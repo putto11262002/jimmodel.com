@@ -1,0 +1,8 @@
+#__next {
+  @apply w-full h-full flex flex-col justify-between items-center;
+}
+
+body,
+html {
+  @apply w-full h-full;
+}
