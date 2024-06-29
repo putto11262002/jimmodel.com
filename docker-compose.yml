@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: jimmodel_postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: jimmodel
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: jimmodel
