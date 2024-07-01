@@ -12,7 +12,7 @@ export enum UserAction {
 type UIOptions = { title?: string; description?: string };
 
 type InvokePayload = {
-  target: UserWithoutSecrets;
+  target: UserWithoutSecrets | null;
   action: UserAction;
 } & UIOptions;
 
@@ -54,7 +54,7 @@ export default function UserActionsProvider({
     description,
   }: {
     action: UserAction;
-    target: UserWithoutSecrets;
+    target: UserWithoutSecrets | null;
     title?: string;
     description?: string;
   }) => {

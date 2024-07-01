@@ -24,8 +24,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await findByUsernameOrEmail(
           credentails.username as string,
         );
-        console.log(user);
-
         if (user === null) {
           throw new AuthenticationError("invalid credentials");
         }

@@ -1,4 +1,5 @@
 "use client";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UserRole, userRoles } from "@/db/schemas/users";
@@ -8,7 +9,6 @@ import { SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { updateUserRoleAction } from "@/lib/actions/user";
 import { useUserActions } from "../actions-context";
-import { useQuery } from "@tanstack/react-query";
 
 export default function UpdateRoleForm() {
   const { target, done: completedAction } = useUserActions();
@@ -43,7 +43,10 @@ export default function UpdateRoleForm() {
             <FormItem className="space-y-3">
               <FormLabel>Roles</FormLabel>
               {userRoles.map((role) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormItem
+                  key={role}
+                  className="flex flex-row items-start space-x-3 space-y-0"
+                >
                   <Checkbox
                     checked={
                       roles.fields.find(({ value }) => value === role) !==

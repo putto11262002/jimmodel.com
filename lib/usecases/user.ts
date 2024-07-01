@@ -6,7 +6,7 @@ import {
   UserWithoutSecrets,
 } from "@/db/schemas/users";
 import ContraintViolationError from "../errors/contrain-violation-error";
-import { or, eq } from "drizzle-orm";
+import { or, eq, and, arrayContains, count } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const addUser = async (input: UserCreateInput): Promise<void> => {
@@ -102,4 +102,39 @@ export const resetPassword = async (
     .set({ password: hashedPassword })
     .where(eq(userTable.id, userId))
     .returning({ updatedId: userTable.id });
+};
+
+export const getUsers = async ({
+  roles,
+  page,
+  pageSize = 10,
+}: {
+  roles: UserRole[];
+  page: number;
+  pageSize?: number;
+}) => {
+  const whereClause = and(
+    ...[...(roles.length > 0 ? [arrayContains(userTable.roles, roles)] : [])],
+  );
+  const offset = (page - 1) * pageSize;
+  const [users, userCounts] = await Promise.all([
+    db
+      .select()
+      .from(userTable)
+      .where(whereClause)
+      .offset(offset)
+      .limit(pageSize),
+    db.select({ total: count() }).from(userTable).where(whereClause),
+  ]);
+
+  // Validate page input ?
+  const total = userCounts?.[0].total ?? 0;
+  const totalPages = Math.ceil(total / pageSize);
+  return {
+    users,
+    total,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrevious: page > 1,
+  };
 };

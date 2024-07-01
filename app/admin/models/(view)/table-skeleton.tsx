@@ -10,9 +10,7 @@ export default function TableSkeleton() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Username</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="hidden md:table-cell">Roles</TableHead>
+              <TableHead>Gender</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>

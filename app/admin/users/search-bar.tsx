@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import AddUserSheet from "./add-user-sheet";
 import RoleFilter from "./role-filter";
 import { PlusCircle } from "lucide-react";
 import { UserAction, useUserActions } from "./actions-context";
@@ -14,8 +13,9 @@ export default function SearchBar() {
         <Button
           onClick={() =>
             startAction({
-              title: "Add New User",
+              title: "AddNew User",
               action: UserAction.AddUser,
+              target: null,
             })
           }
           size="sm"

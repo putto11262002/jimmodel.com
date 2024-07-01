@@ -10,17 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import PaginationControl from "@/components/pagination-control";
-import { getUsers } from "@/lib/usecases/user";
-import { searchParamsToString } from "@/lib/utils/search-param";
+import { getModelProfiles } from "@/lib/usecases/model";
 
 const PAGE_SIZE = 8;
-
-const parseUserRole = (role: string): UserRole | null => {
-  if (userRoles.includes(role as UserRole)) {
-    return role as UserRole;
-  }
-  return null;
-};
 
 export default async function Page({
   searchParams,
@@ -31,12 +23,9 @@ export default async function Page({
     <>
       <Card x-chunk="dashboard-06-chunk-0">
         <CardHeader>
-          <CardTitle>Users</CardTitle>
+          <CardTitle>Models</CardTitle>
         </CardHeader>
-        <Suspense
-          fallback={<TableSkeleton />}
-          key={`admin/users?${searchParamsToString(searchParams)}`}
-        >
+        <Suspense fallback={<TableSkeleton />} key={`admin/models`}>
           <PageContent page={searchParams.page} roles={searchParams.roles} />
         </Suspense>
       </Card>
@@ -56,10 +45,7 @@ async function PageContent({
     ? parseInt(Array.isArray(pageParam) ? pageParam?.[0] : pageParam, 10) || 1
     : 1;
 
-  const { users, totalPages } = await getUsers({
-    roles: (Array.isArray(roles) ? roles : [roles])
-      .map(parseUserRole)
-      .filter((role) => role !== null),
+  const { data, totalPages } = await getModelProfiles({
     page,
     pageSize: PAGE_SIZE,
   });
@@ -67,7 +53,7 @@ async function PageContent({
   return (
     <>
       <CardContent>
-        <UserTable users={users} />
+        <UserTable models={data} />
       </CardContent>
       <CardFooter>
         <PaginationControl page={page} totalPages={totalPages} />
