@@ -1,8 +1,12 @@
-import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { drizzle } from "drizzle-orm/postgres-js";
+import dotenv from  "dotenv"
 import postgres from "postgres";
+import * as schema from "./schemas";
+
+dotenv.config({path: ".env"});
 
 declare module globalThis {
-  let db: PostgresJsDatabase | undefined;
+  let db: DB | undefined;
 }
 
 const connectDB = () => {
@@ -14,12 +18,16 @@ const connectDB = () => {
     database: process.env.DB_NAME,
   });
 
-  return drizzle(client, { logger: process.env.NODE_ENV === "development" });
+  return drizzle(client, {
+    schema,
+    logger: process.env.NODE_ENV === "development",
+  });
 };
+
+export type DB = ReturnType<typeof connectDB>;
 
 const db = globalThis.db ?? connectDB();
 
 export default db;
 
 if (process.env.NODE_ENV !== "production") globalThis.db = db;
-

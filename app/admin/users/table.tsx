@@ -19,12 +19,30 @@ import {
 import { User } from "@/db/schemas/users";
 import { MoreHorizontal } from "lucide-react";
 import { UserAction, useUserActions } from "./actions-context";
-export default function UserTable({ users }: { users: User[] }) {
+import { UserWithoutSecrets } from "@/lib/types/user";
+import UserAvatar from "@/components/user/user-avatar";
+import { UserActions } from "@/config/permission";
+import { upperFirst } from "lodash";
+export default function UserTable({
+  users,
+  allowedActions,
+}: {
+  users: UserWithoutSecrets[];
+  allowedActions: {
+    [UserActions.updatePasswordById]: boolean;
+    [UserActions.updateRoleById]: boolean;
+    [UserActions.addImageById]: boolean;
+  };
+}) {
   const { invoke } = useUserActions();
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="hidden sm:table-cell">
+            <span className="sr-only">Image</span>
+          </TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Username</TableHead>
           <TableHead>Email</TableHead>
@@ -37,6 +55,9 @@ export default function UserTable({ users }: { users: User[] }) {
       <TableBody>
         {users.map((user) => (
           <TableRow key={user.id}>
+            <TableCell>
+              <UserAvatar user={user} />
+            </TableCell>
             <TableCell className="hidden sm:table-cell">{user.name}</TableCell>
             <TableCell className="font-medium">{user.username}</TableCell>
             <TableCell>{user.email}</TableCell>
@@ -46,7 +67,7 @@ export default function UserTable({ users }: { users: User[] }) {
                   ?.filter((_, i) => i < 2)
                   ?.map((role) => (
                     <Badge key={role} variant="outline">
-                      {role}
+                      {upperFirst(role)}
                     </Badge>
                   ))}
               </div>
@@ -66,39 +87,45 @@ export default function UserTable({ users }: { users: User[] }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      invoke({
-                        action: UserAction.ResetPassword,
-                        target: user,
-                        title: "Reset Password",
-                      })
-                    }
-                  >
-                    Reset password
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      invoke({
-                        action: UserAction.Delete,
-                        target: user,
-                        title: "Delete user",
-                      });
-                    }}
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      invoke({
-                        action: UserAction.UpdateRole,
-                        target: user,
-                        title: "Update User Role",
-                      });
-                    }}
-                  >
-                    Update role
-                  </DropdownMenuItem>
+                  {allowedActions[UserActions.updatePasswordById] && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        invoke({
+                          action: UserAction.ResetPassword,
+                          target: user,
+                          title: "Reset Password",
+                        })
+                      }
+                    >
+                      Reset Password
+                    </DropdownMenuItem>
+                  )}
+                  {allowedActions[UserActions.addImageById] && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        invoke({
+                          action: UserAction.UploadImage,
+                          target: user,
+                          title: "Upload Image",
+                        });
+                      }}
+                    >
+                      Upload Image
+                    </DropdownMenuItem>
+                  )}
+                  {allowedActions[UserActions.addImageById] && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        invoke({
+                          action: UserAction.UpdateRole,
+                          target: user,
+                          title: "Update User Role",
+                        });
+                      }}
+                    >
+                      Update role
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>

@@ -1,10 +1,3 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import UserActionsProvider from "./actions-context";
 import UserActionForms from "./forms";
 import SearchBar from "./search-bar";

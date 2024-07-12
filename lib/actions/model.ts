@@ -1,9 +1,6 @@
 "use server";
-import {
-  ModelCreateInput,
-  ModelIamgeType,
-  ModelUpdateInput,
-} from "@/db/schemas/models";
+import { ModelImageType } from "@/db/schemas/model-images";
+import { ModelCreateInput, ModelUpdateInput } from "@/db/schemas/models";
 import { addModel, addModelImage, updateModel } from "../usecases/model";
 import { CreateModelSchema, UpdateModelSchema } from "../validators/model";
 import { revalidatePath } from "next/cache";
@@ -44,7 +41,7 @@ export const addModelImageAction = async (
   modelId: string,
   formData: FormData,
 ) => {
-  const type = formData.get("type") as ModelIamgeType;
+  const type = formData.get("type") as ModelImageType;
   const file = formData.get("file") as File;
 
   await addModelImage(

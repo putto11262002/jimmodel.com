@@ -2,12 +2,7 @@
 
 import { UserCreateInput, UserRole } from "@/db/schemas/users";
 import { revalidatePath } from "next/cache";
-import { addUser, resetPassword, updateUserRole } from "../usecases/user";
-
-export const addUserAction = async (input: UserCreateInput): Promise<void> => {
-  await addUser(input);
-  revalidatePath("/admin/users", "layout");
-};
+import { resetPassword, updateUserRole } from "../usecases/user";
 
 export const updateUserRoleAction = async (
   userId: string,

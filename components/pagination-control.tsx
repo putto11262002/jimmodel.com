@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { setParam } from "@/lib/utils/search-param";
 import { CircleChevronLeft, CircleChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
 export default function PaginationControl({
@@ -14,6 +14,8 @@ export default function PaginationControl({
   totalPages: number;
 }) {
   const searchParams = useSearchParams();
+  const path = usePathname();
+
   const router = useRouter();
   return (
     <div className="flex items-center  w-full">
@@ -28,7 +30,7 @@ export default function PaginationControl({
           size={"sm"}
           onClick={() =>
             router.push(
-              `/admin/users?${setParam("page", [(page - 1).toString()], searchParams)}`,
+              `${path}?${setParam("page", [(page - 1).toString()], searchParams)}`,
             )
           }
         >
@@ -42,7 +44,7 @@ export default function PaginationControl({
           size={"sm"}
           onClick={() =>
             router.push(
-              `/admin/users?${setParam("page", [(page + 1).toString()], searchParams)}`,
+              `${path}?${setParam("page", [(page + 1).toString()], searchParams)}`,
             )
           }
         >

@@ -33,8 +33,12 @@
 		"**/*.ts",
 		"**/*.tsx",
 		".next/types/**/*.ts"
-	],
+, "sctipts/init.ts"	],
 	"exclude": [
 		"node_modules"
-	]
+	],
+	"ts-node": {
+		"esm": true,
+		"experimentalSpecifierResolution": "node",
+	}
 }

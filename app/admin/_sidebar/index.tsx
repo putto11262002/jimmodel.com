@@ -6,10 +6,16 @@ import {
 } from "@/components/ui/tooltip";
 import { Briefcase, Lock, User } from "lucide-react";
 import UserMenu from "./user-menu";
+import { DashboardIcon } from "@radix-ui/react-icons";
 
 const iconClasses = "h-5 w-5";
 
 const navMenuItems = [
+  {
+    label: "Dashbaord",
+    href: "/admin",
+    icon: <DashboardIcon className={iconClasses} />,
+  },
   {
     label: "Models",
     href: "/admin/models",

@@ -25,8 +25,8 @@ export default function TopNavBar() {
             .map((breadcrumb, index, arr) => {
               if (index < arr.length - 1) {
                 return (
-                  <>
-                    <BreadcrumbItem key={index}>
+                  <div className="flex items-center" key={index}>
+                    <BreadcrumbItem >
                       <BreadcrumbLink asChild>
                         <Link href="#">
                           {truncate(breadcrumb, { length: 10 })}
@@ -34,7 +34,7 @@ export default function TopNavBar() {
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
-                  </>
+                  </div>
                 );
               } else {
                 return (

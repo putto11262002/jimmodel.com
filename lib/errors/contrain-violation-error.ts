@@ -1,8 +1,8 @@
-class ContraintViolationError extends Error {
+class ConstraintViolationError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "ContraintViolationError";
   }
 }
 
-export default ContraintViolationError;
+export default ConstraintViolationError;

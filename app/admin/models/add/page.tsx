@@ -29,10 +29,10 @@ import {
   SelectValue,
   SelectTrigger,
 } from "@/components/ui/select";
-import { genders } from "@/db/schemas/genders";
+import { genders } from "@/db/data/genders";
 import { ethnicties } from "@/lib/data/ethnicities";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Calendar } from "@/components/ui/calendar";
 import { z } from "zod";
@@ -41,14 +41,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ModelCreateInput } from "@/db/schemas/models";
 import { addModelAction } from "@/lib/actions/model";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import client from "@/lib/api/client";
+import { Badge } from "@/components/ui/badge";
+import useToast from "@/components/toast";
 
 const CreateModelFormSchema = z.object({
   firstName: z.string().min(1, "First name cannot be empty"),
   lastName: z.string().min(1, "Last name cannot be emtpy"),
   gender: CreateModelSchema.shape.gender,
   ethnicity: CreateModelSchema.shape.ethnicity,
-  dateOfBirth: CreateModelSchema.shape.dateOfBirth,
+  dateOfBirth: z.date(),
 });
 
 // transforms the the data in the shape of the form schema to the schema that is compatible with the service layer
@@ -59,13 +62,13 @@ const transform = (
     name: `${data.firstName} ${data.lastName}`,
     gender: data.gender,
     ethnicity: data.ethnicity,
-    dateOfBirth: data.dateOfBirth,
+    dateOfBirth: data.dateOfBirth.toISOString(),
   })).parse(formSchema);
 };
 
 export default function Page() {
-  const { toast } = useToast();
   const router = useRouter();
+  const { error } = useToast();
 
   const form = useForm<z.infer<typeof CreateModelFormSchema>>({
     resolver: zodResolver(CreateModelFormSchema),
@@ -75,17 +78,34 @@ export default function Page() {
     },
   });
 
-  const onSubmit = async (formData: z.infer<typeof CreateModelFormSchema>) => {
-    const modelId = await addModelAction(transform(formData));
-    toast({ title: "Success", description: "Model successfully added" });
-    router.push(`/admin/models/update/${modelId}`);
-  };
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (formData: z.infer<typeof CreateModelFormSchema>) => {
+      const res = await client.api.models.$post({
+        json: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          gender: formData.gender,
+          dateOfBirth: formData.dateOfBirth,
+          ethnicity: formData.ethnicity,
+        },
+      });
+      return res.json();
+    },
+    onSuccess: ({ id }) => {
+      queryClient.invalidateQueries({ queryKey: ["models"] });
+      router.push(`/admin/models/update/${id}/general`);
+    },
+    onError: () => {
+      error("Failed to add model");
+    },
+  });
 
   return (
-    <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:px-10">
+    <main className="flex  flex-1 flex-col bg-muted/40 p-4 ">
       <div className=" mx-auto w-full max-w-3xl">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit((formData) => mutate(formData))}>
             <Card>
               <CardHeader>
                 <CardTitle> Add New Model</CardTitle>
@@ -96,7 +116,7 @@ export default function Page() {
                     name="firstName"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-2 md:col-span-1">
                         <FormLabel>First Name</FormLabel>
                         <FormControl>
                           <Input {...field} />
@@ -109,7 +129,7 @@ export default function Page() {
                     name="lastName"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-2 md:col-span-1">
                         <FormLabel>Last Name</FormLabel>
                         <FormControl>
                           <Input {...field} />
@@ -217,7 +237,14 @@ export default function Page() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit">Save</Button>
+                <Button disabled={isPending} type="submit">
+                  Save
+                  {isPending && (
+                    <span className="ml-2">
+                      <Loader className="w-4 h-4 animate-spin" />
+                    </span>
+                  )}
+                </Button>
               </CardFooter>
             </Card>
           </form>

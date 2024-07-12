@@ -1,63 +1,47 @@
-import { UserRole, userRoles } from "@/db/schemas/users";
-import UserTable from "./table";
-import { Suspense } from "react";
-import TableSkeleton from "./table-skeleton";
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import PaginationControl from "@/components/pagination-control";
-import { getModelProfiles } from "@/lib/usecases/model";
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import client from "@/lib/api/client";
+import PageContent from "./_page";
 
-const PAGE_SIZE = 8;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function Page({
   searchParams,
 }: {
   searchParams: { page?: string[] | string; roles: string[] | string };
 }) {
-  return (
-    <>
-      <Card x-chunk="dashboard-06-chunk-0">
-        <CardHeader>
-          <CardTitle>Models</CardTitle>
-        </CardHeader>
-        <Suspense fallback={<TableSkeleton />} key={`admin/models`}>
-          <PageContent page={searchParams.page} roles={searchParams.roles} />
-        </Suspense>
-      </Card>
-    </>
-  );
-}
-
-async function PageContent({
-  roles,
-  page: pageParam,
-}: {
-  roles: string | string[];
-  page?: string | string[];
-}) {
   // Use zod to validate and clean search params
-  const page = pageParam
-    ? parseInt(Array.isArray(pageParam) ? pageParam?.[0] : pageParam, 10) || 1
+  const page = searchParams?.page
+    ? parseInt(
+        Array.isArray(searchParams.page)
+          ? searchParams.page?.[0]
+          : searchParams.page,
+        10,
+      ) || 1
     : 1;
 
-  const { data, totalPages } = await getModelProfiles({
-    page,
-    pageSize: PAGE_SIZE,
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: ["models", { page }],
+    queryFn: async () => {
+      const res = await client.api.models.profile.$get({
+        query: { page: page.toString(), pageSize: (5).toString() },
+      });
+      const data = await res.json();
+      return data;
+    },
   });
 
   return (
     <>
-      <CardContent>
-        <UserTable models={data} />
-      </CardContent>
-      <CardFooter>
-        <PaginationControl page={page} totalPages={totalPages} />
-      </CardFooter>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <PageContent />
+      </HydrationBoundary>
     </>
   );
 }

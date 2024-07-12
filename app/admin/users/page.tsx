@@ -1,6 +1,6 @@
+"use client";
 import { UserRole, userRoles } from "@/db/schemas/users";
 import UserTable from "./table";
-import { Suspense } from "react";
 import TableSkeleton from "./table-skeleton";
 import {
   Card,
@@ -10,8 +10,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import PaginationControl from "@/components/pagination-control";
-import { getUsers } from "@/lib/usecases/user";
-import { searchParamsToString } from "@/lib/utils/search-param";
+import { useQuery } from "@tanstack/react-query";
+import client from "@/lib/api/client";
+import useSession from "@/hooks/use-session";
+import { hasPermission } from "@/lib/utils/auth";
+import permissions, { UserActions } from "@/config/permission";
 
 const PAGE_SIZE = 8;
 
@@ -22,7 +25,7 @@ const parseUserRole = (role: string): UserRole | null => {
   return null;
 };
 
-export default async function Page({
+export default function Page({
   searchParams,
 }: {
   searchParams: { page?: string[] | string; roles: string[] | string };
@@ -33,18 +36,13 @@ export default async function Page({
         <CardHeader>
           <CardTitle>Users</CardTitle>
         </CardHeader>
-        <Suspense
-          fallback={<TableSkeleton />}
-          key={`admin/users?${searchParamsToString(searchParams)}`}
-        >
-          <PageContent page={searchParams.page} roles={searchParams.roles} />
-        </Suspense>
+        <PageContent page={searchParams.page} roles={searchParams.roles} />
       </Card>
     </>
   );
 }
 
-async function PageContent({
+function PageContent({
   roles,
   page: pageParam,
 }: {
@@ -56,21 +54,45 @@ async function PageContent({
     ? parseInt(Array.isArray(pageParam) ? pageParam?.[0] : pageParam, 10) || 1
     : 1;
 
-  const { users, totalPages } = await getUsers({
-    roles: (Array.isArray(roles) ? roles : [roles])
-      .map(parseUserRole)
-      .filter((role) => role !== null),
-    page,
-    pageSize: PAGE_SIZE,
+  const { data, isSuccess } = useQuery({
+    queryKey: ["users", { page }],
+    queryFn: async () => {
+      const res = await client.api.users.$get({
+        query: { page: page.toString() },
+      });
+      return res.json();
+    },
   });
+
+  const { data: session, status } = useSession();
+
+  if (!isSuccess || status === "loading") {
+    return <TableSkeleton />;
+  }
 
   return (
     <>
       <CardContent>
-        <UserTable users={users} />
+        <UserTable
+          users={data.data}
+          allowedActions={{
+            [UserActions.updatePasswordById]: hasPermission(
+              permissions.users.updatePasswordById,
+              session.user.roles,
+            ),
+            [UserActions.updateRoleById]: hasPermission(
+              permissions.users.updateRoleById,
+              session.user.roles,
+            ),
+            [UserActions.addImageById]: hasPermission(
+              permissions.users.addImageById,
+              session.user.roles,
+            ),
+          }}
+        />
       </CardContent>
       <CardFooter>
-        <PaginationControl page={page} totalPages={totalPages} />
+        <PaginationControl page={page} totalPages={data.totalPages} />
       </CardFooter>
     </>
   );

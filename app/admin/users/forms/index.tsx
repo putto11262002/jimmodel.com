@@ -10,12 +10,16 @@ import { UserAction, useUserActions } from "../actions-context";
 import { lazy, LazyExoticComponent } from "react";
 
 const actionsForms: Record<
-  UserAction.AddUser | UserAction.UpdateRole | UserAction.ResetPassword,
+  | UserAction.AddUser
+  | UserAction.UpdateRole
+  | UserAction.ResetPassword
+  | UserAction.UploadImage,
   LazyExoticComponent<() => JSX.Element>
 > = {
   [UserAction.ResetPassword]: lazy(() => import("./reset-password-form")),
   [UserAction.UpdateRole]: lazy(() => import("./update-role-form")),
   [UserAction.AddUser]: lazy(() => import("./add-user-form")),
+  [UserAction.UploadImage]: lazy(() => import("./upload-image-form")),
 };
 
 export default function UserActionForms() {
@@ -29,7 +33,8 @@ export default function UserActionForms() {
   const ActionForm =
     action === UserAction.AddUser ||
     action === UserAction.ResetPassword ||
-    action === UserAction.UpdateRole
+    action === UserAction.UpdateRole ||
+    action === UserAction.UploadImage
       ? actionsForms[action]
       : null;
 

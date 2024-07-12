@@ -7,6 +7,7 @@ export enum UserAction {
   ResetPassword = "reset-password",
   UpdateRole = "update-role",
   AddUser = "add-user",
+  UploadImage = "upload-image",
 }
 
 type UIOptions = { title?: string; description?: string };
