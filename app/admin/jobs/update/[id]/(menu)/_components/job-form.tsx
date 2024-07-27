@@ -14,18 +14,15 @@ import {
   FormMessage,
   Form,
 } from "@/components/ui/form";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { JobUpdateInputSchema } from "@/lib/validators/job";
 import { z } from "zod";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import client from "@/lib/api/client";
 import { useGetJob, useUpdateJob } from "@/hooks/queries/job";
-import { Skeleton } from "@/components/ui/skeleton";
-import JobFormSkeleton from "./_components/job-form-skeleton";
+import JobFormSkeleton from "./job-form-skeleton";
 import { Job } from "@/lib/types/job";
 
 export default function JobForm({ jobId }: { jobId: string }) {

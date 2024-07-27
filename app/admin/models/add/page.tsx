@@ -36,39 +36,25 @@ import { CalendarIcon, Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Calendar } from "@/components/ui/calendar";
 import { z } from "zod";
-import { CreateModelSchema } from "@/lib/validators/model";
+import { ModelCreateInputSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ModelCreateInput } from "@/db/schemas/models";
-import { addModelAction } from "@/lib/actions/model";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import client from "@/lib/api/client";
-import { Badge } from "@/components/ui/badge";
-import useToast from "@/components/toast";
+import { BreakcrumbSetter } from "@/components/breadcrumb";
+import { useCreateModel } from "@/hooks/queries/model";
 
-const CreateModelFormSchema = z.object({
-  firstName: z.string().min(1, "First name cannot be empty"),
-  lastName: z.string().min(1, "Last name cannot be emtpy"),
-  gender: CreateModelSchema.shape.gender,
-  ethnicity: CreateModelSchema.shape.ethnicity,
-  dateOfBirth: z.date(),
-});
-
-// transforms the the data in the shape of the form schema to the schema that is compatible with the service layer
-const transform = (
-  formSchema: z.infer<typeof CreateModelFormSchema>,
-): ModelCreateInput => {
-  return CreateModelFormSchema.transform((data) => ({
-    name: `${data.firstName} ${data.lastName}`,
-    gender: data.gender,
-    ethnicity: data.ethnicity,
-    dateOfBirth: data.dateOfBirth.toISOString(),
-  })).parse(formSchema);
-};
+const CreateModelFormSchema = ModelCreateInputSchema.pick({
+  gender: true,
+  ethnicity: true,
+}).and(
+  z.object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    dateOfBirth: z.date().optional(),
+  }),
+);
 
 export default function Page() {
   const router = useRouter();
-  const { error } = useToast();
 
   const form = useForm<z.infer<typeof CreateModelFormSchema>>({
     resolver: zodResolver(CreateModelFormSchema),
@@ -78,37 +64,36 @@ export default function Page() {
     },
   });
 
-  const queryClient = useQueryClient();
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (formData: z.infer<typeof CreateModelFormSchema>) => {
-      const res = await client.api.models.$post({
-        json: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          gender: formData.gender,
-          dateOfBirth: formData.dateOfBirth,
-          ethnicity: formData.ethnicity,
-        },
-      });
-      return res.json();
-    },
-    onSuccess: ({ id }) => {
-      queryClient.invalidateQueries({ queryKey: ["models"] });
-      router.push(`/admin/models/update/${id}/general`);
-    },
-    onError: () => {
-      error("Failed to add model");
-    },
-  });
+  const { mutate, isPending } = useCreateModel();
 
   return (
     <main className="flex  flex-1 flex-col bg-muted/40 p-4 ">
+      <BreakcrumbSetter
+        breadcrumbs={[
+          { label: "Models", href: "/admin/models" },
+          { label: "New Model" },
+        ]}
+      />
       <div className=" mx-auto w-full max-w-3xl">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((formData) => mutate(formData))}>
+          <form
+            onSubmit={form.handleSubmit((formData) =>
+              mutate(
+                {
+                  ...formData,
+                  name: `${formData.firstName} ${formData.lastName}`,
+                  dateOfBirth: formData.dateOfBirth?.toISOString(),
+                },
+                {
+                  onSuccess: ({ id }) =>
+                    router.push(`/admin/models/update/${id}`),
+                },
+              ),
+            )}
+          >
             <Card>
               <CardHeader>
-                <CardTitle> Add New Model</CardTitle>
+                <CardTitle>New Model</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">

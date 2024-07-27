@@ -28,11 +28,11 @@ export default function PaginationControl({
           className="h-7 space-x-1"
           variant={"outline"}
           size={"sm"}
-          onClick={() =>
-            router.push(
-              `${path}?${setParam("page", [(page - 1).toString()], searchParams)}`,
-            )
-          }
+          onClick={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            setParam("page", [(page - 1).toString()], params);
+            router.push(`${path}?${params}`);
+          }}
         >
           <CircleChevronLeft className="h-3.5 w-3.5" />
           <span>Back</span>
@@ -42,11 +42,11 @@ export default function PaginationControl({
           className="h-7 space-x-1"
           variant={"outline"}
           size={"sm"}
-          onClick={() =>
-            router.push(
-              `${path}?${setParam("page", [(page + 1).toString()], searchParams)}`,
-            )
-          }
+          onClick={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            setParam("page", [(page + 1).toString()], params);
+            router.push(`${path}?${params}`);
+          }}
         >
           <span>Next</span>
           <CircleChevronRight className="h-3.5 w-3.5" />

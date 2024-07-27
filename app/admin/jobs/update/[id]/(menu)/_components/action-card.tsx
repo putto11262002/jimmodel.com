@@ -1,16 +1,14 @@
 "use client";
 import { CardHeader, Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import client from "@/lib/api/client";
-import { Suspense } from "react";
-import ActionCardSkeleton from "./action-card-skelton";
+
 import {
   useArchive as useArchiveJob,
   useCancelJob,
   useConfrirmJob as useConfirmJob,
   useGetJob,
 } from "@/hooks/queries/job";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ActionCard({ jobId }: { jobId: string }) {
   return (
@@ -31,11 +29,22 @@ function ActionCardContent({ jobId }: { jobId: string }) {
   const { mutate: archive } = useArchiveJob();
   const { mutate: cancel } = useCancelJob();
   if (!isSuccess) {
-    return <ActionCardSkeleton />;
+    return (
+      <div className="grid gap-4">
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="h-6 w-full" />
+      </div>
+    );
   }
 
   return (
     <div className="grid gap-4">
+      {data.status === "cancelled" && (
+        <p className="text-center text-muted-foreground text-sm py-4">
+          No Actions Avaialble
+        </p>
+      )}
       {data.status == "pending" && (
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">

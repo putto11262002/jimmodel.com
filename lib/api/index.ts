@@ -4,6 +4,7 @@ import jobRouter from "./job";
 import userRouter from "./user";
 import { HTTPException } from "hono/http-exception";
 import ConstraintViolationError from "../errors/contrain-violation-error";
+import applicationRouter from "./application";
 
 const app = new Hono({}).basePath("/api");
 
@@ -11,6 +12,7 @@ const appRouter = app
   .route("/", modelRouter)
   .route("/", jobRouter)
   .route("/", userRouter)
+  .route("/", applicationRouter)
   .onError((err, c) => {
     console.error(err);
 

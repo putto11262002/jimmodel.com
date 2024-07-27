@@ -1,6 +1,7 @@
 import { hc } from "hono/client";
 import { ofetch } from "ofetch";
 import { AppRouter } from ".";
+import HttpError from "../errors/http-error";
 
 const client = hc<AppRouter>(
   typeof window === "undefined" ? process.env.SERVER_BASE_URL! : "/",
@@ -8,8 +9,9 @@ const client = hc<AppRouter>(
     async fetch(input, requestInit, Env, executionCtx) {
       const res = await fetch(input, requestInit);
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message);
+        const body = await res.json();
+        const error = new HttpError(body.message, res.status);
+        throw error;
       }
       return res;
     },

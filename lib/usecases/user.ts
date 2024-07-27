@@ -12,7 +12,7 @@ import { HTTPException } from "hono/http-exception";
 
 interface IUserUsecase {
   getById(id: string): Promise<UserWithoutSecrets | null>;
-  addImage(userId: string, file: File): Promise<void>;
+  addImage(userId: string, file: Blob): Promise<void>;
   getAll({}: {
     page?: number;
     pageSize?: number;
@@ -41,7 +41,7 @@ export class UserUsecase implements IUserUsecase {
     return user;
   }
 
-  async addImage(userId: string, file: File): Promise<void> {
+  async addImage(userId: string, file: Blob): Promise<void> {
     const existingImage = await this.db
       .update(userTable)
       .set({ imageId: null })

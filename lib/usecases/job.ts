@@ -6,13 +6,20 @@ import {
   jobTable,
   jobToModelTable,
 } from "../../db/schemas/jobs";
-import { and, count, eq, gte, inArray, lte, or } from "drizzle-orm";
+import { and, count, eq, gte, inArray, lt, lte, or } from "drizzle-orm";
 import { getOffset, getPagination } from "../utils/pagination";
 import db, { DB } from "../../db/client";
-import { ModelProfile } from "@/db/schemas";
+import {
+  fileInfoTable,
+  modelImageTable,
+  ModelProfile,
+  modelTable,
+  userTable,
+} from "@/db/schemas";
 import { getModelProfiles } from "./model";
 import { PaginatedData } from "../types/paginated-data";
 import { BookingWithJob, Job, JobUpdateInput } from "../types/job";
+import { alias } from "drizzle-orm/pg-core";
 
 export class JobUsecase {
   private readonly db: DB;
@@ -23,23 +30,33 @@ export class JobUsecase {
   public async getBookingsBetweenRange({
     start,
     end,
-    status,
+    statuses,
   }: {
     start: Date;
     end: Date;
-    status?: JobStatus[];
+    statuses?: JobStatus[];
   }): Promise<BookingWithJob[]> {
+    const whereClause = and(
+      start && !end ? gte(bookingTable.start, start.toISOString()) : undefined,
+      end && !start ? lte(bookingTable.end, end.toISOString()) : undefined,
+      start && end
+        ? or(
+            and(
+              lt(bookingTable.start, start.toISOString()),
+              gte(bookingTable.end, start.toISOString()),
+            ),
+            and(
+              gte(bookingTable.start, start.toISOString()),
+              lte(bookingTable.start, end.toISOString()),
+            ),
+          )
+        : undefined,
+      statuses && statuses.length > 0
+        ? inArray(bookingTable, statuses)
+        : undefined,
+    );
     const bookings = await this.db.query.bookingTable.findMany({
-      where: or(
-        and(
-          lte(bookingTable.start, end.toISOString()),
-          gte(bookingTable.start, start.toISOString()),
-        ),
-        and(
-          lte(bookingTable.end, end.toISOString()),
-          gte(bookingTable.end, start.toISOString()),
-        ),
-      ),
+      where: whereClause,
       with: {
         job: {
           with: {
@@ -77,13 +94,19 @@ export class JobUsecase {
   }
 
   public async getJobs({
-    page,
-    pageSize,
+    page = 1,
+    pageSize = 10,
+    statuses,
   }: {
-    page: number;
-    pageSize: number;
+    page?: number;
+    pageSize?: number;
+    statuses?: JobStatus[];
   }): Promise<PaginatedData<Job>> {
-    const whereClause = or();
+    const whereClause = and(
+      statuses && statuses.length > 0
+        ? inArray(jobTable.status, statuses)
+        : undefined,
+    );
     const [rawJobs, counts] = await Promise.all([
       this.db.query.jobTable.findMany({
         where: whereClause,
@@ -243,27 +266,87 @@ export class JobUsecase {
     await this.db.delete(bookingTable).where(eq(bookingTable.id, bookingId));
   }
 
-  public async getBookings(
-    jobId: string,
-    opts?: {
-      page?: number;
-      pageSize?: number;
-    },
-  ) {
-    const page = opts?.page || 1;
-    const pageSize = opts?.pageSize || 10;
-    const [bookings, counts] = await Promise.all([
+  public async getBookings({
+    jobIds,
+    page = 1,
+    pageSize = 10,
+    start,
+    end,
+    modelIds,
+  }: {
+    jobIds?: string[] | undefined;
+    page?: number;
+    pageSize?: number;
+    start?: Date;
+    end?: Date;
+    modelIds?: string[] | undefined;
+  }): Promise<PaginatedData<BookingWithJob>> {
+    const where = and(
+      start && !end ? gte(bookingTable.start, start.toISOString()) : undefined,
+      end && !start ? lte(bookingTable.end, end.toISOString()) : undefined,
+      start && end
+        ? or(
+            and(
+              lt(bookingTable.start, start.toISOString()),
+              gte(bookingTable.end, start.toISOString()),
+            ),
+            and(
+              gte(bookingTable.start, start.toISOString()),
+              lte(bookingTable.start, end.toISOString()),
+            ),
+          )
+        : undefined,
+      jobIds && jobIds.length > 0 ? inArray(jobTable.id, jobIds) : undefined,
+      modelIds && modelIds.length > 0
+        ? inArray(jobToModelTable.modelId, modelIds)
+        : undefined,
+    );
+
+    const [rows, counts] = await Promise.all([
       this.db
         .select()
         .from(bookingTable)
-        .where(eq(bookingTable.jobId, jobId))
-        .offset(getOffset(page, pageSize))
-        .limit(pageSize),
+        .where(where)
+        .innerJoin(jobTable, eq(jobTable.id, bookingTable.jobId))
+        .innerJoin(userTable, eq(userTable.id, jobTable.ownerId))
+        .leftJoin(fileInfoTable, eq(fileInfoTable.id, userTable.id))
+        .leftJoin(jobToModelTable, eq(jobTable.id, jobToModelTable.jobId))
+        .leftJoin(modelTable, eq(modelTable.id, jobToModelTable.modelId))
+        .leftJoin(modelImageTable, eq(modelTable.id, modelImageTable.modelId)),
+
       this.db
         .select({ count: count() })
         .from(bookingTable)
-        .where(eq(bookingTable.jobId, jobId)),
+        .where(where)
+        .innerJoin(jobTable, eq(bookingTable.jobId, jobTable.id))
+        .innerJoin(userTable, eq(jobTable.ownerId, userTable.id))
+        .leftJoin(fileInfoTable, eq(userTable.imageId, fileInfoTable.id))
+        .leftJoin(jobToModelTable, eq(jobTable.id, jobToModelTable.jobId))
+        .leftJoin(modelTable, eq(modelTable.id, jobToModelTable.modelId))
+        .leftJoin(modelImageTable, eq(modelTable.id, modelImageTable.modelId)),
     ]);
+    let jobs = new Map<string, Job>();
+    let bookings: BookingWithJob[] = [];
+    rows.forEach((row) => {
+      if (!jobs.has(row.jobs.id)) {
+        jobs.set(row.jobs.id, {
+          ...row.jobs,
+          owner: { ...row.users, image: row.files },
+          models: [],
+        });
+      }
+      if (row.models?.id) {
+        jobs.get(row.jobs.id)?.models?.push({
+          id: row.models.id,
+          name: row.models.name,
+          profileImage: row.model_images,
+        });
+      }
+      bookings.push({
+        ...row.bookings,
+        job: jobs.get(row.jobs.id)!,
+      });
+    });
 
     const paginatedBookings = getPagination(
       bookings,
@@ -283,17 +366,25 @@ export class JobUsecase {
     end: Date;
     models: string[];
   }) {
+    const whereClause = and(
+      start && !end ? gte(bookingTable.start, start.toISOString()) : undefined,
+      end && !start ? lte(bookingTable.end, end.toISOString()) : undefined,
+      start && end
+        ? or(
+            and(
+              lt(bookingTable.start, start.toISOString()),
+              gte(bookingTable.end, start.toISOString()),
+            ),
+            and(
+              gte(bookingTable.start, start.toISOString()),
+              lte(bookingTable.start, end.toISOString()),
+            ),
+          )
+        : undefined,
+    );
+
     const conflicts = await this.db.query.bookingTable.findMany({
-      where: or(
-        and(
-          lte(bookingTable.start, end.toISOString()),
-          gte(bookingTable.start, start.toISOString()),
-        ),
-        and(
-          lte(bookingTable.end, end.toISOString()),
-          gte(bookingTable.end, start.toISOString()),
-        ),
-      ),
+      where: whereClause,
       with: {
         job: {
           with: {

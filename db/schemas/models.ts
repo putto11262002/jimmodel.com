@@ -7,23 +7,18 @@ import {
   real,
   date,
   uuid,
-  pgEnum,
   foreignKey,
+  integer,
 } from "drizzle-orm/pg-core";
 
-import { genders } from "../data/genders";
-import { eyeColors } from "../data/eye-colors";
-import { hairColors } from "../data/hair-colors";
-import { ethnicities } from "../data/ethnicities";
 import { modelImageTable } from "./model-images";
-
-export const genderEnum = pgEnum("gender", genders);
-
-export const eyeColorEnum = pgEnum("eye_color", eyeColors);
-
-export const hairColorEnum = pgEnum("hair_color", hairColors);
-
-export const ethnicityEnum = pgEnum("ethnicity", ethnicities);
+import {
+  countryEnum,
+  ethnicityEnum,
+  eyeColorEnum,
+  genderEnum,
+  hairColorEnum,
+} from "./enums";
 
 export const modelTable = pgTable(
   "models",
@@ -45,14 +40,13 @@ export const modelTable = pgTable(
     instagram: varchar("instagram"),
     facebook: varchar("facebook"),
 
-    nationality: varchar("nationality"),
+    nationality: countryEnum("nationality"),
     ethnicity: ethnicityEnum("ethnicity"),
-    countryOfResidence: varchar("country_of_residence"),
-    spokenLanguages: varchar("spoken_languages").array(),
+    countryOfResidence: countryEnum("country_of_residence"),
     occupation: varchar("occupation"),
     highestLevelOfEducation: varchar("highest_level_of_education"),
     medicalInfo: varchar("medical_info"),
-
+    spokenLanguages: varchar("spoken_languages").array(),
     passportNumber: varchar("passport_number"),
     idCardNumber: varchar("id_card_number"),
     taxId: varchar("tax_id"),
@@ -61,7 +55,7 @@ export const modelTable = pgTable(
     city: varchar("city"),
     region: varchar("region"),
     zipCode: varchar("zipCode"),
-    country: varchar("country"),
+    country: countryEnum("country"),
 
     emergencyContactName: varchar("emergency_contact_name"),
     emergencyContactPhoneNumber: varchar("emergency_contact_phone_number"),
@@ -125,8 +119,11 @@ export const modelTable = pgTable(
     hairColor: hairColorEnum("hair_color"),
     eyeColor: eyeColorEnum("eye_color"),
 
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+    }).defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
       .defaultNow()
       .$onUpdate(() => new Date().toISOString()),
 
@@ -153,6 +150,7 @@ export const modelTable = pgTable(
 export const modelRelations = relations(modelTable, ({ many, one }) => ({
   images: many(modelImageTable),
   profileImage: one(modelImageTable),
+  expereinces: many(modelExperienceTable),
 }));
 
 export type ModelCreateInput = typeof modelTable.$inferInsert;
@@ -183,11 +181,14 @@ export const modelBlockTable = pgTable("model_blocks", {
   modelId: uuid("model_id")
     .references(() => modelTable.id)
     .notNull(),
-  start: timestamp("start", { mode: "string" }).notNull(),
-  end: timestamp("end", { mode: "string" }).notNull(),
+  start: timestamp("start", { mode: "string", withTimezone: true }).notNull(),
+  end: timestamp("end", { mode: "string", withTimezone: true }).notNull(),
   reason: varchar("reason").notNull(),
-  createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "string" })
+  createdAt: timestamp("created_at", {
+    mode: "string",
+    withTimezone: true,
+  }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
     .defaultNow()
     .$onUpdate(() => new Date().toISOString()),
 });
@@ -198,3 +199,25 @@ export const modelBlockRelations = relations(modelBlockTable, ({ one }) => ({
     references: [modelTable.id],
   }),
 }));
+
+export const modelExperienceTable = pgTable("model_experiences", {
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  modelId: uuid("application_id"),
+  year: integer("year").notNull(),
+  media: varchar("media").notNull(),
+  country: countryEnum("country").notNull(),
+  product: varchar("product").notNull(),
+  details: varchar("details"),
+});
+
+export const modelExperienceRelations = relations(
+  modelExperienceTable,
+  ({ one }) => ({
+    model: one(modelTable, {
+      fields: [modelExperienceTable.modelId],
+      references: [modelTable.id],
+    }),
+  }),
+);

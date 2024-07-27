@@ -1,7 +1,7 @@
 import useToast from "@/components/toast";
 import { JobUpdateInput } from "@/db/schemas";
 import client from "@/lib/api/client";
-import { JobCreateInput } from "@/lib/types/job";
+import { BookingWithJob, JobCreateInput, JobStatus } from "@/lib/types/job";
 import {
   QueryClient,
   UndefinedInitialDataOptions,
@@ -9,6 +9,7 @@ import {
   UseMutationOptions,
   useQuery,
   useQueryClient,
+  UseQueryOptions,
 } from "@tanstack/react-query";
 
 export const useDeleteBooking = ({
@@ -67,7 +68,7 @@ export const useDeleteModel = ({
         error("Failed to delete model");
       },
     },
-    queryClient
+    queryClient,
   );
 };
 
@@ -91,7 +92,7 @@ export const useGetJob = ({
       },
       throwOnError: true,
     },
-    queryClient
+    queryClient,
   );
 };
 
@@ -104,8 +105,8 @@ export const useUpdateJob = ({
     { jobId: string; formData: JobUpdateInput }
   >;
 } = {}) => {
-  const {ok, error} = useToast()
-  const queryClient = useQueryClient()
+  const { ok, error } = useToast();
+  const queryClient = useQueryClient();
   return useMutation({
     ...opts,
     mutationFn: async ({
@@ -123,14 +124,14 @@ export const useUpdateJob = ({
       return data;
     },
     onSuccess: (...args) => {
-      ok("Job updated successfully")
+      ok("Job updated successfully");
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      opts?.onSuccess?.(...args)
+      opts?.onSuccess?.(...args);
     },
     onError: (...args) => {
-      error(args[0].message)
-      opts?.onError?.(...args)
-    }
+      error(args[0].message);
+      opts?.onError?.(...args);
+    },
   });
 };
 
@@ -168,7 +169,7 @@ export const useAddJob = ({
         opts?.onError && opts?.onError(...args);
       },
     },
-    queryClient
+    queryClient,
   );
 };
 
@@ -204,7 +205,7 @@ export const useAddModel = ({
         error("Failed to add model to job");
       },
     },
-    queryClient
+    queryClient,
   );
 };
 
@@ -258,3 +259,55 @@ export const useArchive = () => {
     },
   });
 };
+
+export function useGetJobs({
+  page,
+  pageSize,
+  status,
+}: { page?: string; pageSize?: string; status?: JobStatus } = {}) {
+  return useQuery({
+    queryKey: ["jobs", { page }],
+    queryFn: async () => {
+      const res = await client.api.jobs.$get({
+        query: {
+          page: page?.toString(),
+          pageSize: pageSize?.toString(),
+          status,
+        },
+      });
+      const data = await res.json();
+      return data;
+    },
+  });
+}
+
+export function useGetBookings({
+  start,
+  end,
+  modelIds,
+  ...props
+}: {
+  start?: Date;
+  end?: Date;
+  modelIds?: string[];
+} & Omit<
+  UseQueryOptions<BookingWithJob[], Error, BookingWithJob[]>,
+  "queryKey" | "queryFn"
+>) {
+  return useQuery({
+    queryKey: ["bookings", { start, end }],
+    queryFn: async () => {
+      const res = await client.api.bookings.$get({
+        query: {
+          start: start?.toISOString(),
+          end: end?.toISOString(),
+          modelIds,
+        },
+      });
+      let { data: bookings } = await res.json();
+      return bookings;
+    },
+
+    ...props,
+  });
+}

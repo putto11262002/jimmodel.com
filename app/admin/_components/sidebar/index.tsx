@@ -4,7 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Briefcase, Lock, User } from "lucide-react";
+import { Briefcase, Dock, Lock, User } from "lucide-react";
 import UserMenu from "./user-menu";
 import { DashboardIcon } from "@radix-ui/react-icons";
 
@@ -30,6 +30,11 @@ const navMenuItems = [
     label: "Users",
     href: "/admin/users",
     icon: <Lock className={iconClasses} />,
+  },
+  {
+    label: "Applications",
+    href: "/admin/applications",
+    icon: <Dock className={iconClasses} />,
   },
 ];
 

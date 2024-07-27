@@ -1,7 +1,5 @@
 "use client";
-import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -30,11 +28,11 @@ import { UpdateModelSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { codesToNames } from "@/db/data/countries";
-import { ethnicities } from "@/db/data/ethnicities";
 import FormSkeleton from "../form-skeleton";
 import { Model } from "@/db/schemas";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
+import { countryNames } from "@/db/data/countries";
+import { ethnicities } from "@/db/data/ethnicities";
 
 const FormDataSchema = UpdateModelSchema;
 export default function Page({ params: { id } }: { params: { id: string } }) {
@@ -85,9 +83,9 @@ function PageContent({ model }: { model: Model }) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.entries(codesToNames).map(([key, value]) => (
-                            <SelectItem key={key} value={key}>
-                              {value}
+                          {countryNames.map((country, index) => (
+                            <SelectItem key={index} value={country}>
+                              {country}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -141,9 +139,9 @@ function PageContent({ model }: { model: Model }) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.entries(codesToNames).map(([key, value]) => (
-                            <SelectItem key={key} value={key}>
-                              {value}
+                          {countryNames.map((country, index) => (
+                            <SelectItem key={index} value={country}>
+                              {country}
                             </SelectItem>
                           ))}
                         </SelectContent>

@@ -1,6 +1,6 @@
 import { pgEnum, timestamp, pgTable, varchar, uuid } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { fileMetadataTable } from "./file-metadata";
+import { fileInfoTable } from "./file-metadata";
 
 export const userRoles = ["admin", "staff", "IT"] as const;
 
@@ -15,17 +15,19 @@ export const userTable = pgTable("users", {
   password: varchar("password").notNull(),
   email: varchar("email").unique().notNull(),
   roles: userRoleEnum("roles").array(),
-  imageId: uuid("image_id").references(() => fileMetadataTable.id),
-  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "string" })
+  imageId: uuid("image_id").references(() => fileInfoTable.id),
+  createdAt: timestamp("created_at", { mode: "string", withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
     .notNull()
     .$onUpdate(() => new Date().toISOString()),
 });
 
 export const userRelations = relations(userTable, ({ one }) => ({
-  image: one(fileMetadataTable, {
+  image: one(fileInfoTable, {
     fields: [userTable.imageId],
-    references: [fileMetadataTable.id],
+    references: [fileInfoTable.id],
   }),
 }));
 

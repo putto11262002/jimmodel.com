@@ -1,47 +1,46 @@
+"use client";
+import { BreakcrumbSetter } from "@/components/breadcrumb";
 import {
-  dehydrate,
-  HydrationBoundary,
-  QueryClient,
-} from "@tanstack/react-query";
-import client from "@/lib/api/client";
-import PageContent from "./_page";
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import TableSkeleton from "./_page-skeleton";
+import UserTable from "./table";
+import PaginationControlSkeleton from "./pagination-control-skeleton";
+import PaginationControl from "@/components/pagination-control";
+import { useSearchParams } from "next/navigation";
+import Loader from "@/components/loader";
+import { useGetModels } from "@/hooks/queries/model";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export default function Page() {
+  const searchParams = useSearchParams();
+  const pageParam = searchParams.get("page");
+  const page = pageParam ? parseInt(pageParam, 10) : 1;
+  const q = searchParams.get("q") ?? undefined;
 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: { page?: string[] | string; roles: string[] | string };
-}) {
-  // Use zod to validate and clean search params
-  const page = searchParams?.page
-    ? parseInt(
-        Array.isArray(searchParams.page)
-          ? searchParams.page?.[0]
-          : searchParams.page,
-        10,
-      ) || 1
-    : 1;
+  const { data, isPending, isSuccess } = useGetModels({ page, q });
 
-  const queryClient = new QueryClient();
-
-  await queryClient.prefetchQuery({
-    queryKey: ["models", { page }],
-    queryFn: async () => {
-      const res = await client.api.models.profile.$get({
-        query: { page: page.toString(), pageSize: (5).toString() },
-      });
-      const data = await res.json();
-      return data;
-    },
-  });
+  if (isPending || !isSuccess) {
+    return <Loader />;
+  }
 
   return (
     <>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <PageContent />
-      </HydrationBoundary>
+      <BreakcrumbSetter breadcrumbs={[{ label: "Models" }]} />
+      <Card>
+        <CardHeader>
+          <CardTitle>Models</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <UserTable models={data.data} />
+        </CardContent>
+        <CardFooter>
+          <PaginationControl page={page} totalPages={data.totalPages} />
+        </CardFooter>
+      </Card>
     </>
   );
 }

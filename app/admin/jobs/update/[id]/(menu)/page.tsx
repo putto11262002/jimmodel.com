@@ -1,9 +1,7 @@
-import JobForm from "./_components/job-form";
-import MetadataCard from "./_components/_components/metadata-card";
-import ActionCard from "./_components/_components/action-card";
+import MetadataCard from "./_components/metadata-card";
+import ActionCard from "./_components/action-card";
 import ModelForm from "./_components/model-form";
-import { Suspense } from "react";
-import { Loader } from "lucide-react";
+import JobForm from "./_components/job-form";
 
 export default async function Page({
   params: { id },

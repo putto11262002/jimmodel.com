@@ -3,6 +3,7 @@ import { signIn, signOut } from "@/lib/auth";
 import { SignInSchema } from "@/lib/validators/auth";
 import { AuthError } from "next-auth";
 import { FormSubmissinState } from "./common";
+import { revalidatePath } from "next/cache";
 
 export const credentialSigninAction = async (
   _: FormSubmissinState,
@@ -26,6 +27,7 @@ export const credentialSigninAction = async (
       password,
       redirectTo: "/admin",
     });
+    revalidatePath("/", "layout");
     return {};
   } catch (error) {
     if (error instanceof Error) {
@@ -48,4 +50,5 @@ export const credentialSigninAction = async (
 
 export const signOutAction = async () => {
   await signOut({ redirectTo: "/" });
+  revalidatePath("/", "layout");
 };

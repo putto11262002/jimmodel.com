@@ -7,6 +7,7 @@ import { File } from "buffer";
 import { fileValidator } from "./validators/file";
 import { validationMiddleware } from "./middlewares/validator";
 import { NewUserSchema } from "../validators/user";
+import { imageValidator } from "../validators/file";
 
 const USER_IMAGE_SIZE_LIMIT = 1024 * 1024 * 2; // 2MB
 const USER_IMAGE_FILE_TYPES = [
@@ -29,21 +30,13 @@ const userRouter = new Hono()
     validationMiddleware(
       "form",
       z.object({
-        file: fileValidator({
-          sizeLimit: USER_IMAGE_SIZE_LIMIT,
-          mimetypes: USER_IMAGE_FILE_TYPES,
-        }),
+        file: imageValidator(),
       }),
     ),
     async (c) => {
       const { file } = c.req.valid("form");
       const session = c.get("session");
-      await userUsecase.addImage(
-        session.user.id,
-        new File([Buffer.from(await file.arrayBuffer())], "", {
-          type: file.type,
-        }),
-      );
+      await userUsecase.addImage(session.user.id, file);
       return c.newResponse(null, 204);
     },
   )
@@ -62,12 +55,7 @@ const userRouter = new Hono()
     async (c) => {
       const { file } = c.req.valid("form");
       const id = c.req.param("id");
-      await userUsecase.addImage(
-        id,
-        new File([Buffer.from(await file.arrayBuffer())], "", {
-          type: file.type,
-        }),
-      );
+      await userUsecase.addImage(id, file);
       return c.newResponse(null, 204);
     },
   )

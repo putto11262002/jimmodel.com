@@ -14,18 +14,21 @@ import { z } from "zod";
 import { modelImageTypes } from "@/db/schemas";
 import * as buffer from "buffer";
 import {
-  CreateModelSchema,
+  ModelCreateInputSchema,
   ModelBlockCreateInputSchema,
+  ModelExperienceCreateInputSchema,
   UpdateModelSchema,
 } from "../validators/model";
 import { validationMiddleware } from "./middlewares/validator";
+import { imageValidator } from "../validators/file";
+import { stringToNumber, stringToNumberOrDefault } from "./util";
 
 export const MODEL_IMAGE_FILE_TYPES = ["image/webp", "image/jpeg", "image/jpg"];
 
 export const MODEL_IMAGE_SIZE_LIMIT = 5_000_000;
 
 const modelRouter = new Hono()
-  .post("/models", zValidator("json", CreateModelSchema), async (c) => {
+  .post("/models", zValidator("json", ModelCreateInputSchema), async (c) => {
     const model = c.req.valid("json");
     const id = await addModel(model);
     if (!id) {
@@ -34,32 +37,18 @@ const modelRouter = new Hono()
     return c.json({ id });
   })
   .get(
-    "/models/profile",
+    "/models",
     zValidator(
       "query",
       z.object({
-        page: z
-          .string()
-          .optional()
-          .transform((v) => {
-            if (!v) return 1;
-            const n = parseInt(v, 10);
-            return isNaN(n) ? 1 : n;
-          }),
-        pageSize: z
-          .string()
-          .optional()
-          .transform((v) => {
-            if (!v) return 10;
-            const n = parseInt(v, 10);
-            return isNaN(n) ? 10 : n;
-          }),
+        page: stringToNumber.optional(),
+        pageSize: stringToNumber.optional(),
         q: z.string().optional(),
       }),
     ),
     async (c) => {
       const { page, pageSize, q } = c.req.valid("query");
-      const profiles = await getModelProfiles({ page, pageSize, q });
+      const profiles = await modelUseCase.getModels({ page, pageSize, q });
       return c.json(profiles);
     },
   )
@@ -81,7 +70,10 @@ const modelRouter = new Hono()
     return c.json({ id: updatedModelId });
   })
   .delete("/models/:modelId/images/:fileId", async (c) => {
-    await deleteModelImage(c.req.param("modelId"), c.req.param("fileId"));
+    await modelUseCase.removeImage(
+      c.req.param("modelId"),
+      c.req.param("fileId"),
+    );
     return c.newResponse(null, 204);
   })
   .post(
@@ -105,40 +97,14 @@ const modelRouter = new Hono()
     zValidator(
       "form",
       z.object({
-        file: z
-          .any()
-          .transform((v, ctx) => {
-            if (v instanceof Blob) {
-              return v;
-            }
-            ctx.addIssue({
-              code: "custom",
-              message: "expected File",
-              path: ["file"],
-            });
-            return z.NEVER;
-          })
-          .refine(
-            (v) => v.size <= MODEL_IMAGE_SIZE_LIMIT,
-            "File exceeded size limit",
-          )
-          .refine(
-            (v) => MODEL_IMAGE_FILE_TYPES.includes(v.type),
-            "Invalid file type",
-          ),
+        file: imageValidator(),
         type: z.enum(modelImageTypes),
       }),
     ),
     async (c) => {
       const { file, type } = c.req.valid("form");
       const modelId = c.req.param("modelId");
-      await addModelImage(
-        modelId,
-        new buffer.File([Buffer.from(await file.arrayBuffer())], "", {
-          type: file.type,
-        }),
-        type,
-      );
+      await addModelImage(modelId, file, type);
       c.status(204);
       return c.body(null);
     },
@@ -159,7 +125,7 @@ const modelRouter = new Hono()
   )
   .get("/models/:id/blocks", async (c) => {
     const modelId = c.req.param("id");
-    const blocks = await modelUseCase.getBlocks({ modelId });
+    const blocks = await modelUseCase.getBlocks({ modelIds: [modelId] });
     return c.json(blocks);
   })
   .get(
@@ -170,17 +136,64 @@ const modelRouter = new Hono()
         start: z
           .string()
           .datetime()
-          .transform((v) => new Date(v)),
+          .transform((v) => new Date(v))
+          .optional(),
         end: z
           .string()
           .datetime()
-          .transform((v) => new Date(v)),
+          .transform((v) => new Date(v))
+          .optional(),
+        include: z
+          .enum(["model"])
+          .or(z.array(z.enum(["model"])))
+          .optional(),
+        modelIds: z
+          .string()
+          .transform((v) => [v])
+          .or(z.array(z.string()))
+          .optional(),
       }),
     ),
     async (c) => {
-      const blocks = await modelUseCase.getBlocks();
+      const { start, end, include, modelIds } = c.req.valid("query");
+      const blocks = await modelUseCase.getBlocks({
+        start,
+        end,
+        modelIds,
+        include: {
+          model: Array.isArray(include)
+            ? include?.includes("model")
+            : include === "model",
+        },
+      });
       return c.json(blocks);
     },
-  );
+  )
+  .delete("/blocks/:id", async (c) => {
+    const id = c.req.param("id");
+    const block = await modelUseCase.removeBlock(id);
+    return c.json(block);
+  })
+  .get("/models/:id/experiences", async (c) => {
+    const modelId = c.req.param("id");
+    const experiences = await modelUseCase.getExperiences(modelId);
+    return c.json(experiences);
+  })
+  .post(
+    "/models/:id/experiences",
+    zValidator("json", ModelExperienceCreateInputSchema),
+    async (c) => {
+      const input = c.req.valid("json");
+      const id = c.req.param("id");
+      await modelUseCase.addExperience(id, input);
+      return c.newResponse(null, 201);
+    },
+  )
+  .delete("/models/:id/experiences/:experienceId", async (c) => {
+    const id = c.req.param("id");
+    const experienceId = c.req.param("experienceId");
+    await modelUseCase.removeExperience(id, experienceId);
+    return c.newResponse(null, 204);
+  });
 
 export default modelRouter;

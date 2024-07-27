@@ -2,12 +2,12 @@
 import { ModelImageType } from "@/db/schemas/model-images";
 import { ModelCreateInput, ModelUpdateInput } from "@/db/schemas/models";
 import { addModel, addModelImage, updateModel } from "../usecases/model";
-import { CreateModelSchema, UpdateModelSchema } from "../validators/model";
+import { ModelCreateInputSchema, UpdateModelSchema } from "../validators/model";
 import { revalidatePath } from "next/cache";
 import { File as BufferFile } from "buffer";
 
 export const addModelAction = async (formData: ModelCreateInput) => {
-  const result = CreateModelSchema.safeParse(formData);
+  const result = ModelCreateInputSchema.safeParse(formData);
   if (result.error) {
     // TODO: custome validation error
     throw new Error("invalid model dataj");
@@ -35,21 +35,4 @@ export const updateModelAction = async (
   }
   revalidatePath("/admin/models", "page");
   return modelId;
-};
-
-export const addModelImageAction = async (
-  modelId: string,
-  formData: FormData,
-) => {
-  const type = formData.get("type") as ModelImageType;
-  const file = formData.get("file") as File;
-
-  await addModelImage(
-    modelId,
-    new BufferFile([Buffer.from(await file.arrayBuffer())], file.name, {
-      type: file.type,
-    }),
-    type,
-  );
-  revalidatePath(`/admin/models/upload${modelId}`);
 };

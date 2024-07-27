@@ -1,24 +1,41 @@
-import db, { DB } from "@/db/client";
+import db, { DB, TX } from "@/db/client";
 import {
   modelBlockTable,
   ModelCreateInput,
+  modelExperienceTable,
   ModelProfile,
   modelTable,
   ModelUpdateInput,
 } from "@/db/schemas/models";
-import { and, count, eq, gte, ilike, inArray, lte, not, or } from "drizzle-orm";
-import FileUseCase from "./file";
-import { File } from "buffer";
-import { PaginatedData } from "../types/paginated-data";
 import {
-  ModelImageType,
-  ModelImageCreateInput,
-  modelImageTable,
-} from "../../db/schemas/model-images";
+  and,
+  count,
+  eq,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  lt,
+  lte,
+  not,
+  or,
+} from "drizzle-orm";
+import FileUseCase from "./file";
+import { PaginatedData } from "../types/paginated-data";
+import { ModelImageType, modelImageTable } from "../../db/schemas/model-images";
 import { getOffset, getPagination } from "../utils/pagination";
-import { ModelBlock } from "../types/model";
+import {
+  isExistingFile,
+  ModelBlock,
+  ModelBlockWithPartialModel,
+  ModelExperienceCreateInput,
+} from "../types/model";
 import { LapTimerIcon } from "@radix-ui/react-icons";
 import ConstraintViolationError from "../errors/contrain-violation-error";
+import { isArray } from "lodash";
+import { FileInfo as FileInfo } from "@/lib/types/file";
+import { ModelImageCreateInput } from "../types/model";
+import { NotFoundError } from "../errors/not-found-error";
 
 const fileUsecase = new FileUseCase(db, process.env.FILE_STORAGE_PATH!);
 
@@ -71,7 +88,7 @@ export const updateModel = async (modelId: string, input: ModelUpdateInput) => {
 
 export const addModelImage = async (
   modelId: string,
-  file: File,
+  file: Blob,
   type: ModelImageType,
 ) => {
   const model = await findModelById(modelId);
@@ -79,12 +96,11 @@ export const addModelImage = async (
     throw new Error("Model not found");
   }
   const fileMetadata = await fileUsecase.writeFile(file);
-  const modelImage: ModelImageCreateInput = {
+  await db.insert(modelImageTable).values({
     fileId: fileMetadata.id,
-    modelId: modelId,
+    modelId,
     type,
-  };
-  await db.insert(modelImageTable).values(modelImage);
+  });
 };
 
 export const getModelImages = async (modelId: string) => {
@@ -263,6 +279,21 @@ export class ModelUseCase {
     this.db = db;
   }
 
+  /**
+   * Add new model record. If the operation is successful a model id is returned. Otherwise, return null.
+   **/
+  public async createModel(
+    input: ModelCreateInput,
+    tx?: TX,
+  ): Promise<{ id: string }> {
+    const createdModel = await (tx ? tx : this.db)
+      .insert(modelTable)
+      .values(input)
+      .returning({ id: modelTable.id });
+
+    return createdModel?.[0];
+  }
+
   async getModels({
     page = 1,
     pageSize = 10,
@@ -320,6 +351,8 @@ export class ModelUseCase {
     },
   ) {
     const existingBlock = await this.isBlock(modelId, { start, end });
+    const blocks = await this.getBlocks({ modelIds: [modelId], start, end });
+    console.log(blocks);
     if (existingBlock) {
       throw new ConstraintViolationError(
         `There is already a block between ${start.toUTCString()} to ${end.toUTCString()}`,
@@ -353,12 +386,12 @@ export class ModelUseCase {
       where: and(
         or(
           and(
-            gte(modelBlockTable.start, start.toISOString()),
-            lte(modelBlockTable.end, start.toISOString()),
+            lt(modelBlockTable.start, start.toISOString()),
+            gte(modelBlockTable.end, start.toISOString()),
           ),
           and(
-            gte(modelBlockTable.start, end.toISOString()),
-            lte(modelBlockTable.end, end.toISOString()),
+            gte(modelBlockTable.start, start.toISOString()),
+            lte(modelBlockTable.start, end.toISOString()),
           ),
         ),
         eq(modelBlockTable.modelId, modelId),
@@ -372,42 +405,181 @@ export class ModelUseCase {
   }
 
   async getBlocks({
-    modelId,
+    modelIds,
     start,
     end,
-  }: { modelId?: string; start?: Date; end?: Date } = {}) {
+  }: {
+    modelIds?: string[];
+    start?: Date;
+    end?: Date;
+    include?: { model?: boolean | undefined } | undefined;
+  }): Promise<ModelBlock[] | ModelBlockWithPartialModel[]>;
+
+  async getBlocks({
+    modelIds,
+    start,
+    end,
+    include,
+  }: {
+    modelIds?: string[];
+    start?: Date;
+    end?: Date;
+    include?: { model?: boolean };
+  }): Promise<ModelBlockWithPartialModel[] | ModelBlock[]> {
     const blocks = await this.db.query.modelBlockTable.findMany({
       where: and(
-        or(
-          start
-            ? and(
+        start && !end
+          ? gte(modelBlockTable.start, start.toISOString())
+          : undefined,
+        end && !start ? lte(modelBlockTable.end, end.toISOString()) : undefined,
+        start && end
+          ? or(
+              and(
+                lt(modelBlockTable.start, start.toISOString()),
+                gte(modelBlockTable.end, start.toISOString()),
+              ),
+              and(
                 gte(modelBlockTable.start, start.toISOString()),
-                lte(modelBlockTable.end, start.toISOString()),
-              )
-            : undefined,
-          end
-            ? and(
-                gte(modelBlockTable.start, end.toISOString()),
-                lte(modelBlockTable.end, end.toISOString()),
-              )
-            : undefined,
-        ),
-        modelId ? eq(modelBlockTable.modelId, modelId) : undefined,
+                lte(modelBlockTable.start, end.toISOString()),
+              ),
+            )
+          : undefined,
+        modelIds && modelIds.length > 0
+          ? inArray(modelBlockTable.modelId, modelIds)
+          : undefined,
       ),
       with: {
-        model: {
-          columns: {
-            id: true,
-            name: true,
-            email: true,
-          },
-          with: {
-            profileImage: true,
-          },
-        },
+        ...(include && include.model
+          ? {
+              model: {
+                columns: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+                with: {
+                  profileImage: true,
+                },
+              },
+            }
+          : {}),
       },
     });
     return blocks;
+  }
+
+  async removeBlock(blockId: string) {
+    const deleted = await this.db
+      .delete(modelBlockTable)
+      .where(eq(modelBlockTable.id, blockId))
+      .returning();
+    if (deleted.length < 1) {
+      throw new Error("Block not found");
+    }
+    return deleted[0];
+  }
+
+  async addExperience(
+    modelId: string,
+    input: ModelExperienceCreateInput | ModelExperienceCreateInput[],
+    tx?: TX,
+  ) {
+    await (tx ? tx : this.db)
+      .insert(modelExperienceTable)
+      .values(
+        isArray(input)
+          ? input.map((i) => ({ ...i, modelId: modelId }))
+          : [{ ...input, modelId }],
+      );
+  }
+
+  async removeExperience(modelId: string, experienceId: string) {
+    const deleted = await this.db
+      .delete(modelExperienceTable)
+      .where(
+        and(
+          eq(modelExperienceTable.id, experienceId),
+          eq(modelExperienceTable.modelId, modelId),
+        ),
+      )
+      .returning();
+    return deleted?.[0];
+  }
+
+  async getExperiences(modelId: string) {
+    const experiences = await this.db.query.modelExperienceTable.findMany({
+      where: eq(modelExperienceTable.modelId, modelId),
+    });
+    return experiences;
+  }
+  async addModelImage(modelId: string, input: ModelImageCreateInput, tx?: TX) {
+    const model = await (tx ? tx : this.db).query.modelTable.findFirst({
+      where: eq(modelTable.id, modelId),
+    });
+    if (!model) {
+      throw new Error("Model not found");
+    }
+    let fileId: string;
+    if (isExistingFile(input)) {
+      fileId = input.fileId;
+    } else {
+      const { id } = await fileUsecase.writeFile(input.file);
+      fileId = id;
+    }
+
+    await db
+      .insert(modelImageTable)
+      .values({ type: input.type, fileId, modelId });
+  }
+
+  async addModelImages(modelId: string, input: ModelImageCreateInput) {
+    const model = await this.db.query.modelTable.findFirst({
+      where: eq(modelTable.id, modelId),
+    });
+    if (!model) {
+      throw new Error("Model not found");
+    }
+    let fileId: string;
+    if (isExistingFile(input)) {
+      fileId = input.fileId;
+    } else {
+      const { id } = await fileUsecase.writeFile(input.file);
+      fileId = id;
+    }
+
+    await db
+      .insert(modelImageTable)
+      .values({ type: input.type, fileId, modelId });
+  }
+
+  async removeImage(modelId: string, fileId: string) {
+    const modelImage = await this.db.query.modelImageTable.findFirst({
+      where: and(
+        eq(modelImageTable.modelId, modelId),
+        eq(modelImageTable.fileId, fileId),
+      ),
+    });
+
+    if (!modelImage) {
+      throw new NotFoundError("Model image not found");
+    }
+
+    if (modelImage.isProfile) {
+      throw new ConstraintViolationError("Cannot delete profile image");
+    }
+
+    this.db.transaction(async (tx) => {
+      await tx
+        .delete(modelImageTable)
+        .where(
+          and(
+            eq(modelImageTable.modelId, modelId),
+            eq(modelImageTable.fileId, fileId),
+          ),
+        );
+
+      await fileUsecase.deleteFile(fileId, tx);
+    });
   }
 }
 

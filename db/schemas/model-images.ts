@@ -7,11 +7,17 @@ import {
   boolean,
   AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { fileMetadataTable } from "./file-metadata";
+import { fileInfoTable } from "./file-metadata";
 import { modelTable } from "./models";
 import { relations } from "drizzle-orm";
 
-export const modelImageTypes = ["book", "polaroid", "composite"] as const;
+export const modelImageTypes = [
+  "book",
+  "polaroid",
+  "composite",
+  "application",
+  "other",
+] as const;
 
 export type ModelImageType = (typeof modelImageTypes)[number];
 
@@ -21,15 +27,18 @@ export const modelImageTable = pgTable(
   "model_images",
   {
     fileId: uuid("file_id")
-      .references(() => fileMetadataTable.id, {})
+      .references(() => fileInfoTable.id, {})
       .notNull(),
     modelId: uuid("model_id")
       .references((): AnyPgColumn => modelTable.id, {})
       .notNull(),
     type: modelImageTypeEnum("image_type"),
     isProfile: boolean("is_profile"),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+    }).defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
       .defaultNow()
       .$onUpdate(() => new Date().toISOString()),
   },
@@ -48,5 +57,3 @@ export const modelImageRelatios = relations(modelImageTable, ({ one }) => ({
 }));
 
 export type ModelImage = typeof modelImageTable.$inferSelect;
-
-export type ModelImageCreateInput = typeof modelImageTable.$inferInsert;

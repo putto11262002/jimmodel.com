@@ -1,12 +1,12 @@
-import db from "@/db/client";
-import { FileMetadata, fileMetadataTable } from "@/db/schemas/file-metadata";
-import { File } from "buffer";
+import db, { TX } from "@/db/client";
+import { fileInfoTable } from "@/db/schemas/file-metadata";
 import { v4 as randomUUID } from "uuid";
 import { eq } from "drizzle-orm";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { promises as fs } from "fs";
 import path from "path";
-
+import { FileInfo } from "../types/file";
+import { newFile } from "../utils/file";
 export default class FileUseCase {
   private path: string;
   private db: PostgresJsDatabase<any>;
@@ -18,24 +18,27 @@ export default class FileUseCase {
   /**
    * write file to the the file system and return an id that can be used to retrieve the file.
    **/
-  public async writeFile(file: File): Promise<FileMetadata> {
+  public async writeFile(file: Blob, tx?: TX): Promise<FileInfo> {
     const fileName = randomUUID();
     const filePath = path.join(this.path, `${fileName}`);
     await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()), {
       flag: "w",
       mode: 0o644,
     });
-    const fileMetadata = { path: fileName, mimeType: file.type, id: fileName };
-    await this.db.insert(fileMetadataTable).values(fileMetadata);
+    const input = { path: fileName, mimeType: file.type, id: fileName };
+    const fileInfo = await (tx ? tx : this.db)
+      .insert(fileInfoTable)
+      .values(input)
+      .returning();
 
-    return fileMetadata;
+    return fileInfo[0];
   }
 
-  public async readFile(fileId: string): Promise<File> {
-    const fileMetadatas = await this.db
+  public async readFile(fileId: string, tx?: TX): Promise<File> {
+    const fileMetadatas = await (tx ? tx : this.db)
       .select()
-      .from(fileMetadataTable)
-      .where(eq(fileMetadataTable.id, fileId));
+      .from(fileInfoTable)
+      .where(eq(fileInfoTable.id, fileId));
 
     if (fileMetadatas.length < 1) {
       // TODO: custome error
@@ -46,19 +49,20 @@ export default class FileUseCase {
 
     const buffer = await fs.readFile(path.join(this.path, fileMetadata.path));
 
-    const file = new File([buffer], fileMetadata.mimeType);
+    const file = newFile([buffer], "", { type: fileMetadata.mimeType });
     return file;
   }
 
-  public async deleteFile(fileId: string): Promise<void> {
-    const deleted = await db
-      .delete(fileMetadataTable)
-      .where(eq(fileMetadataTable.id, fileId))
+  public async deleteFile(fileId: string, tx?: TX): Promise<void> {
+    const deleted = await (tx ? tx : this.db)
+      .delete(fileInfoTable)
+      .where(eq(fileInfoTable.id, fileId))
       .returning();
     if (deleted.length < 1) {
       return;
     }
-    await fs.unlink(deleted[0].path);
+
+    await fs.unlink(path.join(this.path, deleted[0].path));
   }
 }
 

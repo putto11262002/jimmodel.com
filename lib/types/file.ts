@@ -1,3 +1,3 @@
-import { fileMetadataTable } from "@/db/schemas";
+import { fileInfoTable } from "@/db/schemas";
 
-export type File = typeof fileMetadataTable.$inferSelect;
+export type FileInfo = typeof fileInfoTable.$inferSelect;

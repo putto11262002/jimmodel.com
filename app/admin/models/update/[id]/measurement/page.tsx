@@ -28,51 +28,41 @@ import { UpdateModelSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { parseInt } from "lodash";
-import { Switch } from "@/components/ui/switch";
 import { eyeColors } from "@/db/data/eye-colors";
 import { hairColors } from "@/db/data/hair-colors";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import FormSkeleton from "../form-skeleton";
 import { Model } from "@/db/schemas";
-
-const stringToNumber = z
-  .number()
-  .or(
-    z
-      .string()
-      .regex(/^\d*\.?\d*$/, { message: "Invalid number" })
-      .transform((v) => parseInt(v)),
-  )
-  .nullable();
+import { stringToNumber } from "@/lib/utils/validator";
+import { Switch } from "@/components/ui/switch";
 
 const FormDataSchema = z
   .object({
-    height: stringToNumber,
-    weight: stringToNumber,
-    collar: stringToNumber,
-    chest: stringToNumber,
-    chestHeight: stringToNumber,
-    chestWidth: stringToNumber,
-    waist: stringToNumber,
-    shoulder: stringToNumber,
-    aroundArmpit: stringToNumber,
-    frontShoulder: stringToNumber,
-    frontLength: stringToNumber,
-    backShoulder: stringToNumber,
-    backLength: stringToNumber,
-    aroundUpperArm: stringToNumber,
-    aroundElbow: stringToNumber,
-    aroundWrist: stringToNumber,
-    shoulderToWrist: stringToNumber,
-    shoulderToElbow: stringToNumber,
-    aroundThigh: stringToNumber,
-    aroundKnee: stringToNumber,
-    aroundAnkle: stringToNumber,
-    inSeam: stringToNumber,
-    outSeam: stringToNumber,
-    crotch: stringToNumber,
-    shoeSize: stringToNumber,
+    height: stringToNumber.nullable().optional(),
+    weight: stringToNumber.nullable().optional(),
+    collar: stringToNumber.nullable().optional(),
+    chest: stringToNumber.nullable().optional(),
+    chestHeight: stringToNumber.nullable().optional(),
+    chestWidth: stringToNumber.nullable().optional(),
+    waist: stringToNumber.nullable().optional(),
+    shoulder: stringToNumber.nullable().optional(),
+    aroundArmpit: stringToNumber.nullable().optional(),
+    frontShoulder: stringToNumber.nullable().optional(),
+    frontLength: stringToNumber.nullable().optional(),
+    backShoulder: stringToNumber.nullable().optional(),
+    backLength: stringToNumber.nullable().optional(),
+    aroundUpperArm: stringToNumber.nullable().optional(),
+    aroundElbow: stringToNumber.nullable().optional(),
+    aroundWrist: stringToNumber.nullable().optional(),
+    shoulderToWrist: stringToNumber.nullable().optional(),
+    shoulderToElbow: stringToNumber.nullable().optional(),
+    aroundThigh: stringToNumber.nullable().optional(),
+    aroundKnee: stringToNumber.nullable().optional(),
+    aroundAnkle: stringToNumber.nullable().optional(),
+    inSeam: stringToNumber.nullable().optional(),
+    outSeam: stringToNumber.nullable().optional(),
+    crotch: stringToNumber.nullable().optional(),
+    shoeSize: stringToNumber.nullable().optional(),
   })
   .and(
     UpdateModelSchema.omit({

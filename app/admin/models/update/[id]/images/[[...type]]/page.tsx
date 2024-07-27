@@ -15,6 +15,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
 import useToast from "@/components/toast";
 import ImageSkeleton from "./_components/image-skeleton";
+import { useRemoveModelImage } from "@/hooks/queries/model";
 
 export default function Page() {
   const params = useParams<{ id: string; type?: string[] }>();
@@ -83,7 +84,7 @@ const ImageGrid = ({
   Overlay,
 }: {
   images: ModelImage[];
-  Overlay: React.FC<{ image: ModelImage }>;
+  Overlay?: React.FC<{ image: ModelImage }>;
 }) => {
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -94,7 +95,7 @@ const ImageGrid = ({
           ratio={1 / 1}
         >
           <div className="absolute hidden group-hover:flex w-full h-full z-10 inset-0 ">
-            <Overlay image={image} />
+            {Overlay && <Overlay image={image} />}
           </div>
           <Image
             className="object-cover w-full h-full"
@@ -111,23 +112,7 @@ const ImageGrid = ({
 const ImageActions = ({ image }: { image: ModelImage }) => {
   const queryClient = useQueryClient();
   const { ok, error } = useToast();
-  const { mutate: deleteImage } = useMutation({
-    mutationFn: async () => {
-      await client.api.models[":modelId"].images[":fileId"].$delete({
-        param: { modelId: image.modelId, fileId: image.fileId },
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["models", image.modelId, "images"],
-      });
-      ok("Image deleted successfully");
-    },
-    onError: () => {
-      error("Failed to delete image");
-    },
-  });
-
+  const { mutate: deleteImage } = useRemoveModelImage();
   const { mutate: setProfile } = useMutation({
     mutationFn: async () => {
       await client.api.models[":modelId"].images.profile.$post({
@@ -154,7 +139,9 @@ const ImageActions = ({ image }: { image: ModelImage }) => {
             className="rounded-full"
             variant={"outline"}
             size={"icon"}
-            onClick={() => deleteImage()}
+            onClick={() =>
+              deleteImage({ modelId: image.modelId, fileId: image.fileId })
+            }
           >
             <Trash className="w-4 h-4" />
           </Button>

@@ -2,7 +2,13 @@
 const nextConfig = {
   output: "standalone",
   async rewrites() {
-    return [{ source: "/admin", destination: "/admin/calendar" }];
+    return [
+      { source: "/admin", destination: "/admin/calendar" },
+      {
+        source: "/admin/models/update/:id",
+        destination: "/admin/models/update/:id/general",
+      },
+    ];
   },
   experimental: {
     instrumentationHook: true,

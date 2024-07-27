@@ -24,7 +24,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { addJobAction } from "../../../../../lib/server-funcs/job";
 import { useAddJob } from "@/hooks/queries/job";
 
 const FormDataSchema = z.object({
@@ -41,13 +40,8 @@ export default function AddJobModal() {
     resolver: zodResolver(FormDataSchema),
     defaultValues: { confirmed: false },
   });
-  const { mutate } = useAddJob({
-    opts: {
-      onSuccess(data) {
-        router.push(`/admin/jobs/update/${data.id}`);
-      },
-    },
-  });
+
+  const { mutate } = useAddJob();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -67,12 +61,19 @@ export default function AddJobModal() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit((data) =>
-              mutate({
-                input: {
-                  ...data,
-                  status: data.confirmed ? "confirmed" : "pending",
+              mutate(
+                {
+                  input: {
+                    ...data,
+                    status: data.confirmed ? "confirmed" : "pending",
+                  },
                 },
-              }),
+                {
+                  onSuccess: ({ id }) => {
+                    router.push(`/admin/jobs/update/${id}`);
+                  },
+                },
+              ),
             )}
           >
             <div className="grid gap-4 py-4">

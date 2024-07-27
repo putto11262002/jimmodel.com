@@ -1,18 +1,25 @@
+import { BreakcrumbSetter } from "@/components/breadcrumb";
 import UserActionsProvider from "./actions-context";
 import UserActionForms from "./forms";
 import SearchBar from "./search-bar";
 import { Suspense } from "react";
+import permissions from "@/config/permission";
+import { auth } from "@/lib/auth";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  await auth(permissions.users.getUsers);
   return (
     <UserActionsProvider>
+      <BreakcrumbSetter breadcrumbs={[{ label: "Users" }]} />
       <UserActionForms />
-      <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-4">
-        <Suspense>
-          <SearchBar />
-        </Suspense>
-        {children}
-      </main>
+      <Suspense>
+        <SearchBar />
+      </Suspense>
+      {children}
     </UserActionsProvider>
   );
 }

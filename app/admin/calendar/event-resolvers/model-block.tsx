@@ -1,21 +1,17 @@
-import { CircleCheck, CircleX, Clock, User } from "lucide-react";
-import UserAvatar from "@/components/user/user-avatar";
+import { CircleX, SquareX } from "lucide-react";
 import { Event, EventResolver } from "../calendar";
-import { BookingWithJob } from "@/lib/types/job";
-import jobUsecase from "@/lib/usecases/job";
 import client from "../../../../lib/api/client";
-import dayjs from "dayjs";
-import JobStatusBadge from "../../../../components/job/job-status-badge";
-import { Badge } from "../../../../components/ui/badge";
-import { upperFirst } from "lodash";
-import { ModelBlock, ModelBlockWithModel } from "@/lib/types/model";
+import {
+  ModelBlockWithModel,
+  ModelBlockWithPartialModel,
+} from "@/lib/types/model";
 
 class BlockEvent implements Event {
-  private block: Omit<ModelBlockWithModel, "start" | "end"> & {
+  private block: Omit<ModelBlockWithPartialModel, "start" | "end"> & {
     start: Date;
     end: Date;
   };
-  constructor(block: ModelBlockWithModel) {
+  constructor(block: ModelBlockWithPartialModel) {
     this.block = {
       ...block,
       start: new Date(block.start),
@@ -26,9 +22,8 @@ class BlockEvent implements Event {
   render() {
     return (
       <div className="grid gap-2">
-        {/* <p className="text-xs text-muted-foreground">{dayjs(this.booking.start).format("HH:mm")} to {dayjs(this.booking.end).format("HH:mm")}</p> */}
         <div className="flex items-center gap-2">
-          <CircleX className="text-red-800 h-[20px] w-[20px]" />
+          <SquareX className="text-red-800 h-[20px] w-[20px]" />
           <p className="font-medium">{this.block.model.name}</p>
         </div>
         {/* <div className="flex items-center gap-2"> */}
@@ -62,27 +57,6 @@ class BlockEvent implements Event {
         {/* </div> */}
 
         <p className="text-sm">{this.block.reason}</p>
-
-        {/* <p className="text-xs overflow-ellipsis text-nowrap pt-2 flex flex-wrap gap-2"> */}
-        {/*   {this.booking.job.models.map((model, index) => ( */}
-        {/*     <div */}
-        {/*       className="text-sm font-normal py-1.5 px-2 rounded bg-muted flex items-center gap-2" */}
-        {/*       key={index} */}
-        {/*     > */}
-        {/*       <UserAvatar */}
-        {/*         width={25} */}
-        {/*         height={25} */}
-        {/*         user={{ */}
-        {/*           name: model.name, */}
-        {/*           image: model.profileImage */}
-        {/*             ? { id: model.profileImage.fileId } */}
-        {/*             : null, */}
-        {/*         }} */}
-        {/*       />{" "} */}
-        {/*       <span>{model.name}</span> */}
-        {/*     </div> */}
-        {/*   ))} */}
-        {/* </p> */}
       </div>
     );
   }
@@ -90,7 +64,9 @@ class BlockEvent implements Event {
   renderPreview() {
     return (
       <div className="flex items-center gap-2 ">
-        <CircleX className="h-[15px] w-[15px] text-red-800" />
+        <div>
+          <CircleX className="h-[15px] w-[15px] text-red-800" />
+        </div>
         <p className="text-xs overflow-ellipsis text-nowrap">
           {this.block.model.name}
         </p>
@@ -111,9 +87,13 @@ export class BlockResolver implements EventResolver {
 
   async resolve(start: Date, end: Date) {
     const res = await client.api.blocks.$get({
-      query: { start: start.toISOString(), end: end.toISOString() },
+      query: {
+        start: start.toISOString(),
+        end: end.toISOString(),
+        include: ["model"],
+      },
     });
-    const blocks = await res.json();
+    const blocks = (await res.json()) as ModelBlockWithPartialModel[];
     return blocks.map((block) => new BlockEvent(block));
   }
 }

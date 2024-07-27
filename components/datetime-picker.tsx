@@ -67,7 +67,7 @@ export default function DatetimePicker({
           <label className="text-xs font-semibold">Time</label>
           <div className="flex items-center gap-3">
             <Select
-              defaultValue={
+              value={
                 value ? dayjs(value).hour().toString().padStart(2, "0") : ""
               }
               onValueChange={(hour) => {
@@ -90,7 +90,7 @@ export default function DatetimePicker({
             </Select>
             <span>:</span>
             <Select
-              defaultValue={
+              value={
                 value ? dayjs(value).minute().toString().padStart(2, "0") : ""
               }
               onValueChange={(minute) => {

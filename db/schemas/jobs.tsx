@@ -1,11 +1,4 @@
-import {
-  foreignKey,
-  pgEnum,
-  pgTable,
-  timestamp,
-  uuid,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { userTable } from "./users";
 import { modelTable } from "./models";
 import { relations } from "drizzle-orm";
@@ -41,8 +34,11 @@ export const jobTable = pgTable("jobs", {
   contractDetails: varchar("contract_details"),
   status: jobStatusEnum("status").notNull(),
   ownerId: uuid("created_by_id").notNull(),
-  createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "string" })
+  createdAt: timestamp("created_at", {
+    mode: "string",
+    withTimezone: true,
+  }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
     .defaultNow()
     .$onUpdateFn(() => new Date().toISOString()),
 });
@@ -79,12 +75,15 @@ export const bookingTable = pgTable("bookings", {
   jobId: uuid("job_id")
     .references(() => jobTable.id)
     .notNull(),
-  start: timestamp("start", {mode: "string"}).notNull(),
-  end: timestamp("end", {mode: "string"}).notNull(),
+  start: timestamp("start", { mode: "string", withTimezone: true }).notNull(),
+  end: timestamp("end", { mode: "string", withTimezone: true }).notNull(),
   type: bookingTypeEnum("type").notNull(),
   notes: varchar("notes"),
-  createdAt: timestamp("created_at", {mode: "string"}).defaultNow(),
-  updatedAt: timestamp("updated_at", {mode: "string"})
+  createdAt: timestamp("created_at", {
+    mode: "string",
+    withTimezone: true,
+  }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
     .defaultNow()
     .$onUpdateFn(() => new Date().toISOString()),
 });

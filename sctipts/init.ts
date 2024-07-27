@@ -1,16 +1,15 @@
-
 import { eq, or } from "drizzle-orm";
 import { userTable } from "../db/schemas/users";
 import db from "../db/client";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
 
 async function createRootUser() {
   const input = {
-name: process.env.ROOT_NAME || "Root" ,
-email: process.env.ROOT_EMAIL || "root@example/com",
-username: process.env.ROOT_USERNAME || "root",
-password: process.env.ROOT_PASSWORD || "password",
-  }
+    name: process.env.ROOT_NAME || "Root",
+    email: process.env.ROOT_EMAIL || "root@example/com",
+    username: process.env.ROOT_USERNAME || "root",
+    password: process.env.ROOT_PASSWORD || "password",
+  };
   const existingUser = await db.query.userTable.findFirst({
     where: or(
       eq(userTable.email, input.email),
@@ -19,7 +18,7 @@ password: process.env.ROOT_PASSWORD || "password",
   });
 
   if (existingUser) {
-    return 
+    return;
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -30,14 +29,14 @@ password: process.env.ROOT_PASSWORD || "password",
     email: input.email,
     name: input.name,
     password: hashedPassword,
-    roles: ["admin"]
+    roles: ["admin"],
   });
 }
 
 async function init() {
   await createRootUser();
-  console.log("Successfully pre-configure the app.")
-  process.exit(0)
+  console.log("Successfully pre-configure the app.");
+  process.exit(0);
 }
 
 init();

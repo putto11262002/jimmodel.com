@@ -7,10 +7,11 @@ import {
   JobCreateInputSchema,
   JobUpdateInputSchema,
 } from "../validators/job";
-import { stringToNumberOrDefault } from "./util";
+import { stringToNumber, stringToNumberOrDefault } from "./util";
 import { authMiddleware } from "./middlewares/auth";
 import { HTTPException } from "hono/http-exception";
 import { validationMiddleware } from "./middlewares/validator";
+import { jobStatuses } from "@/db/schemas";
 
 const jobRouter = new Hono()
   .post(
@@ -35,13 +36,18 @@ const jobRouter = new Hono()
     zValidator(
       "query",
       z.object({
-        page: stringToNumberOrDefault(1),
-        pageSize: stringToNumberOrDefault(10),
+        page: stringToNumber.optional(),
+        pageSize: stringToNumber.optional(),
+        status: z.enum(jobStatuses).optional(),
       }),
     ),
     async (c) => {
-      const { page, pageSize } = c.req.valid("query");
-      const jobs = await jobUsecase.getJobs({ page, pageSize });
+      const { page, pageSize, status } = c.req.valid("query");
+      const jobs = await jobUsecase.getJobs({
+        page,
+        pageSize,
+        statuses: status ? [status] : undefined,
+      });
       return c.json(jobs);
     },
   )
@@ -58,7 +64,7 @@ const jobRouter = new Hono()
     const job = c.req.valid("json");
     const updateJobId = await jobUsecase.update(id, job);
     if (!updateJobId) {
-      throw new HTTPException(404, { message: "Job not found" })
+      throw new HTTPException(404, { message: "Job not found" });
     }
     return c.json({ id: updateJobId });
   })
@@ -86,7 +92,7 @@ const jobRouter = new Hono()
     const jobId = c.req.param("id");
     const modelId = c.req.param("modelId");
     await jobUsecase.removeModel(jobId, modelId);
-    return c.text("", 204);
+    return c.newResponse(null, 204);
   })
   .post(
     "/bookings",
@@ -98,7 +104,7 @@ const jobRouter = new Hono()
     },
   )
   .get(
-    "/jobs/:id/bookings",
+    "/bookings",
     zValidator(
       "query",
       z.object({
@@ -122,12 +128,35 @@ const jobRouter = new Hono()
             return parsed;
           })
           .optional(),
+        jobIds: z.string().or(z.array(z.string())).optional(),
+        start: z
+          .string()
+          .datetime()
+          .transform((s) => new Date(s))
+          .optional(),
+        end: z
+          .string()
+          .datetime()
+          .transform((s) => new Date(s))
+          .optional(),
+        modelIds: z.string().or(z.array(z.string())).optional(),
       }),
     ),
     async (c) => {
-      const { page, pageSize } = c.req.valid("query");
-      const jobId = c.req.param("id");
-      const bookings = await jobUsecase.getBookings(jobId, { page, pageSize });
+      const { page, pageSize, start, end, jobIds, modelIds } =
+        c.req.valid("query");
+      const bookings = await jobUsecase.getBookings({
+        page,
+        pageSize,
+        start,
+        end,
+        jobIds: Array.isArray(jobIds) ? jobIds : jobIds ? [jobIds] : undefined,
+        modelIds: Array.isArray(modelIds)
+          ? modelIds
+          : modelIds
+            ? [modelIds]
+            : undefined,
+      });
       return c.json(bookings);
     },
   )
@@ -173,14 +202,26 @@ const jobRouter = new Hono()
     await jobUsecase.cancelJob(c.req.param("id"));
     return c.newResponse(null, 204);
   })
-  .get("/bookings/range", validationMiddleware('query', z.object({
-    start: z.string().datetime().transform((s) => new Date(s)),
-    end: z.string().datetime().transform((s) => new Date(s)),
-
-  })), async (c) => {
-    const { start, end } = c.req.valid('query')
-    const bookings = await jobUsecase.getBookingsBetweenRange({ start, end })
-    return c.json(bookings)
-  })
+  .get(
+    "/bookings/range",
+    validationMiddleware(
+      "query",
+      z.object({
+        start: z
+          .string()
+          .datetime()
+          .transform((s) => new Date(s)),
+        end: z
+          .string()
+          .datetime()
+          .transform((s) => new Date(s)),
+      }),
+    ),
+    async (c) => {
+      const { start, end } = c.req.valid("query");
+      const bookings = await jobUsecase.getBookingsBetweenRange({ start, end });
+      return c.json(bookings);
+    },
+  );
 
 export default jobRouter;

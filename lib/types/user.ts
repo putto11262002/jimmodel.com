@@ -1,8 +1,8 @@
 import { userTable } from "@/db/schemas";
-import { File } from "./file";
+import { FileInfo } from "./file";
 
 export type User = typeof userTable.$inferSelect & {
-  image: File | null;
+  image: FileInfo | null;
 };
 
 export type UserWithoutSecrets = Omit<User, "password">;

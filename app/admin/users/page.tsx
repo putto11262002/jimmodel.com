@@ -15,8 +15,7 @@ import client from "@/lib/api/client";
 import useSession from "@/hooks/use-session";
 import { hasPermission } from "@/lib/utils/auth";
 import permissions, { UserActions } from "@/config/permission";
-
-const PAGE_SIZE = 8;
+import { useSearchParams } from "next/navigation";
 
 const parseUserRole = (role: string): UserRole | null => {
   if (userRoles.includes(role as UserRole)) {
@@ -25,34 +24,12 @@ const parseUserRole = (role: string): UserRole | null => {
   return null;
 };
 
-export default function Page({
-  searchParams,
-}: {
-  searchParams: { page?: string[] | string; roles: string[] | string };
-}) {
-  return (
-    <>
-      <Card x-chunk="dashboard-06-chunk-0">
-        <CardHeader>
-          <CardTitle>Users</CardTitle>
-        </CardHeader>
-        <PageContent page={searchParams.page} roles={searchParams.roles} />
-      </Card>
-    </>
-  );
-}
-
-function PageContent({
-  roles,
-  page: pageParam,
-}: {
-  roles: string | string[];
-  page?: string | string[];
-}) {
+export default function PageContent() {
+  const searchParams = useSearchParams();
   // Use zod to validate and clean search params
-  const page = pageParam
-    ? parseInt(Array.isArray(pageParam) ? pageParam?.[0] : pageParam, 10) || 1
-    : 1;
+  const pageParam = searchParams.get("page");
+
+  const page = pageParam ? parseInt(pageParam) || 1 : 1;
 
   const { data, isSuccess } = useQuery({
     queryKey: ["users", { page }],
@@ -71,7 +48,10 @@ function PageContent({
   }
 
   return (
-    <>
+    <Card x-chunk="dashboard-06-chunk-0">
+      <CardHeader>
+        <CardTitle>Users</CardTitle>
+      </CardHeader>
       <CardContent>
         <UserTable
           users={data.data}
@@ -94,6 +74,6 @@ function PageContent({
       <CardFooter>
         <PaginationControl page={page} totalPages={data.totalPages} />
       </CardFooter>
-    </>
+    </Card>
   );
 }

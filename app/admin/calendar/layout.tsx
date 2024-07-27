@@ -7,14 +7,12 @@ import { SheetProvider } from "./_components/day-sheet-provider";
 import ControlBar from "./_components/control-bar";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-
   return (
     <CalendarProvider>
-        <SheetProvider/>
+      <SheetProvider />
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 ">
         <div>
-        <ControlBar/>
-       
+          <ControlBar />
         </div>
         {children}
       </main>

@@ -8,6 +8,14 @@ export const stringToNumberOrUndefined = z.string().transform((v) => {
   return parsed;
 });
 
+export const stringToNumber = z.string().transform((v) => {
+  const parsed = parseInt(v);
+  if (isNaN(parsed)) {
+    return z.NEVER;
+  }
+  return parsed;
+});
+
 export const stringToNumberOrDefault = (defaultValue: number) =>
   z.string().transform((v) => {
     const parsed = parseInt(v, 10);

@@ -1,9 +1,11 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import dotenv from  "dotenv"
+import { drizzle, PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
+import dotenv from "dotenv";
 import postgres from "postgres";
 import * as schema from "./schemas";
+import { PgTransaction } from "drizzle-orm/pg-core";
+import { ExtractTablesWithRelations } from "drizzle-orm";
 
-dotenv.config({path: ".env"});
+dotenv.config({ path: ".env" });
 
 declare module globalThis {
   let db: DB | undefined;
@@ -25,6 +27,12 @@ const connectDB = () => {
 };
 
 export type DB = ReturnType<typeof connectDB>;
+
+export type TX = PgTransaction<
+  PostgresJsQueryResultHKT,
+  typeof schema,
+  ExtractTablesWithRelations<typeof schema>
+>;
 
 const db = globalThis.db ?? connectDB();
 

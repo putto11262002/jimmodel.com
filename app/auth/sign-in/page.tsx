@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import SignInForm from "./sign-in-form";
 
 export default async function Page() {
-  const session = await auth();
+  const session = await auth([], { redirect: false });
   if (session) {
     redirect("/admin");
   }

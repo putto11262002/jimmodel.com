@@ -10,15 +10,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetModelBlocks } from "@/hooks/queries/model";
+import { useDeleteBlock, useGetModelBlocks } from "@/hooks/queries/model";
+import { formatUTCDateStringWithoutTZ } from "@/lib/utils/date";
 import dayjs from "dayjs";
-import { ChevronLeft, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
 export default function Page() {
   const { id } = useParams<{ id: string }>();
 
   const { data, isSuccess } = useGetModelBlocks({ modelId: id });
+  const { mutate: deleteBlock } = useDeleteBlock();
 
   const router = useRouter();
 
@@ -35,8 +37,13 @@ export default function Page() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Start</TableHead>
-              <TableHead>End</TableHead>
+              <TableHead className="flex items-center gap-2">
+                Start
+                <span>
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+                End
+              </TableHead>
               <TableHead>Reason</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
@@ -48,14 +55,18 @@ export default function Page() {
               ? data?.map((block, index) => (
                   <TableRow key={index}>
                     <TableCell>
-                      {dayjs(block.start).format("DD MMM YY HH:mm")}
-                    </TableCell>
-                    <TableCell>
-                      {dayjs(block.end).format("DD MMM YY HH:mm")}
+                      <div className="flex items-center gap-2">
+                        {formatUTCDateStringWithoutTZ(block.start)}
+                        <span>
+                          <ArrowRight className="w-4 h-4" />
+                        </span>
+                        {formatUTCDateStringWithoutTZ(block.end)}
+                      </div>
                     </TableCell>
                     <TableCell>{block.reason}</TableCell>
                     <TableCell>
                       <Button
+                        onClick={() => deleteBlock({ blockId: block.id })}
                         variant={"outline"}
                         size={"icon"}
                         className="w-7 h-7"
