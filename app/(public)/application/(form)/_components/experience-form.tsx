@@ -38,6 +38,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { countryNames } from "@/db/data/countries";
 
 const formDataSchema = ApplicationCreateInputSchema.pick({
   experiences: true,
@@ -214,9 +222,23 @@ function AddNewExperienceDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Country</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  <Select
+                    defaultValue={field.value}
+                    onValueChange={(v) => field.onChange(v)}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {countryNames.map((country, index) => (
+                        <SelectItem key={index} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

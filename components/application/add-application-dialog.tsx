@@ -17,6 +17,14 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { stringToNumber } from "@/lib/utils/validator";
 import { Input } from "../ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { countryNames } from "@/db/data/countries";
 
 const newExperienceFormDataSchema = ApplicationExperienceCreateInputSchema.omit(
   { year: true },
@@ -110,9 +118,23 @@ export default function AddNewExperienceDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Country</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  <Select
+                    defaultValue={field.value}
+                    onValueChange={(v) => field.onChange(v)}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {countryNames.map((country, index) => (
+                        <SelectItem key={index} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
