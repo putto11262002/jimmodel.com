@@ -11,7 +11,6 @@ export default function TopBar() {
     <header className="sticky top-0 z-10 flex items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:px-6 ">
       <div className="h-14 flex items-center gap-4 w-full">
         <MobileNavMenu />
-
         <div>
           <BreadcrumbDisplay />
         </div>

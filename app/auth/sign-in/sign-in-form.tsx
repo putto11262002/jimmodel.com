@@ -1,44 +1,80 @@
 "use client";
-import { Label } from "@/components/ui/label";
-import { useFormState } from "react-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { credentialSigninAction } from "../../../lib/actions/auth";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SignInSchema } from "@/lib/validators/auth";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useSignIn } from "@/hooks/queries/auth";
 
 export default function SignInForm() {
-  const [state, formAction] = useFormState(credentialSigninAction, {});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
+  const form = useForm<z.infer<typeof SignInSchema>>({
+    resolver: zodResolver(SignInSchema),
+  });
+
+  const { mutate, isPending } = useSignIn();
 
   return (
-    <form action={formAction} className="grid gap-4">
-      {state?.formError && (
-        <div className="pt-2 pb-3">
-          <Alert variant={"destructive"}>
-            <AlertDescription>{state.formError}</AlertDescription>
-          </Alert>
-        </div>
-      )}
-      <div className="grid gap-2">
-        <Label htmlFor="username">Username</Label>
-        <Input name="username" type="text" />
-        {state?.fieldErrors?.username && (
-          <p className="text-xs text-destructive">
-            {state.fieldErrors.username}
-          </p>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit((data) =>
+          mutate(data, {
+            onSuccess: () => router.push("/admin"),
+            onError: (error) => setErrorMessage(error.message),
+          }),
         )}
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="password">Password</Label>
-        <Input name="password" type="password" required />
-        {state?.fieldErrors?.password && (
-          <p className="text-xs text-destructive">
-            {state.fieldErrors.password}
-          </p>
+        className="grid gap-4"
+      >
+        {errorMessage && (
+          <div className="pt-2 pb-3">
+            <Alert variant={"destructive"}>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          </div>
         )}
-      </div>
-      <Button type="submit" className="w-full">
-        Login
-      </Button>
-    </form>
+        <FormField
+          name="username"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          name="password"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button disabled={isPending} type="submit" className="w-full">
+          Login
+        </Button>
+      </form>
+    </Form>
   );
 }
