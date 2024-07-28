@@ -10,23 +10,36 @@ export default function ImageGrid<T extends { fileId: string }>({
 }) {
   return (
     <div className="grid grid-cols-3 gap-4">
-      {images.map((image, index) => (
-        <AspectRatio
-          key={index}
-          className="relative block group overflow-hidden rounded"
-          ratio={1 / 1}
-        >
-          <div className="absolute hidden group-hover:flex w-full h-full z-10 inset-0 ">
-            {Overlay && <Overlay image={image} />}
-          </div>
-          <Image
-            className="object-cover w-full h-full"
-            src={`/files/${image.fileId}`}
-            alt={"Model"}
-            fill
-          />
-        </AspectRatio>
-      ))}
+      {images.length > 0 ? (
+        images.map((image, index) => (
+          <AspectRatio
+            key={index}
+            className="relative block group overflow-hidden rounded"
+            ratio={1 / 1}
+          >
+            <div className="absolute hidden group-hover:flex w-full h-full z-10 inset-0 ">
+              {Overlay && <Overlay image={image} />}
+            </div>
+            <Image
+              className="object-cover w-full h-full"
+              src={`/files/${image.fileId}`}
+              alt={"Model"}
+              fill
+            />
+          </AspectRatio>
+        ))
+      ) : (
+        <>
+          <div></div>
+          <AspectRatio
+            className="flex items-center justify-center text-sm text-muted-foreground"
+            ratio={1 / 1}
+          >
+            <p className="">No images found</p>
+          </AspectRatio>
+          <div></div>
+        </>
+      )}
     </div>
   );
 }

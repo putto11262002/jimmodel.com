@@ -16,6 +16,7 @@ import { useMemo } from "react";
 import useToast from "@/components/toast";
 import ImageSkeleton from "./_components/image-skeleton";
 import { useRemoveModelImage } from "@/hooks/queries/model";
+import ImageGrid from "@/components/model/image-grid";
 
 export default function Page() {
   const params = useParams<{ id: string; type?: string[] }>();
@@ -52,20 +53,7 @@ export default function Page() {
   return (
     <>
       {isSuccess ? (
-        displayImages.length > 0 ? (
-          <ImageGrid images={displayImages} Overlay={ImageActions} />
-        ) : (
-          <div className="col-span-full grid grid-cols-3 place-items-center">
-            <div></div>
-            <AspectRatio
-              className="flex items-center justify-center"
-              ratio={1 / 1}
-            >
-              <p className="">No images found</p>
-            </AspectRatio>
-            <div></div>
-          </div>
-        )
+        <ImageGrid images={displayImages} Overlay={ImageActions} />
       ) : (
         <div className="grid grid-cols-3 gap-4">
           <ImageSkeleton />
@@ -78,36 +66,6 @@ export default function Page() {
     </>
   );
 }
-
-const ImageGrid = ({
-  images,
-  Overlay,
-}: {
-  images: ModelImage[];
-  Overlay?: React.FC<{ image: ModelImage }>;
-}) => {
-  return (
-    <div className="grid grid-cols-3 gap-4">
-      {images.map((image, index) => (
-        <AspectRatio
-          key={index}
-          className="relative block group overflow-hidden rounded"
-          ratio={1 / 1}
-        >
-          <div className="absolute hidden group-hover:flex w-full h-full z-10 inset-0 ">
-            {Overlay && <Overlay image={image} />}
-          </div>
-          <Image
-            className="object-cover w-full h-full"
-            src={`/files/${image.fileId}`}
-            alt={"Model"}
-            fill
-          />
-        </AspectRatio>
-      ))}
-    </div>
-  );
-};
 
 const ImageActions = ({ image }: { image: ModelImage }) => {
   const queryClient = useQueryClient();
