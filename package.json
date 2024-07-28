@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
     "preconfig": "pnpm ts-node --esm  -r tsconfig-paths/register ./sctipts/init.ts"
   },
   "dependencies": {
