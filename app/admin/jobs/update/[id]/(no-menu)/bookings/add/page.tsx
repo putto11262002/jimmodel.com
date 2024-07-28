@@ -57,7 +57,7 @@ import { formatUTCDateStringWithoutTZ } from "@/lib/utils/date";
 import BlockTable from "./_components/block-table";
 import Loader from "@/components/loader";
 import { useGetBlock } from "@/hooks/queries/model";
-import { useGetBookings } from "@/hooks/queries/job";
+import { useCreateBooking, useGetBookings } from "@/hooks/queries/job";
 
 const FormDataSchema = BookingCreateInputSchema;
 type FormData = z.infer<typeof FormDataSchema>;
@@ -80,19 +80,9 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
     enabled: !!id,
   });
 
-  const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { mutate } = useMutation({
-    mutationFn: async (data: BookingCreateInput) => {
-      await client.api.bookings.$post({ json: data });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["jobs", id, "bookings"] });
-      router.push(`/admin/jobs/update/${id}/bookings`);
-    },
-  });
-
+  const { mutate } = useCreateBooking();
   const start = form.watch("start");
   const end = form.watch("end");
 
@@ -127,7 +117,14 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
     <div className="grid grid-cols-3 gap-4">
       <div className="col-span-3">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => mutate(data))}>
+          <form
+            onSubmit={form.handleSubmit((data) =>
+              mutate(data, {
+                onSuccess: ({ id }) =>
+                  router.push(`/admin/jobs/update/${id}/bookings`),
+              }),
+            )}
+          >
             <Card>
               <CardHeader>
                 <CardTitle>New Booking</CardTitle>

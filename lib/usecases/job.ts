@@ -259,7 +259,11 @@ export class JobUsecase {
   }
 
   public async addBooking(booking: BookingCreateInput) {
-    await this.db.insert(bookingTable).values(booking);
+    const res = await this.db
+      .insert(bookingTable)
+      .values(booking)
+      .returning({ id: bookingTable.id });
+    return res[0];
   }
 
   public async removeBooking(bookingId: string) {

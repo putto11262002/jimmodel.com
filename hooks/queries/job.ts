@@ -1,5 +1,5 @@
 import useToast from "@/components/toast";
-import { JobUpdateInput } from "@/db/schemas";
+import { BookingCreateInput, JobUpdateInput } from "@/db/schemas";
 import client from "@/lib/api/client";
 import { BookingWithJob, JobCreateInput, JobStatus } from "@/lib/types/job";
 import {
@@ -309,5 +309,19 @@ export function useGetBookings({
     },
 
     ...props,
+  });
+}
+
+export function useCreateBooking() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: BookingCreateInput) => {
+      const res = await client.api.bookings.$post({ json: data });
+      return res.json();
+    },
+    onSuccess: ({ id }) => {
+      queryClient.invalidateQueries({ queryKey: ["jobs", id, "bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["calendar"] });
+    },
   });
 }

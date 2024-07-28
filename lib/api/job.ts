@@ -99,8 +99,8 @@ const jobRouter = new Hono()
     zValidator("json", BookingCreateInputSchema),
     async (c) => {
       const booking = c.req.valid("json");
-      const id = await jobUsecase.addBooking(booking);
-      return c.json({ id });
+      const res = await jobUsecase.addBooking(booking);
+      return c.json(res);
     },
   )
   .get(
