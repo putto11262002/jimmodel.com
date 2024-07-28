@@ -20,7 +20,6 @@ import {
   not,
   or,
 } from "drizzle-orm";
-import FileUseCase from "./file";
 import { PaginatedData } from "../types/paginated-data";
 import { ModelImageType, modelImageTable } from "../../db/schemas/model-images";
 import { getOffset, getPagination } from "../utils/pagination";
@@ -35,8 +34,8 @@ import { isArray } from "lodash";
 import { ModelImageCreateInput } from "../types/model";
 import { NotFoundError } from "../errors/not-found-error";
 import { PostgresError } from "postgres";
+import { FileUseCase, fileUseCase } from "./file";
 
-const fileUsecase = new FileUseCase(db, process.env.FILE_STORAGE_PATH!);
 
 /**
  * Add new model record. If the operation is successful a model id is returned. Otherwise, return null.
@@ -94,7 +93,7 @@ export const addModelImage = async (
   if (!model) {
     throw new Error("Model not found");
   }
-  const fileMetadata = await fileUsecase.writeFile(file);
+  const fileMetadata = await fileUseCase.writeFile(file);
   await db.insert(modelImageTable).values({
     fileId: fileMetadata.id,
     modelId,
@@ -120,7 +119,7 @@ export const deleteModelImage = async (modelId: string, fileId: string) => {
       ),
     );
 
-  await fileUsecase.deleteFile(fileId);
+  await fileUseCase.deleteFile(fileId);
 };
 
 export const setProfileImage = async (modelId: string, fileId: string) => {
@@ -274,8 +273,10 @@ export const getModelProfiles = async ({
 
 export class ModelUseCase {
   private db: DB;
-  constructor(db: DB) {
+  private fileUseCase : FileUseCase
+  constructor(db: DB, fileUseCase: FileUseCase) {
     this.db = db;
+    this.fileUseCase = fileUseCase
   }
 
   /**
@@ -522,7 +523,7 @@ export class ModelUseCase {
     if (isExistingFile(input)) {
       fileId = input.fileId;
     } else {
-      const { id } = await fileUsecase.writeFile(input.file, tx);
+      const { id } = await this.fileUseCase.writeFile(input.file, tx);
       fileId = id;
     }
 
@@ -542,7 +543,7 @@ export class ModelUseCase {
     if (isExistingFile(input)) {
       fileId = input.fileId;
     } else {
-      const { id } = await fileUsecase.writeFile(input.file);
+      const { id } = await this.fileUseCase.writeFile(input.file);
       fileId = id;
     }
 
@@ -577,7 +578,7 @@ export class ModelUseCase {
       );
 
     try {
-      await fileUsecase.deleteFile(fileId);
+      await fileUseCase.deleteFile(fileId);
     } catch (err) {
       // Ignore foreign key violation error as the file may still be referenced by the application
       if (err instanceof PostgresError && err.code === "23503") {
@@ -589,6 +590,6 @@ export class ModelUseCase {
   }
 }
 
-const modelUseCase = new ModelUseCase(db);
+const modelUseCase = new ModelUseCase(db, fileUseCase);
 
 export default modelUseCase;

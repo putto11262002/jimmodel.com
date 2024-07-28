@@ -13,9 +13,7 @@ export default function Submit() {
   const { trigger, isMutating } = useSWRMutation(
     "/api/applications",
     async () => {
-      console.log(application);
       const data = ApplicationCreateInputSchema.parse(application);
-      console.log(data);
       const res = await client.api.applications.$post({ json: data });
       const { id } = await res.json();
 

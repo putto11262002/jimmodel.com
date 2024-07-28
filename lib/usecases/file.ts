@@ -1,4 +1,4 @@
-import db, { TX } from "@/db/client";
+import db, { DB, TX } from "@/db/client";
 import { fileInfoTable } from "@/db/schemas/file-metadata";
 import { v4 as randomUUID } from "uuid";
 import { eq } from "drizzle-orm";
@@ -7,7 +7,95 @@ import { promises as fs } from "fs";
 import path from "path";
 import { FileInfo } from "../types/file";
 import { newFile } from "../utils/file";
-export default class FileUseCase {
+import * as Minio from "minio";
+/**
+ *  FileUseCase assumes that all files supplied are of appropriate size, e.g. not too large to be handled by the server.
+ */
+export interface FileUseCase {
+  writeFile(file: Blob, tx?: TX): Promise<FileInfo>;
+  readFile(fileId: string, tx?: TX): Promise<File>;
+  deleteFile(fileId: string, tx?: TX): Promise<void>;
+}
+
+type S3FileUseCaseOpts = {
+  defaultBucketName: string;
+};
+export class S3FileUseCase implements FileUseCase {
+  private client: Minio.Client;
+  private opts: S3FileUseCaseOpts;
+  private db: DB;
+
+  constructor(
+    client: Minio.Client,
+    db: DB,
+    opts: { defaultBucketName: string }
+  ) {
+    this.client = client;
+    this.db = db;
+    this.opts = opts;
+  }
+
+  public async writeFile(file: Blob, tx?: TX): Promise<FileInfo> {
+    const fileName = randomUUID();
+    await this.client.putObject(
+      this.opts.defaultBucketName,
+      fileName,
+      Buffer.from(await file.arrayBuffer()),
+      undefined,
+      { "Content-Type": file.type }
+    );
+    const fileInfo = await (tx ? tx : this.db)
+      .insert(fileInfoTable)
+      .values({
+        path: fileName,
+        mimeType: file.type,
+        id: fileName,
+      })
+      .returning();
+    return fileInfo[0];
+  }
+
+  public async readFile(fileId: string, tx?: TX): Promise<File> {
+    const rows = await (tx ? tx : this.db)
+      .select()
+      .from(fileInfoTable)
+      .where(eq(fileInfoTable.id, fileId));
+
+    if (rows.length < 1) {
+      throw new Error("file not found");
+    }
+
+    const fileInfo = rows[0];
+
+    const stream = await this.client.getObject(
+      this.opts.defaultBucketName,
+      fileInfo.path
+    );
+
+    const tempBuf: any[] = [];
+    for await (const chunk of stream) {
+      tempBuf.push(chunk);
+    }
+    const buffer = Buffer.concat(tempBuf);
+
+    const file = newFile([buffer], "", { type: fileInfo.mimeType });
+    return file;
+  }
+
+  public async deleteFile(fileId: string, tx?: TX) {
+    const deleted = await (tx ? tx : this.db)
+      .delete(fileInfoTable)
+      .where(eq(fileInfoTable.id, fileId))
+      .returning();
+    if (deleted.length < 1) {
+      return;
+    }
+
+    await this.client.removeObject(this.opts.defaultBucketName, fileId);
+  }
+}
+
+export default class FSFileUseCase {
   private path: string;
   private db: PostgresJsDatabase<any>;
   constructor(db: PostgresJsDatabase<any>, path: string) {
@@ -66,4 +154,14 @@ export default class FileUseCase {
   }
 }
 
-export const fileUseCase = new FileUseCase(db, process.env.FILE_STORAGE_PATH!);
+const minioClient = new Minio.Client({
+  accessKey: process.env.S3_ACCESS_KEY!,
+  secretKey: process.env.S3_SECRET_KEY!,
+  endPoint: process.env.S3_ENDPOINT!,
+  useSSL: false,
+  ...(process.env.S3_PORT ? {port: parseInt(process.env.S3_PORT!) }: {})
+});
+
+export const fileUseCase = new S3FileUseCase(minioClient, db, {
+  defaultBucketName: process.env.S3_BUCKET_NAME!,
+});

@@ -31,6 +31,25 @@ services:
       - "traefik.tcp.routers.jimmodel-db.entrypoints=postgres"
       - "traefik.tcp.services.jimmodel-db.loadbalancer.server.port=5432"
 
+  minio: 
+    image: quay.io/minio/minio
+    container_name: jimmodel_minio
+    restart: always
+    volumes:
+      - ${MINIO_DATA:-minio_data}:/data 
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"  
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jimmodel-minio.rule=Host(`minio.jimmodel.com`)"
+      - "traefik.http.routers.jimmodel-minio.entrypoints=web"
+      - "traefik.http.services.jimmodel-minio.loadbalancer.server.port=9001"
+    
   app:
     build:
       context: .
@@ -55,3 +74,4 @@ services:
 
 volumes:
   postgres_data:
+  minio_data:

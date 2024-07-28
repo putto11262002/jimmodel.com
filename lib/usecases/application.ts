@@ -15,13 +15,13 @@ import { and, asc, count, eq, inArray } from "drizzle-orm";
 import { NotFoundError } from "../errors/not-found-error";
 import { getOffset, getPagination } from "../utils/pagination";
 import buffer from "buffer";
-import FileUseCase, { fileUseCase } from "./file";
+import FSFileUseCase, { FileUseCase, fileUseCase } from "./file";
 import ConstraintViolationError from "../errors/contrain-violation-error";
 
 export class ApplictionUseCase {
   private db: DB;
   private modelUseCase: ModelUseCase;
-  private fileUseCase: FileUseCase;
+  private fileUseCase: FileUseCase
   constructor({
     db,
     modelUseCase,
@@ -29,7 +29,7 @@ export class ApplictionUseCase {
   }: {
     db: DB;
     modelUseCase: ModelUseCase;
-    fileUseCase: FileUseCase;
+    fileUseCase: FileUseCase
   }) {
     this.db = db;
     this.modelUseCase = modelUseCase;

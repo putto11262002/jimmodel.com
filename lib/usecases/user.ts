@@ -5,7 +5,7 @@ import { or, eq, and, arrayContains, count } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { UserWithoutSecrets, UserCreateInput } from "../types/user";
 import { File } from "buffer";
-import FileUseCase, { fileUseCase } from "./file";
+import FSFileUseCase, { FileUseCase, fileUseCase } from "./file";
 import { getOffset, getPagination } from "../utils/pagination";
 import { PaginatedData } from "../types/paginated-data";
 import { HTTPException } from "hono/http-exception";
