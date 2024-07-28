@@ -18,7 +18,8 @@ export default function Page({
 }: {
   searchParams: { ref: string };
 }) {
-  const { now, key, mode } = useCalendar();
+  const { now, key } = useCalendar();
+
   const calendarRenderer = new CalendarRenderer([
     new BookingResolver(),
     new BlockResolver(),

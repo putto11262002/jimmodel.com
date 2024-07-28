@@ -153,15 +153,26 @@ export default function Page() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.experiences.map((experience, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{experience.year}</TableCell>
-                      <TableCell>{experience.product}</TableCell>
-                      <TableCell>{experience.media}</TableCell>
-                      <TableCell>{experience.country}</TableCell>
-                      <TableCell>{experience.details}</TableCell>
+                  {data.experiences.length > 0 ? (
+                    data.experiences.map((experience, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{experience.year}</TableCell>
+                        <TableCell>{experience.product}</TableCell>
+                        <TableCell>{experience.media}</TableCell>
+                        <TableCell>{experience.country}</TableCell>
+                        <TableCell>{experience.details}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="py-4 text-muted-foreground text-center"
+                      >
+                        No experiences
+                      </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

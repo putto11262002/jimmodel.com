@@ -1,8 +1,4 @@
-import Link from "next/link";
 import { CalendarProvider } from "./_components/calendar-context";
-import { Button } from "../../../components/ui/button";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import dayjs from "dayjs";
 import { SheetProvider } from "./_components/day-sheet-provider";
 import ControlBar from "./_components/control-bar";
 
