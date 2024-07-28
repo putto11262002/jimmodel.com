@@ -31,7 +31,7 @@ const AddModelBlockFormSchema = z
 export default function Page() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { mutate: block } = useCreateBlockModel();
+  const { mutate: block } = useCreateModelBlock();
   const form = useForm<z.infer<typeof AddModelBlockFormSchema>>({
     resolver: zodResolver(AddModelBlockFormSchema),
   });
