@@ -30,12 +30,11 @@ import {
   ModelBlockWithPartialModel,
   ModelExperienceCreateInput,
 } from "../types/model";
-import { LapTimerIcon } from "@radix-ui/react-icons";
 import ConstraintViolationError from "../errors/contrain-violation-error";
 import { isArray } from "lodash";
-import { FileInfo as FileInfo } from "@/lib/types/file";
 import { ModelImageCreateInput } from "../types/model";
 import { NotFoundError } from "../errors/not-found-error";
+import { PostgresError } from "postgres";
 
 const fileUsecase = new FileUseCase(db, process.env.FILE_STORAGE_PATH!);
 
@@ -523,11 +522,11 @@ export class ModelUseCase {
     if (isExistingFile(input)) {
       fileId = input.fileId;
     } else {
-      const { id } = await fileUsecase.writeFile(input.file);
+      const { id } = await fileUsecase.writeFile(input.file, tx);
       fileId = id;
     }
 
-    await db
+    await (tx ? tx : this.db)
       .insert(modelImageTable)
       .values({ type: input.type, fileId, modelId });
   }
@@ -568,18 +567,25 @@ export class ModelUseCase {
       throw new ConstraintViolationError("Cannot delete profile image");
     }
 
-    this.db.transaction(async (tx) => {
-      await tx
-        .delete(modelImageTable)
-        .where(
-          and(
-            eq(modelImageTable.modelId, modelId),
-            eq(modelImageTable.fileId, fileId),
-          ),
-        );
+    await this.db
+      .delete(modelImageTable)
+      .where(
+        and(
+          eq(modelImageTable.modelId, modelId),
+          eq(modelImageTable.fileId, fileId),
+        ),
+      );
 
-      await fileUsecase.deleteFile(fileId, tx);
-    });
+    try {
+      await fileUsecase.deleteFile(fileId);
+    } catch (err) {
+      // Ignore foreign key violation error as the file may still be referenced by the application
+      if (err instanceof PostgresError && err.code === "23503") {
+        console.log(err);
+        return;
+      }
+      throw err;
+    }
   }
 }
 
