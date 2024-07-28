@@ -120,7 +120,7 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
           <form
             onSubmit={form.handleSubmit((data) =>
               mutate(data, {
-                onSuccess: ({ id }) =>
+                onSuccess: () =>
                   router.push(`/admin/jobs/update/${id}/bookings`),
               }),
             )}
