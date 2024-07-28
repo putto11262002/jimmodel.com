@@ -28,10 +28,10 @@ RUN pnpm build
 FROM base AS runner
 WORKDIR /app
 
-RUN mkdir fs
+RUN mkdir file_storage
 
 ENV NODE_ENV=production
-ENV FILE_STORAGE_PATH=/app/fs
+ENV FILE_STORAGE_PATH=/app/file_storage
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001

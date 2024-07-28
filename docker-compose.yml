@@ -1,13 +1,57 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:latest
-    container_name: jimmodel_postgres
+  reverse-proxy:
+    image: traefik:v2.5
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.postgres.address=:5432/tcp"
     ports:
+      - "80:80"
+      - "8080:8080"
       - "5432:5432"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  postgres:
+    image: postgres:16-alpine
+    container_name: jimmodel_postgres
     restart: always
+    volumes:
+      - ${DB_DATA_PATH:-postgres_data}:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: jimmodel
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: jimmodel
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.jimmodel-db.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.jimmodel-db.entrypoints=postgres"
+      - "traefik.tcp.services.jimmodel-db.loadbalancer.server.port=5432"
+
+  app:
+    build:
+      context: .
+      args:
+        - NODE_ENV=production
+    container_name: jimmodel_app
+    restart: always
+    volumes:
+      - ${FILE_STORAGE_PATH:-postgres_data}:/app/file_storage
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: postgres
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_TRUST_HOST: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jimmodel-app.rule=Host(`web.jimmodel.com`)"
+      - "traefik.http.routers.jimmodel-app.entrypoints=web"
+      - "traefik.http.services.jimmodel-app.loadbalancer.server.port=3000"
+
+volumes:
+  postgres_data:
