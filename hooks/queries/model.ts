@@ -91,7 +91,7 @@ export function useUpdateModel() {
   });
 }
 
-export function useBlockModel({
+export function useCreateModelBlock({
   opts,
 }: {
   opts?: UseMutationOptions<
@@ -120,6 +120,9 @@ export function useBlockModel({
       ok("Model block Successfully add");
       queryClient.invalidateQueries({
         queryKey: ["models", args[1].modelId, "blocks"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["calendar"],
       });
     },
     onError: (...args) => {

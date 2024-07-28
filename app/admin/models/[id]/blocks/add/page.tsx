@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { useBlockModel } from "@/hooks/queries/model";
+import {useCreateModelBlock} from "@/hooks/queries/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -31,7 +31,7 @@ const AddModelBlockFormSchema = z
 export default function Page() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { mutate: block } = useBlockModel();
+  const { mutate: block } = useCreateBlockModel();
   const form = useForm<z.infer<typeof AddModelBlockFormSchema>>({
     resolver: zodResolver(AddModelBlockFormSchema),
   });
