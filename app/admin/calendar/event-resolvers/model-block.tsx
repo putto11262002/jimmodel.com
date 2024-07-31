@@ -5,6 +5,7 @@ import {
   ModelBlockWithModel,
   ModelBlockWithPartialModel,
 } from "@/lib/types/model";
+import dayjs from "dayjs";
 
 class BlockEvent implements Event {
   private block: Omit<ModelBlockWithPartialModel, "start" | "end"> & {
@@ -17,6 +18,14 @@ class BlockEvent implements Event {
       start: new Date(block.start),
       end: new Date(block.end),
     };
+  }
+
+  getExternalPriority() {
+    return 1;
+  }
+
+  getInteralPriority() {
+    return this.block.start.getTime();
   }
 
   render() {
@@ -55,6 +64,16 @@ class BlockEvent implements Event {
         {/*   />{" "} */}
         {/*   <span>{this.block.model.name}</span> */}
         {/* </div> */}
+        <div className="grid gap-1 text-muted-foreground">
+          <p className="text-xs">
+            Time: {dayjs(this.block.start).format("HH:mm a")} -{" "}
+            {dayjs(this.block.end).format("HH:mm a")}
+          </p>
+          <p className="text-xs">
+            Created at:{" "}
+            {dayjs(this.block.createdAt).format("DD MMM YY HH:mm a")}
+          </p>
+        </div>
 
         <p className="text-sm">{this.block.reason}</p>
       </div>
@@ -63,11 +82,11 @@ class BlockEvent implements Event {
 
   renderPreview() {
     return (
-      <div className="flex items-center gap-2 ">
+      <div className="flex items-center gap-1">
         <div>
-          <CircleX className="h-[15px] w-[15px] text-red-800" />
+          <CircleX className="h-[10px] w-[10px] text-red-800" />
         </div>
-        <p className="text-xs overflow-ellipsis text-nowrap">
+        <p className="text-[10px] overflow-ellipsis text-nowrap">
           {this.block.model.name}
         </p>
       </div>

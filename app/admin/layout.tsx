@@ -10,9 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="sm:pl-14">
         <TopBar />
-        <main className="grid flex-1 items-start gap-4 p-4 md:gap-4">
-          {children}
-        </main>
+        <main className="">{children}</main>
       </div>
     </div>
   );

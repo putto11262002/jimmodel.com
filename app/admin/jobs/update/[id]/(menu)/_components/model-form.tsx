@@ -22,6 +22,7 @@ export default function ModelForm({ jobId }: { jobId: string }) {
             selected={data?.models || []}
           >
             <Button
+              disabled={isPending || data?.status !== "pending"}
               variant={"outline"}
               size={"icon"}
               className="h-6 w-6 ml-auto"

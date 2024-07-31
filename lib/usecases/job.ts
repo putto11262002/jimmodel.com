@@ -20,6 +20,8 @@ import { getModelProfiles } from "./model";
 import { PaginatedData } from "../types/paginated-data";
 import { BookingWithJob, Job, JobUpdateInput } from "../types/job";
 import { alias } from "drizzle-orm/pg-core";
+import { NotFoundError } from "../errors/not-found-error";
+import ConstraintViolationError from "../errors/contrain-violation-error";
 
 export class JobUsecase {
   private readonly db: DB;
@@ -166,6 +168,13 @@ export class JobUsecase {
   }
 
   public async addModel(jobId: string, modelId: string) {
+    const job = await this.db.query.jobTable.findFirst({
+      where: eq(jobTable.id, jobId),
+    });
+    if (!job) {
+      throw new NotFoundError("Job not found");
+    }
+
     await this.db.insert(jobToModelTable).values({
       jobId,
       modelId,
@@ -310,24 +319,20 @@ export class JobUsecase {
       this.db
         .select()
         .from(bookingTable)
-        .where(where)
         .innerJoin(jobTable, eq(jobTable.id, bookingTable.jobId))
         .innerJoin(userTable, eq(userTable.id, jobTable.ownerId))
-        .leftJoin(fileInfoTable, eq(fileInfoTable.id, userTable.id))
+        .leftJoin(fileInfoTable, eq(fileInfoTable.id, userTable.imageId))
         .leftJoin(jobToModelTable, eq(jobTable.id, jobToModelTable.jobId))
         .leftJoin(modelTable, eq(modelTable.id, jobToModelTable.modelId))
-        .leftJoin(modelImageTable, eq(modelTable.id, modelImageTable.modelId)),
+        .leftJoin(modelImageTable, eq(modelTable.id, modelImageTable.modelId))
+        .where(and(where, eq(modelImageTable.isProfile, true))),
 
       this.db
         .select({ count: count() })
         .from(bookingTable)
-        .where(where)
         .innerJoin(jobTable, eq(bookingTable.jobId, jobTable.id))
-        .innerJoin(userTable, eq(jobTable.ownerId, userTable.id))
-        .leftJoin(fileInfoTable, eq(userTable.imageId, fileInfoTable.id))
         .leftJoin(jobToModelTable, eq(jobTable.id, jobToModelTable.jobId))
-        .leftJoin(modelTable, eq(modelTable.id, jobToModelTable.modelId))
-        .leftJoin(modelImageTable, eq(modelTable.id, modelImageTable.modelId)),
+        .where(where),
     ]);
     let jobs = new Map<string, Job>();
     let bookings: BookingWithJob[] = [];
@@ -339,7 +344,12 @@ export class JobUsecase {
           models: [],
         });
       }
-      if (row.models?.id) {
+      if (
+        row.models?.id &&
+        jobs
+          .get(row.jobs.id)
+          ?.models.findIndex((m) => m.id === row?.models?.id) === -1
+      ) {
         jobs.get(row.jobs.id)?.models?.push({
           id: row.models.id,
           name: row.models.name,

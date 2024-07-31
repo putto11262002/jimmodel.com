@@ -31,7 +31,7 @@ export default function UserAvatar({
         style={{
           width: width || sizes[size] || sizes.medium,
           height: height || sizes[size] || sizes.medium,
-          fontSize: width ? `${width / 2}px` : "16px",
+          fontSize: width ? `${width * 0.8}px` : "16px",
         }}
       >
         {user.name.charAt(0).toUpperCase()}

@@ -1,10 +1,14 @@
 import dayjs, { Dayjs } from "dayjs";
+import { BookingResolver } from "./event-resolvers/booking";
+import { BlockResolver } from "./event-resolvers/model-block";
 
 export interface Event {
   render: () => React.ReactNode;
   renderPreview: () => React.ReactNode;
   getStart: () => Date;
   getEnd: () => Date;
+  getExternalPriority: () => number;
+  getInteralPriority: () => number;
 }
 
 export interface EventResolver {
@@ -33,6 +37,20 @@ export class CalendarRenderer {
       current = current.add(1, "day");
     }
 
+    return calendar;
+  }
+
+  public placeholder(date: string, mode: "week" | "month") {
+    const [start, end] = this.getSartEnd(date, mode);
+    const calendar = [];
+    let current = start;
+    while (current.isBefore(end)) {
+      calendar.push({
+        date: current.toDate(),
+        events: [],
+      });
+      current = current.add(1, "day");
+    }
     return calendar;
   }
 
@@ -76,6 +94,20 @@ export class CalendarRenderer {
       }
       return acc;
     }, groupedEvents);
+
+    Object.values(groupedEvents).forEach((group) => {
+      group.events.sort((a, b) => {
+        const aExternal = a.getExternalPriority();
+        const bExternal = b.getExternalPriority();
+        if (aExternal !== bExternal) {
+          return aExternal - bExternal;
+        }
+        const aInternal = a.getInteralPriority();
+        const bInternal = b.getInteralPriority();
+        return aInternal - bInternal;
+      });
+    });
+
     return groupedEvents;
   }
 
@@ -83,3 +115,10 @@ export class CalendarRenderer {
     return (day instanceof Date ? dayjs(day) : day).format("YYYY-MM-DD");
   }
 }
+
+const calendarRenderer = new CalendarRenderer([
+  new BookingResolver(),
+  new BlockResolver(),
+]);
+
+export default calendarRenderer;

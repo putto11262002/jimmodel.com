@@ -1,75 +1,90 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import dayjs, { Dayjs } from "dayjs";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight, CircleCheck, Clock } from "lucide-react";
-import { CalendarRenderer } from "./calendar";
-import { BookingResolver } from "./event-resolvers/booking";
-import Day from "./_components/day";
-import { CalendarProvider, useCalendar } from "./_components/calendar-context";
-import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BlockResolver } from "./event-resolvers/model-block";
+import { useCalendar } from "./_components/calendar-context";
+import React, { useEffect, useState } from "react";
 
-export default function Page({
-  searchParams,
-}: {
-  searchParams: { ref: string };
-}) {
-  const { now, key } = useCalendar();
+export default function Page() {
+  const {
+    calendar: { data, isLoading },
+    view,
+  } = useCalendar();
+  const [eventsLimit, setEventsLimit] = useState(0);
 
-  const calendarRenderer = new CalendarRenderer([
-    new BookingResolver(),
-    new BlockResolver(),
-  ]);
+  const cellRef = React.useRef<HTMLUListElement>(null);
 
-  const { data: calendar, isSuccess } = useQuery({
-    queryKey: ["calendar", key],
-    queryFn: async () => {
-      return calendarRenderer.render(now.toISOString(), "month");
-    },
-  });
+  const calculateLimit = () => {
+    if (cellRef.current) {
+      setEventsLimit(() =>
+        Math.floor((cellRef.current!.clientHeight! - 20) / 20),
+      );
+    }
+  };
+
+  useEffect(() => {
+    calculateLimit();
+  }, [isLoading, data]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      calculateLimit();
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [calculateLimit]);
 
   return (
-    <Card className="">
-      <CardHeader>
-        <CardTitle>{now.format("MMMM YYYY")}</CardTitle>
-      </CardHeader>
-      <CardContent className="h-[calc(100vh_-_13em)]">
-        <div
-          style={{
-            gridTemplateRows: `repeat(${isSuccess ? Math.ceil(calendar.length / 7) : 5}, minmax(0, 1fr))`,
-          }}
-          className="grid grid-cols-7 h-full"
-        >
-          {isSuccess ? (
-            calendar.map((day, index) => {
-              return (
-                <div
-                  key={index}
-                  className={cn(
-                    "p-2 space-y-2 overflow-hidden",
-                    index % 7 !== 6 && "border-r",
-                    calendar.length - 1 - index > 6 && "border-b",
-                  )}
-                >
-                  <Day date={day.date} events={day.events} />
-                </div>
-              );
-            })
-          ) : (
-            <>
-              {new Array(35).fill(0).map((_, index) => (
-                <div key={index} className="p-2">
-                  <Skeleton className="w-full h-full" />
-                </div>
-              ))}
-            </>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div
+      style={{
+        gridTemplateRows: `repeat(${Math.ceil(data.length / 7)}, minmax(0, 1fr))`,
+      }}
+      className="grid grid-cols-7 h-full"
+    >
+      {data.map((day, index) => {
+        return (
+          <div
+            id={index.toString()}
+            onClick={() => view(day)}
+            key={index}
+            className={cn(
+              "overflow-hidden space-y-1 flex flex-col ",
+              index % 7 !== 6 && "border-r",
+              data.length - 1 - index > 6 && "border-b",
+            )}
+          >
+            <div className="text-xs text-muted-foreground text-center p-0.5">
+              {day.date.getDate()}
+            </div>
+            <ul
+              ref={index === 0 ? cellRef : undefined}
+              className="space-y-0.5 overflow-hidden grow"
+            >
+              {isLoading
+                ? new Array(2).fill(0, 0, 2).map((_, idx) => (
+                    <li
+                      className="rounded bg-muted py-[1px] px-1 overflow-hidden h-[18px]"
+                      key={idx}
+                    >
+                      <p className="text-[10px] text-transparent">Event</p>
+                    </li>
+                  ))
+                : day.events.slice(0, eventsLimit).map((event, idx) => (
+                    <li
+                      className="rounded bg-muted py-[1px] px-1 overflow-hidden h-[18px]"
+                      key={idx}
+                    >
+                      {!isLoading && event.renderPreview()}
+                    </li>
+                  ))}
+              {day.events.length > eventsLimit && (
+                <li className="text-[10px] px-1 text-muted-foreground text-nowrap">
+                  {day.events.length - eventsLimit} more...
+                </li>
+              )}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
   );
 }

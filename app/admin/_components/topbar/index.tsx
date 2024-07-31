@@ -8,8 +8,8 @@ import { BreadcrumbDisplay } from "@/components/breadcrumb";
 export default function TopBar() {
   const { status, data } = useSession();
   return (
-    <header className="sticky top-0 z-10 flex items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:px-6 ">
-      <div className="h-14 flex items-center gap-4 w-full">
+    <header className="sticky border-box top-0 z-10 h-14 flex items-center gap-4 border-b bg-background px-4 sm:static sm:px-6 ">
+      <div className="flex items-center gap-4 w-full">
         <MobileNavMenu />
         <div>
           <BreadcrumbDisplay />

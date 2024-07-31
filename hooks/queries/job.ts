@@ -29,7 +29,8 @@ export const useDeleteBooking = ({
 
     onSuccess: (_, { jobId }) => {
       ok("Booking deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["jobs", jobId, "bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["calendar"] });
     },
     onError: () => {
       error("Failed to delete booking");
@@ -285,23 +286,26 @@ export function useGetBookings({
   start,
   end,
   modelIds,
+  jobIds,
   ...props
 }: {
   start?: Date;
   end?: Date;
   modelIds?: string[];
+  jobIds?: string[];
 } & Omit<
   UseQueryOptions<BookingWithJob[], Error, BookingWithJob[]>,
   "queryKey" | "queryFn"
 >) {
   return useQuery({
-    queryKey: ["bookings", { start, end }],
+    queryKey: ["bookings", { start, end, modelIds, jobIds }],
     queryFn: async () => {
       const res = await client.api.bookings.$get({
         query: {
           start: start?.toISOString(),
           end: end?.toISOString(),
           modelIds,
+          jobIds,
         },
       });
       let { data: bookings } = await res.json();
@@ -320,7 +324,7 @@ export function useCreateBooking() {
       return res.json();
     },
     onSuccess: ({ id }) => {
-      queryClient.invalidateQueries({ queryKey: ["jobs", id, "bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
     },
   });

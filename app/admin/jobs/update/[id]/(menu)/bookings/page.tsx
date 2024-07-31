@@ -12,18 +12,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import BookingTable from "./_components/booking-table";
+import { useGetBookings } from "@/hooks/queries/job";
 
 export default function Page({ params: { id } }: { params: { id: string } }) {
-  const { data, isSuccess } = useQuery({
-    queryKey: ["jobs", id, "bookings"],
-    queryFn: async () => {
-      const res = await client.api.bookings.$get({
-        query: { jobIds: [id] },
-      });
-      return res.json();
-    },
-    throwOnError: true,
-  });
+  const { data, isSuccess } = useGetBookings({ jobIds: [id] });
 
   if (!isSuccess) {
     return (
@@ -44,7 +36,7 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
         </Link>
       </CardHeader>
       <CardContent>
-        <BookingTable bookings={data.data} />
+        <BookingTable bookings={data} />
       </CardContent>
     </Card>
   );

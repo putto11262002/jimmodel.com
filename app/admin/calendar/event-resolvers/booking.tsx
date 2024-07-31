@@ -32,12 +32,33 @@ class BookingEvent implements Event {
     };
   }
 
+  public getInteralPriority() {
+    let priority = 0;
+    if (this.booking.job.status === "confirmed") {
+      priority = 1;
+    } else if (this.booking.job.status === "pending") {
+      priority = 2;
+    }
+    priority = this.booking.start.getTime();
+    return priority;
+  }
+
+  public getExternalPriority() {
+    return 2;
+  }
+
   render() {
     return (
       <div className="grid gap-3">
-        {/* <p className="text-xs text-muted-foreground">{dayjs(this.booking.start).format("HH:mm")} to {dayjs(this.booking.end).format("HH:mm")}</p> */}
         <div className="flex items-center gap-4">
-          <p className="font-medium">{this.booking.job.name}</p>
+          <Link
+            className="hover:underline flex items-baseline font-medium"
+            href={`/admin/jobs/update/${this.booking.job.id}`}
+          >
+            {this.booking.job.name}
+          </Link>
+        </div>
+        <div className="flex gap-4">
           <Badge variant={"outline"}>{upperFirst(this.booking.type)}</Badge>
           <JobStatusBadge status={this.booking.job.status} />
         </div>
@@ -52,26 +73,6 @@ class BookingEvent implements Event {
             {dayjs(this.booking.createdAt).format("DD MMM YY HH:mm a")}
           </p>
         </div>
-        {/* <div className="flex items-center gap-2 mt-2"> */}
-        {/*   <UserAvatar */}
-        {/*     rounded */}
-        {/*     width={25} */}
-        {/*     height={25} */}
-        {/*     user={this.booking.job.owner} */}
-        {/*   /> */}
-        {/*   <div> */}
-        {/*     <p className="text-xs"> */}
-        {/*       <span>{this.booking.job.owner.name}</span> */}
-        {/*       <span> */}
-        {/*         {dayjs(this.booking.createdAt).format("DD MMM YY HH:mm")} */}
-        {/*       </span> */}
-        {/*     </p> */}
-        {/*     <p className="text-xs text-muted-foreground"> */}
-        {/*       {this.booking.job.owner.email} */}
-        {/*     </p> */}
-        {/*   </div> */}
-        {/* </div> */}
-        {/**/}
         <ul className="grid gap-2">
           {this.booking.job.models.map((model, index) => (
             <li
@@ -101,21 +102,21 @@ class BookingEvent implements Event {
   }
   renderPreview() {
     return (
-      <div className="flex items-center gap-2 ">
+      <div className="flex items-center gap-1">
         {this.booking.job.status === "pending" && (
           <UserAvatar
             rounded
-            width={15}
-            height={15}
+            width={10}
+            height={10}
             user={this.booking.job.owner}
           />
         )}
         {this.booking.job.status === "confirmed" && (
           <div>
-            <CircleCheck className="h-[15px] w-[15px] text-black" />
+            <CircleCheck className="h-[10px] w-[10px] text-black" />
           </div>
         )}
-        <p className="text-xs overflow-ellipsis text-nowrap">
+        <p className="text-[10px] overflow-ellipsis text-nowrap">
           {this.booking.job.models.map((model) => model.name).join(", ")}
         </p>
       </div>
