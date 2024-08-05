@@ -10,7 +10,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="sm:pl-14">
         <TopBar />
-        <main className="">{children}</main>
+        <main className="min-h-[calc(100vh-theme(spacing.14))]">
+          {children}
+        </main>
       </div>
     </div>
   );

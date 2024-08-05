@@ -2,22 +2,24 @@
 import { Button } from "@/components/ui/button";
 import RoleFilter from "./role-filter";
 import { PlusCircle } from "lucide-react";
-import { UserAction, useUserActions } from "./actions-context";
+import { useRouter } from "next/navigation";
+import useSession from "@/hooks/use-session";
+import { hasPermission } from "@/lib/utils/auth";
+import permissions from "@/config/permission";
 
 export default function SearchBar() {
-  const { invoke: startAction } = useUserActions();
+  const router = useRouter();
+  const { data, status } = useSession();
   return (
     <div className="flex items-center">
       <div className="ml-auto flex items-center gap-2">
         <RoleFilter />
         <Button
-          onClick={() =>
-            startAction({
-              title: "AddNew User",
-              action: UserAction.AddUser,
-              target: null,
-            })
+          disabled={
+            status === "loading" ||
+            !hasPermission(data.user.roles, permissions.users.createUser)
           }
+          onClick={() => router.push("/admin/users/create")}
           size="sm"
           className="h-7 gap-1"
         >

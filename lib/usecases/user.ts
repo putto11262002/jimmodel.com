@@ -87,7 +87,7 @@ export class UserUsecase implements IUserUsecase {
     return paginatedData;
   }
 
-  async addUser(input: UserCreateInput): Promise<void> {
+  async createUser(input: UserCreateInput): Promise<void> {
     const existingUser = await this.db.query.userTable.findFirst({
       where: or(
         eq(userTable.email, input.email),
@@ -107,7 +107,25 @@ export class UserUsecase implements IUserUsecase {
       email: input.email,
       name: input.name,
       password: hashedPassword,
+      roles: input.roles,
     });
+  }
+  async updateUserRole(userId: string, roles: UserRole[]) {
+    await db
+      .update(userTable)
+      .set({ roles: roles })
+      .where(eq(userTable.id, userId))
+      .returning({ updatedId: userTable.id });
+  }
+
+  async resetPassword(userId: string, newPassword: string): Promise<void> {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    await db
+      .update(userTable)
+      .set({ password: hashedPassword })
+      .where(eq(userTable.id, userId))
+      .returning({ updatedId: userTable.id });
   }
 }
 

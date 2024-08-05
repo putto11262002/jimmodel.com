@@ -2,16 +2,24 @@ import { UserRole, userRoles } from "@/db/schemas";
 
 export const UserActions = {
   updatePasswordById: "update-password-by-id",
+  updateSelfPassword: "update-self-password",
   updateRoleById: "update-role-by-id",
+  updateSelfRole: "update-self-role",
   addImageById: "add-image-by-id",
+  addSelfImage: "add-self-image",
   getUsers: "get-users",
+  createUser: "create-user",
 } as const;
 
 const userPermissions: { [key in keyof typeof UserActions]: UserRole[] } = {
   updatePasswordById: ["admin"],
+  updateSelfPassword: [],
   updateRoleById: ["admin"],
+  updateSelfRole: ["admin"],
   addImageById: ["admin"],
+  addSelfImage: [],
   getUsers: ["admin"],
+  createUser: ["admin"],
 } as const;
 
 export const JobActions = {

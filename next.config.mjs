@@ -10,6 +10,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/admin/users/:id/update",
+        destination: "/admin/users/:id/update/password",
+        permanent: false,
+      },
+    ];
+  },
   experimental: {
     instrumentationHook: true,
   },

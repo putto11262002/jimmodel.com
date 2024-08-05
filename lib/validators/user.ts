@@ -1,4 +1,5 @@
 import z from "zod";
+import { imageValidator } from "./file";
 const password = z.string().min(6, "password must be at least 6 characters");
 export const UserPassworSchema = z
   .object({
@@ -20,18 +21,9 @@ export const UserWithoutPasswordSchema = z.object({
 });
 
 export const NewUserImageSchema = z.object({
-  file: z
-    .any()
-    .refine((v) => v instanceof Blob, "Please select a file")
-    .transform((v) => v as File)
-    .refine((v) => v.size <= 5_000_000, "File exceeded size limit")
-    .refine(
-      (v) =>
-        ["image/jpg", "image/jpeg", "image/webp", "image/png"].includes(v.type),
-      "Invalid file type",
-    ),
+  file: imageValidator(),
 });
 
-export const NewUserSchema = UserWithoutPasswordSchema.and(
+export const NewUserSchema = UserWithoutPasswordSchema.merge(
   z.object({ password: password }),
 );

@@ -28,7 +28,7 @@ export class S3FileUseCase implements FileUseCase {
   constructor(
     client: Minio.Client,
     db: DB,
-    opts: { defaultBucketName: string }
+    opts: { defaultBucketName: string },
   ) {
     this.client = client;
     this.db = db;
@@ -42,7 +42,7 @@ export class S3FileUseCase implements FileUseCase {
       fileName,
       Buffer.from(await file.arrayBuffer()),
       undefined,
-      { "Content-Type": file.type }
+      { "Content-Type": file.type },
     );
     const fileInfo = await (tx ? tx : this.db)
       .insert(fileInfoTable)
@@ -69,7 +69,7 @@ export class S3FileUseCase implements FileUseCase {
 
     const stream = await this.client.getObject(
       this.opts.defaultBucketName,
-      fileInfo.path
+      fileInfo.path,
     );
 
     const tempBuf: any[] = [];
@@ -159,7 +159,7 @@ const minioClient = new Minio.Client({
   secretKey: process.env.S3_SECRET_KEY!,
   endPoint: process.env.S3_ENDPOINT!,
   useSSL: false,
-  ...(process.env.S3_PORT ? {port: parseInt(process.env.S3_PORT!) }: {})
+  ...(process.env.S3_PORT ? { port: parseInt(process.env.S3_PORT!) } : {}),
 });
 
 export const fileUseCase = new S3FileUseCase(minioClient, db, {
