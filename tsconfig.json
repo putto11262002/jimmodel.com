@@ -40,6 +40,10 @@
 	],
 	"ts-node": {
 		"esm": true,
-		"experimentalSpecifierResolution": "node"
+		"experimentalSpecifierResolution": "node",
+		"esModuleInterop": true,
+		"require": [
+			"tsconfig-paths/register"
+		]
 	}
 }

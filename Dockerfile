@@ -12,6 +12,7 @@ WORKDIR /app
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install sharp@0.32.6
 
 
 # 2. Rebuild the source code only when needed
@@ -23,6 +24,16 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # This will do the trick, use the corresponding env file for each environment.
 RUN pnpm build
+
+
+FROM base as initializer 
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+CMD pnpm db:migrate && pnpm db:seed
 
 # 3. Production image, copy all the files and run next
 FROM base AS runner
@@ -51,3 +62,5 @@ EXPOSE 3000
 ENV PORT 3000
 
 CMD node server.js
+
+
