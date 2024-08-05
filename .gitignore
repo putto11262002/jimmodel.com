@@ -35,7 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Uploadf folder for local dev
-/uploads
-
+temp
 .env
