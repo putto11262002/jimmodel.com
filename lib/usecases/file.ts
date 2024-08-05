@@ -8,6 +8,7 @@ import path from "path";
 import { FileInfo } from "../types/file";
 import { newFile } from "../utils/file";
 import * as Minio from "minio";
+import config from "@/config/global";
 /**
  *  FileUseCase assumes that all files supplied are of appropriate size, e.g. not too large to be handled by the server.
  */
@@ -155,13 +156,13 @@ export default class FSFileUseCase {
 }
 
 const minioClient = new Minio.Client({
-  accessKey: process.env.S3_ACCESS_KEY!,
-  secretKey: process.env.S3_SECRET_KEY!,
-  endPoint: process.env.S3_ENDPOINT!,
+  accessKey: config.s3.accessKey,
+  secretKey: config.s3.secretKey,
+  endPoint: config.s3.endpoint,
   useSSL: false,
-  ...(process.env.S3_PORT ? { port: parseInt(process.env.S3_PORT!) } : {}),
+  ...(process.env.S3_PORT ? { port: config.s3.port } : {}),
 });
 
 export const fileUseCase = new S3FileUseCase(minioClient, db, {
-  defaultBucketName: process.env.S3_BUCKET_NAME!,
+  defaultBucketName: config.s3.bucketName,
 });

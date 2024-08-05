@@ -20,7 +20,7 @@ services:
     container_name: jimmodel_postgres
     restart: always
     volumes:
-      - ${DB_DATA_PATH:-postgres_data}:/var/lib/postgresql/data
+      - ${DB_DATA:-postgres_data}:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}

@@ -1,13 +1,16 @@
+import { ConfigSchema } from "@/config/global";
 import ConstraintViolationError from "@/lib/errors/contrain-violation-error";
 import userUsecase from "@/lib/usecases/user";
+import { upperFirst } from "lodash";
 
 export default async function createRootUser() {
+  const root = ConfigSchema.shape.root.parse({});
   try {
     await userUsecase.createUser({
-      name: process.env.ROOT_NAME || "Root",
-      email: process.env.ROOT_EMAIL || "root@example/com",
-      username: process.env.ROOT_USERNAME || "root",
-      password: process.env.ROOT_PASSWORD || "password",
+      name: upperFirst(root.user),
+      email: root.email,
+      username: root.user,
+      password: root.password,
       roles: ["admin"],
     });
   } catch (e) {
