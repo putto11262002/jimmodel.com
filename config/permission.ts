@@ -48,6 +48,7 @@ const ApplicationActions = {
   approveApplication: "approve-application",
   rejectApplication: "reject-application",
   getApplicationImageById: "get-application-by-id",
+  addApplicationImageById: "add-application-image-by-id",
 };
 
 const applicationPermissions: {
@@ -58,6 +59,7 @@ const applicationPermissions: {
   approveApplication: ["admin", "staff"],
   rejectApplication: ["admin", "staff"],
   getApplicationImageById: ["admin", "staff"],
+  addApplicationImageById: [],
 };
 
 // Emptry array = only authentication is required

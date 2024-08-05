@@ -15,24 +15,30 @@ import { useGetApplications } from "@/hooks/queries/application";
 import Loader from "@/components/loader";
 import PaginationControl from "@/components/pagination-control";
 import { BreakcrumbSetter } from "@/components/breadcrumb";
+import Container from "@/components/container";
+import useSession from "@/hooks/use-session";
 
 export default function Page() {
+  const session = useSession();
+
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
   const page = pageParam ? parseInt(pageParam, 10) : 1;
-
   const statusParam = searchParams.get("status") as any;
-
   const status = statusParam
     ? applicationStatuses.includes(statusParam)
       ? statusParam
       : "pending"
     : "pending";
 
-  const { data, isLoading } = useGetApplications({ page, status });
+  const { data, isLoading } = useGetApplications({
+    page,
+    status,
+    enabled: session.status === "authenticated",
+  });
 
   return (
-    <>
+    <Container className="grid gap-4">
       <BreakcrumbSetter breadcrumbs={[{ label: "Applications" }]} />
       <Suspense>
         <ViewControl />
@@ -47,11 +53,13 @@ export default function Page() {
           <CardContent>
             <ApplicationTable applications={data.data} />
           </CardContent>
-          <CardFooter>
-            <PaginationControl page={page} totalPages={data.totalPages} />
-          </CardFooter>
+          {data.totalPages > 1 && (
+            <CardFooter>
+              <PaginationControl page={page} totalPages={data.totalPages} />
+            </CardFooter>
+          )}
         </Card>
       )}
-    </>
+    </Container>
   );
 }

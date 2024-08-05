@@ -66,13 +66,6 @@ const applicationRouter = new Hono()
       return c.json(application);
     },
   )
-  .post("/", zValidator("json", ApplicationCreateInputSchema), async (c) => {
-    const input = c.req.valid("json");
-    console.log(input);
-    const createdApplication =
-      await applicationUseCase.createApplication(input);
-    return c.json(createdApplication);
-  })
   .get(
     "/:id/images",
     authMiddleware(permissions.applications.getApplicationImageById),
@@ -82,6 +75,13 @@ const applicationRouter = new Hono()
       return c.json(images);
     },
   )
+  .post("/", zValidator("json", ApplicationCreateInputSchema), async (c) => {
+    const input = c.req.valid("json");
+    console.log(input);
+    const createdApplication =
+      await applicationUseCase.createApplication(input);
+    return c.json(createdApplication);
+  })
   .post(
     "/:id/images",
     zValidator("form", ApplicationImageCreateInputSchema),

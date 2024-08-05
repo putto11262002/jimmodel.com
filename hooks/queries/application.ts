@@ -1,6 +1,13 @@
 import useToast from "@/components/toast";
 import client from "@/lib/api/client";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Application, ApplicationImage } from "@/lib/types/application";
+import { PaginatedData } from "@/lib/types/paginated-data";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 export function useRejectApplication() {
   const queryClient = useQueryClient();
   const { ok } = useToast();
@@ -38,8 +45,15 @@ export function useApproveApplication() {
   });
 }
 
-export function useGetApplication({ id }: { id: string }) {
+export function useGetApplication({
+  id,
+  ...opts
+}: { id: string } & Omit<
+  UseQueryOptions<Application>,
+  "queryKey" | "queryFn"
+>) {
   return useQuery({
+    ...opts,
     queryKey: ["applications", id],
     queryFn: async () => {
       const res = await client.api.applications[":id"].$get({
@@ -52,8 +66,15 @@ export function useGetApplication({ id }: { id: string }) {
   });
 }
 
-export function useGetApplicationImages({ id }: { id: string }) {
+export function useGetApplicationImages({
+  id,
+  ...opts
+}: { id: string } & Omit<
+  UseQueryOptions<ApplicationImage[], Error, ApplicationImage[]>,
+  "queryFn" | "queryKey"
+>) {
   return useQuery({
+    ...opts,
     queryKey: ["applications", id, "images"],
     queryFn: async () => {
       const res = await client.api.applications[":id"].images.$get({
@@ -67,11 +88,20 @@ export function useGetApplicationImages({ id }: { id: string }) {
 export function useGetApplications({
   page,
   status,
+  ...opts
 }: {
   page: number;
   status: string;
-}) {
+} & Omit<
+  UseQueryOptions<
+    PaginatedData<Application>,
+    Error,
+    PaginatedData<Application>
+  >,
+  "queryKey" | "queryFn"
+>) {
   return useQuery({
+    ...opts,
     queryKey: ["applications", { page, status }],
     queryFn: async () => {
       const res = await client.api.applications.$get({

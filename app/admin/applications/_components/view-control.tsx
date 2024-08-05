@@ -9,7 +9,7 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { applicationStatuses } from "@/db/schemas";
-import { removeParam, setParam } from "@/lib/utils/search-param";
+import { setParam } from "@/lib/utils/search-param";
 import { upperFirst } from "lodash";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -33,7 +33,7 @@ export default function ViewControl() {
           router.push(`/admin/applications/?${params.toString()}`);
         }}
       >
-        <SelectTrigger className="w-[120px]">
+        <SelectTrigger className="w-[120px] h-7">
           <SelectValue className="" />
         </SelectTrigger>
         <SelectContent>
