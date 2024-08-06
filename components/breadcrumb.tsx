@@ -38,6 +38,17 @@ export function BreakcrumbSetter({
   return null;
 }
 
+export function useBreadcrumbSetter(
+  breadcrumbs: { label: string; href?: string }[],
+) {
+  const { clearBreadcrumbs, setBreadcrumbs } = useBreadcrumb();
+  useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+    return () => clearBreadcrumbs();
+  }, []);
+  return null;
+}
+
 export function BreadcrumbProvider({
   children,
 }: {
@@ -75,7 +86,7 @@ export function BreadcrumbDisplay() {
                     <BreadcrumbItem>
                       <BreadcrumbLink asChild>
                         <Link href={breadcrumb.href ? breadcrumb.href : "#"}>
-                          {breadcrumb.label}
+                          {truncate(breadcrumb.label, { length: 20 })}
                         </Link>
                       </BreadcrumbLink>
                     </BreadcrumbItem>

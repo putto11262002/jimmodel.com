@@ -62,12 +62,53 @@ const applicationPermissions: {
   addApplicationImageById: [],
 };
 
+const ModelActions = {
+  createModel: "create-model",
+  getModels: "get-models",
+  updateModelById: "update-model-by-id",
+  getModelById: "get-model-by-id",
+  getModelExperiencesById: "get-model-experiences-by-id",
+  getModelImagesById: "get-model-images-by-id",
+  removeModelImageById: "remove-model-image-by-id",
+  setProfileImageById: "set-profile-image-by-id",
+  addModelImage: "add-model-image-by-id",
+  getModelBlocks: "get-model-blocks",
+  getBlocks: "get-blocks",
+  removeModelBlockById: "remove-model-block-by-id",
+  addModelBlock: "add-model-block",
+  getModelExperiences: "get-model-experiences",
+  addModelExperience: "add-model-experience",
+  removeModelExperience: "remove-model-experience",
+};
+
+const modelPermissions: {
+  [key in keyof typeof ModelActions]: UserRole[];
+} = {
+  createModel: ["admin", "staff"],
+  getModels: ["admin", "staff"],
+  updateModelById: ["admin", "staff"],
+  getModelById: ["admin", "staff"],
+  getModelExperiencesById: ["admin", "staff"],
+  getModelImagesById: ["admin", "staff"],
+  removeModelImageById: ["admin", "staff"],
+  addModelImage: ["admin", "staff"],
+  setProfileImageById: ["admin", "staff"],
+  getModelBlocks: ["admin", "staff"],
+  addModelBlock: ["admin", "staff"],
+  removeModelBlockById: ["admin", "staff"],
+  getBlocks: ["admin", "staff"],
+  getModelExperiences: ["admin", "staff"],
+  addModelExperience: ["admin", "staff"],
+  removeModelExperience: ["admin", "staff"],
+};
+
 // Emptry array = only authentication is required
 // Null = no authentication required
 const permissions = {
   users: userPermissions,
   jobs: jobPermissions,
   applications: applicationPermissions,
+  models: modelPermissions,
 } as const;
 
 export default permissions;

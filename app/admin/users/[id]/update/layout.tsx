@@ -48,14 +48,14 @@ export default function Layout({
   return (
     <Container className="grid gap-6">
       <div className="flex items-center gap-4">
-        <Button
-          onClick={() => router.back()}
-          className=""
-          variant={"outline"}
-          size={"icon"}
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
+        {/* <Button */}
+        {/*   onClick={() => router.back()} */}
+        {/*   className="" */}
+        {/*   variant={"outline"} */}
+        {/*   size={"icon"} */}
+        {/* > */}
+        {/*   <ChevronLeft className="w-4 h-4" /> */}
+        {/* </Button> */}
         <h2 className="text-2xl font-semibold">
           {upperFirst(data.name)}&apos;s Profile
         </h2>

@@ -76,8 +76,8 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
                             size={"small"}
                             user={{
                               name: model.name,
-                              image: model.profileImage
-                                ? { id: model.profileImage.fileId }
+                              image: model.image
+                                ? { id: model.image.fileId }
                                 : null,
                             }}
                           />
@@ -93,8 +93,8 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
                             size={"small"}
                             user={{
                               name: model.name,
-                              image: model.profileImage
-                                ? { id: model.profileImage.fileId }
+                              image: model.image
+                                ? { id: model.image.fileId }
                                 : null,
                             }}
                           />

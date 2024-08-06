@@ -2,11 +2,16 @@ import useToast from "@/components/toast";
 import { ModelCreateInput, ModelUpdateInput } from "@/db/schemas/models";
 import client from "@/lib/api/client";
 import {
+  Model,
   ModelBlock,
   ModelBlockCreateInput,
   ModelBlockWithPartialModel,
+  ModelExperience,
   ModelExperienceCreateInput,
+  ModelImage,
+  ModelProfile,
 } from "@/lib/types/model";
+import { PaginatedData } from "@/lib/types/paginated-data";
 import {
   QueryClient,
   useMutation,
@@ -30,8 +35,15 @@ export function useSuspenseGetModel({ modelId }: { modelId: string }) {
   });
 }
 
-export function useGetModel({ modelId }: { modelId: string }) {
+export function useGetModel({
+  modelId,
+  ...opts
+}: { modelId: string } & Omit<
+  UseQueryOptions<Model, Error, Model>,
+  "queryFn" | "queryKey"
+>) {
   return useQuery({
+    ...opts,
     queryKey: ["models", modelId],
     queryFn: async () => {
       const res = await client.api.models[":modelId"].$get({
@@ -131,12 +143,22 @@ export function useCreateModelBlock({
   });
 }
 
-export function useGetModelBlocks({ modelId }: { modelId: string }) {
+export function useGetModelBlocks({
+  modelId,
+  page,
+  pageSize,
+  ...opts
+}: { modelId: string; page?: number; pageSize?: number } & Omit<
+  UseQueryOptions<PaginatedData<ModelBlock>, Error, PaginatedData<ModelBlock>>,
+  "queryFn" | "queryKey"
+>) {
   return useQuery({
+    ...opts,
     queryKey: ["models", modelId, "blocks"],
     queryFn: async () => {
       const res = await client.api.models[":id"].blocks.$get({
         param: { id: modelId },
+        query: { page: page?.toString(), pageSize: pageSize?.toString() },
       });
       const data = await res.json();
       return data;
@@ -175,8 +197,15 @@ export function useDeleteBlock({
   });
 }
 
-export function useGetModelExperiences({ modelId }: { modelId: string }) {
+export function useGetModelExperiences({
+  modelId,
+  ...opts
+}: { modelId: string } & Omit<
+  UseQueryOptions<ModelExperience[], Error, ModelExperience[]>,
+  "queryFn" | "queryKey"
+>) {
   return useQuery({
+    ...opts,
     queryKey: ["models", modelId, "experiences"],
     queryFn: async () => {
       const res = await client.api.models[":id"].experiences.$get({
@@ -278,11 +307,20 @@ export function useCreateModel() {
 export function useGetModels({
   page,
   q,
+  ...opts
 }: {
   page?: number;
   q?: string | undefined;
-}) {
+} & Omit<
+  UseQueryOptions<
+    PaginatedData<ModelProfile>,
+    Error,
+    PaginatedData<ModelProfile>
+  >,
+  "queryKey" | "queryFn"
+>) {
   return useQuery({
+    ...opts,
     queryKey: ["models", { page, q }],
     queryFn: async () => {
       const res = await client.api.models.$get({
@@ -332,6 +370,26 @@ export function useGetBlock({
       });
       const data = (await res.json()) as ModelBlockWithPartialModel[];
       return data;
+    },
+  });
+}
+
+export function useGetModelImages({
+  modelId,
+  ...opts
+}: { modelId: string } & Omit<
+  UseQueryOptions<ModelImage[], Error, ModelImage[]>,
+  "queryFn" | "queryKey"
+>) {
+  return useQuery({
+    ...opts,
+    queryKey: ["models", modelId, "images"],
+    queryFn: async () => {
+      const res = await client.api.models[":modelId"].images.$get({
+        param: { modelId },
+      });
+      const images = await res.json();
+      return images;
     },
   });
 }

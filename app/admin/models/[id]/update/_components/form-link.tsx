@@ -15,7 +15,7 @@ export default function FormLink({
   const path = usePathname();
   return (
     <Link
-      href={`/admin/models/update/${modelId}/${formId}`}
+      href={`/admin/models/${modelId}/update/${formId}`}
       className={cn(
         path.split("/").pop() === formId && "font-semibold text-primary",
       )}

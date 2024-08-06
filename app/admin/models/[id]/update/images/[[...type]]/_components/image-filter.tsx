@@ -7,34 +7,42 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { modelImageTypes } from "@/db/schemas/model-images";
+import { setParam } from "@/lib/utils/search-param";
 import { upperFirst } from "lodash";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const modelImageMenuItems = [
-  { label: "All", href: (id: string) => `/admin/models/update/${id}/images` },
+  { label: "All", href: "all" },
   {
     label: "Profile",
-    href: (id: string) => `/admin/models/update/${id}/images/profile`,
+    href: "profile",
   },
   ...modelImageTypes.map((type) => ({
     label: upperFirst(type),
-    href: (id: string) => `/admin/models/update/${id}/images/${type}`,
+    href: `${type}`,
   })),
 ];
 
 export default function ImageFilter() {
-  const path = usePathname();
+  const searchParam = useSearchParams();
   const router = useRouter();
-  const { id } = useParams<{ id: string }>();
 
   return (
-    <Select onValueChange={(value) => router.push(value)} defaultValue={path}>
-      <SelectTrigger className="min-w-[110px] h-7">
+    <Select
+      onValueChange={(value) => {
+        const params = new URLSearchParams(searchParam.toString());
+        setParam("type", [value], params);
+        const href = `?${params.toString()}`;
+        router.replace(href);
+      }}
+      defaultValue={searchParam.get("type") || "all"}
+    >
+      <SelectTrigger className="min-w-32 h-7">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {modelImageMenuItems.map(({ label, href }, index) => (
-          <SelectItem key={index} value={href(id)}>
+          <SelectItem key={index} value={href}>
             {label}
           </SelectItem>
         ))}

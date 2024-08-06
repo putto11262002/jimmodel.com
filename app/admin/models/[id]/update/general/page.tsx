@@ -40,16 +40,20 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import FormSkeleton from "../form-skeleton";
-import { useParams } from "next/navigation";
 import { Model } from "@/db/schemas";
+import useSession from "@/hooks/use-session";
+import permissions from "@/config/permission";
 
 const FormDataSchema = UpdateModelSchema.omit({
   dateOfBirth: true,
 }).and(z.object({ dateOfBirth: z.date() }));
 
-export default function Page() {
-  const { id } = useParams<{ id: string }>();
-  const { data, isSuccess } = useGetModel({ modelId: id });
+export default function Page({ params: { id } }: { params: { id: string } }) {
+  const session = useSession(permissions.models.getModelById);
+  const { data, isSuccess } = useGetModel({
+    modelId: id,
+    enabled: session.status === "authenticated",
+  });
 
   if (!isSuccess) {
     return <FormSkeleton />;

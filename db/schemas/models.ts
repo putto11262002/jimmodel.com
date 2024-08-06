@@ -136,20 +136,20 @@ export const modelTable = pgTable(
 
     tags: varchar("tags").array(),
 
-    profileFileId: uuid("profile_file_id"),
+    imageId: uuid("image_id"),
   },
   (table) => ({
-    profileImageFk: foreignKey({
+    imageFK: foreignKey({
       foreignColumns: [modelImageTable.modelId, modelImageTable.fileId],
-      columns: [table.id, table.profileFileId],
-      name: "profile_image_fk",
+      columns: [table.id, table.imageId],
+      name: "image_fk",
     }),
   }),
 );
 
 export const modelRelations = relations(modelTable, ({ many, one }) => ({
   images: many(modelImageTable),
-  profileImage: one(modelImageTable),
+  image: one(modelImageTable),
   expereinces: many(modelExperienceTable),
 }));
 

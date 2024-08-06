@@ -18,7 +18,7 @@ const searchForm = z.object({
   q: z.string().optional(),
 });
 
-export default function SearchBar() {
+export default function ViewControl() {
   const form = useForm({ resolver: zodResolver(searchForm) });
   const searchParam = useSearchParams();
   const router = useRouter();

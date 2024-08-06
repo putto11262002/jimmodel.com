@@ -20,7 +20,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import UserAvatar from "@/components/user/user-avatar";
-import { ModelProfile } from "@/db/schemas/models";
+import { ModelProfile } from "@/lib/types/model";
 import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
@@ -47,9 +47,7 @@ export default function UserTable({ models }: { models: ModelProfile[] }) {
                 <UserAvatar
                   user={{
                     name: model.name,
-                    image: model.profileImage
-                      ? { id: model.profileImage.fileId }
-                      : null,
+                    image: model.image ? { id: model.image.fileId } : null,
                   }}
                 />
               </TableCell>
@@ -67,28 +65,27 @@ export default function UserTable({ models }: { models: ModelProfile[] }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem>View Profile</DropdownMenuItem>
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>Edit</DropdownMenuSubTrigger>
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
                           <Link
-                            href={`/admin/models/update/${model.id}/general`}
+                            href={`/admin/models/${model.id}/update/general`}
                           >
                             <DropdownMenuItem>Profile</DropdownMenuItem>
                           </Link>
                           <Link
-                            href={`/admin/models/update/${model.id}/images`}
+                            href={`/admin/models/${model.id}/update/images`}
                           >
                             <DropdownMenuItem>Images</DropdownMenuItem>
                           </Link>
                           <Link
-                            href={`/admin/models/update/${model.id}/experiences`}
+                            href={`/admin/models/${model.id}/update/experiences`}
                           >
                             <DropdownMenuItem>Experiences</DropdownMenuItem>
                           </Link>
                           <Link
-                            href={`/admin/models/update/${model.id}/settings`}
+                            href={`/admin/models/${model.id}/update/settings`}
                           >
                             <DropdownMenuItem>Settings</DropdownMenuItem>
                           </Link>
@@ -100,10 +97,10 @@ export default function UserTable({ models }: { models: ModelProfile[] }) {
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
                           <Link href={`/admin/models/${model.id}/blocks/add`}>
-                            <DropdownMenuItem>Add Block</DropdownMenuItem>
+                            <DropdownMenuItem>Add</DropdownMenuItem>
                           </Link>
                           <Link href={`/admin/models/${model.id}/blocks`}>
-                            <DropdownMenuItem>View Blocks</DropdownMenuItem>
+                            <DropdownMenuItem>View</DropdownMenuItem>
                           </Link>
                         </DropdownMenuSubContent>
                       </DropdownMenuPortal>

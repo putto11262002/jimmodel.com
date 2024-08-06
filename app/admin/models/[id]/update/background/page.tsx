@@ -33,10 +33,16 @@ import { Model } from "@/db/schemas";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import { countryNames } from "@/db/data/countries";
 import { ethnicities } from "@/db/data/ethnicities";
+import useSession from "@/hooks/use-session";
+import permissions from "@/config/permission";
 
 const FormDataSchema = UpdateModelSchema;
 export default function Page({ params: { id } }: { params: { id: string } }) {
-  const { data, isSuccess } = useGetModel({ modelId: id });
+  const session = useSession(permissions.models.getModelById);
+  const { data, isSuccess } = useGetModel({
+    modelId: id,
+    enabled: session.status === "authenticated",
+  });
   if (!isSuccess) {
     return <FormSkeleton />;
   }

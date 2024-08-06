@@ -1,22 +1,12 @@
-import { CircleCheck, Clock, ExternalLink, User } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import UserAvatar from "@/components/user/user-avatar";
 import { Event, EventResolver } from "../calendar";
 import { BookingWithJob } from "@/lib/types/job";
-import jobUsecase from "@/lib/usecases/job";
 import client from "../../../../lib/api/client";
 import dayjs from "dayjs";
 import JobStatusBadge from "../../../../components/job/job-status-badge";
 import { Badge } from "../../../../components/ui/badge";
 import { upperFirst } from "lodash";
-import { Link as LinkIcon } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import Link from "next/link";
 
 class BookingEvent implements Event {
@@ -83,9 +73,7 @@ class BookingEvent implements Event {
                 size={"small"}
                 user={{
                   name: model.name,
-                  image: model.profileImage
-                    ? { id: model.profileImage.fileId }
-                    : null,
+                  image: model.image ? { id: model.image.fileId } : null,
                 }}
               />
               <Link

@@ -19,9 +19,7 @@ import {
 import { getModelProfiles } from "./model";
 import { PaginatedData } from "../types/paginated-data";
 import { BookingWithJob, Job, JobUpdateInput } from "../types/job";
-import { alias } from "drizzle-orm/pg-core";
 import { NotFoundError } from "../errors/not-found-error";
-import ConstraintViolationError from "../errors/contrain-violation-error";
 
 export class JobUsecase {
   private readonly db: DB;
@@ -69,9 +67,11 @@ export class JobUsecase {
                     name: true,
                     id: true,
                     email: true,
+                    gender: true,
+                    dateOfBirth: true,
                   },
                   with: {
-                    profileImage: true,
+                    image: true,
                   },
                 },
               },
@@ -129,9 +129,12 @@ export class JobUsecase {
                 columns: {
                   id: true,
                   name: true,
+                  email: true,
+                  gender: true,
+                  dateOfBirth: true,
                 },
                 with: {
-                  profileImage: true,
+                  image: true,
                 },
               },
             },
@@ -213,9 +216,11 @@ export class JobUsecase {
                 id: true,
                 name: true,
                 email: true,
+                gender: true,
+                dateOfBirth: true,
               },
               with: {
-                profileImage: true,
+                image: true,
               },
             },
           },
@@ -353,7 +358,9 @@ export class JobUsecase {
         jobs.get(row.jobs.id)?.models?.push({
           id: row.models.id,
           name: row.models.name,
-          profileImage: row.model_images,
+          image: row.model_images,
+          gender: row.models.gender,
+          dateOfBirth: row.models.dateOfBirth,
         });
       }
       bookings.push({

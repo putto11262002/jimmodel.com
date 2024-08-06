@@ -3,15 +3,14 @@ import {
   modelBlockTable,
   ModelCreateInput,
   modelExperienceTable,
-  ModelProfile,
   modelTable,
   ModelUpdateInput,
 } from "@/db/schemas/models";
+import { ModelImage, ModelProfile } from "../types/model";
 import {
   and,
   count,
   eq,
-  gt,
   gte,
   ilike,
   inArray,
@@ -36,7 +35,6 @@ import { NotFoundError } from "../errors/not-found-error";
 import { PostgresError } from "postgres";
 import { FileUseCase, fileUseCase } from "./file";
 
-
 /**
  * Add new model record. If the operation is successful a model id is returned. Otherwise, return null.
  **/
@@ -47,10 +45,6 @@ export const addModel = async (
     .insert(modelTable)
     .values(input)
     .returning({ id: modelTable.id });
-
-  if (createdModel.length < 1) {
-    return null;
-  }
 
   return createdModel[0].id;
 };
@@ -69,46 +63,6 @@ export const findModelById = async (modelId: string) => {
   return model[0];
 };
 
-/**
- * Update a model by id. If the operation is successful a model id is returned. Otherwise, return null.
- * */
-export const updateModel = async (modelId: string, input: ModelUpdateInput) => {
-  const updatedModel = await db
-    .update(modelTable)
-    .set(input)
-    .where(eq(modelTable.id, modelId))
-    .returning({ id: modelTable.id });
-  if (updatedModel.length < 1) {
-    return null;
-  }
-  return updatedModel[0].id;
-};
-
-export const addModelImage = async (
-  modelId: string,
-  file: Blob,
-  type: ModelImageType,
-) => {
-  const model = await findModelById(modelId);
-  if (!model) {
-    throw new Error("Model not found");
-  }
-  const fileMetadata = await fileUseCase.writeFile(file);
-  await db.insert(modelImageTable).values({
-    fileId: fileMetadata.id,
-    modelId,
-    type,
-  });
-};
-
-export const getModelImages = async (modelId: string) => {
-  const images = await db
-    .select()
-    .from(modelImageTable)
-    .where(eq(modelImageTable.modelId, modelId));
-  return images;
-};
-
 export const deleteModelImage = async (modelId: string, fileId: string) => {
   await db
     .delete(modelImageTable)
@@ -120,33 +74,6 @@ export const deleteModelImage = async (modelId: string, fileId: string) => {
     );
 
   await fileUseCase.deleteFile(fileId);
-};
-
-export const setProfileImage = async (modelId: string, fileId: string) => {
-  await db
-    .update(modelImageTable)
-    .set({ isProfile: true })
-    .where(
-      and(
-        eq(modelImageTable.modelId, modelId),
-        eq(modelImageTable.fileId, fileId),
-      ),
-    );
-
-  await db
-    .update(modelTable)
-    .set({ profileFileId: fileId })
-    .where(eq(modelTable.id, modelId));
-
-  await db
-    .update(modelImageTable)
-    .set({ isProfile: false })
-    .where(
-      and(
-        eq(modelImageTable.modelId, modelId),
-        not(eq(modelImageTable.fileId, fileId)),
-      ),
-    );
 };
 
 export const findModelProfileById = async (
@@ -172,7 +99,7 @@ export const findModelProfileById = async (
     name: modelProfile.name,
     dateOfBirth: modelProfile?.dateOfBirth,
     gender: modelProfile.gender,
-    profileImage: modelProfile?.images?.[0] || null,
+    image: modelProfile?.images?.[0] || null,
   };
 };
 
@@ -196,7 +123,7 @@ export const getModels = async ({
     db.query.modelTable.findMany({
       where: whereClause,
       with: {
-        profileImage: true,
+        image: true,
       },
       orderBy: (model, { asc }) => [asc(model.name)],
       limit: pageSize,
@@ -261,7 +188,7 @@ export const getModelProfiles = async ({
       name: modelProfile.name,
       gender: modelProfile.gender,
       dateOfBirth: modelProfile.dateOfBirth,
-      profileImage: modelProfile.images?.[0] || null,
+      image: modelProfile.images?.[0] || null,
     })),
     page,
     pageSize,
@@ -273,10 +200,25 @@ export const getModelProfiles = async ({
 
 export class ModelUseCase {
   private db: DB;
-  private fileUseCase : FileUseCase
+  private fileUseCase: FileUseCase;
   constructor(db: DB, fileUseCase: FileUseCase) {
     this.db = db;
-    this.fileUseCase = fileUseCase
+    this.fileUseCase = fileUseCase;
+  }
+
+  /**
+   * Retreive a model by id. A model is returned if exist. Otherwise, return null. */
+  async getById(modelId: string) {
+    const model = await this.db.query.modelTable.findFirst({
+      where: eq(modelTable.id, modelId),
+      with: {
+        image: true,
+      },
+    });
+    if (!model) {
+      return null;
+    }
+    return model;
   }
 
   /**
@@ -292,6 +234,21 @@ export class ModelUseCase {
       .returning({ id: modelTable.id });
 
     return createdModel?.[0];
+  }
+
+  /**
+   * Update a model by id. If the operation is successful a model id is returned. Otherwise, return null.
+   * */
+  async updateModel(modelId: string, input: ModelUpdateInput) {
+    const updatedRows = await this.db
+      .update(modelTable)
+      .set(input)
+      .where(eq(modelTable.id, modelId))
+      .returning({ id: modelTable.id });
+    if (updatedRows.length < 1) {
+      return null;
+    }
+    return updatedRows[0].id;
   }
 
   async getModels({
@@ -315,7 +272,7 @@ export class ModelUseCase {
       this.db.query.modelTable.findMany({
         where: whereClause,
         with: {
-          profileImage: true,
+          image: true,
         },
         orderBy: (model, { asc }) => [asc(model.name)],
         limit: pageSize,
@@ -404,68 +361,65 @@ export class ModelUseCase {
     return block;
   }
 
-  async getBlocks({
-    modelIds,
-    start,
-    end,
-  }: {
-    modelIds?: string[];
-    start?: Date;
-    end?: Date;
-    include?: { model?: boolean | undefined } | undefined;
-  }): Promise<ModelBlock[] | ModelBlockWithPartialModel[]>;
-
-  async getBlocks({
-    modelIds,
-    start,
-    end,
-    include,
-  }: {
-    modelIds?: string[];
-    start?: Date;
-    end?: Date;
-    include?: { model?: boolean };
-  }): Promise<ModelBlockWithPartialModel[] | ModelBlock[]> {
-    const blocks = await this.db.query.modelBlockTable.findMany({
-      where: and(
-        start && !end
-          ? gte(modelBlockTable.start, start.toISOString())
-          : undefined,
-        end && !start ? lte(modelBlockTable.end, end.toISOString()) : undefined,
-        start && end
-          ? or(
-              and(
-                lt(modelBlockTable.start, start.toISOString()),
-                gte(modelBlockTable.end, start.toISOString()),
-              ),
-              and(
-                gte(modelBlockTable.start, start.toISOString()),
-                lte(modelBlockTable.start, end.toISOString()),
-              ),
-            )
-          : undefined,
-        modelIds && modelIds.length > 0
-          ? inArray(modelBlockTable.modelId, modelIds)
-          : undefined,
-      ),
-      with: {
-        ...(include && include.model
+  async getBlocks(
+    {
+      modelIds,
+      start,
+      end,
+      page = 1,
+      pageSize = 10,
+      pagination = true,
+    }: {
+      modelIds?: string[];
+      start?: Date;
+      end?: Date;
+      page?: number;
+      pageSize?: number;
+      pagination?: boolean;
+    } = { page: 1, pageSize: 10, pagination: true },
+  ): Promise<PaginatedData<ModelBlock>> {
+    const where = and(
+      start && !end
+        ? gte(modelBlockTable.start, start.toISOString())
+        : undefined,
+      end && !start ? lte(modelBlockTable.end, end.toISOString()) : undefined,
+      start && end
+        ? or(
+            and(
+              lt(modelBlockTable.start, start.toISOString()),
+              gte(modelBlockTable.end, start.toISOString()),
+            ),
+            and(
+              gte(modelBlockTable.start, start.toISOString()),
+              lte(modelBlockTable.start, end.toISOString()),
+            ),
+          )
+        : undefined,
+      modelIds && modelIds.length > 0
+        ? inArray(modelBlockTable.modelId, modelIds)
+        : undefined,
+    );
+    const [blocks, blockCount] = await Promise.all([
+      this.db.query.modelBlockTable.findMany({
+        where,
+        ...(pagination
           ? {
-              model: {
-                columns: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
-                with: {
-                  profileImage: true,
-                },
-              },
+              limit: pageSize,
+              offset: getOffset(page, pageSize),
             }
           : {}),
-      },
-    });
-    return blocks;
+      }),
+
+      this.db.select({ count: count() }).from(modelBlockTable),
+    ]);
+
+    const paginatedData = getPagination(
+      blocks,
+      page,
+      pageSize,
+      blockCount?.[0].count,
+    );
+    return paginatedData;
   }
 
   async removeBlock(blockId: string) {
@@ -587,6 +541,41 @@ export class ModelUseCase {
       }
       throw err;
     }
+  }
+
+  async setProfileImage(modelId: string, fileId: string) {
+    await this.db
+      .update(modelImageTable)
+      .set({ isProfile: true })
+      .where(
+        and(
+          eq(modelImageTable.modelId, modelId),
+          eq(modelImageTable.fileId, fileId),
+        ),
+      );
+
+    await db
+      .update(modelTable)
+      .set({ imageId: fileId })
+      .where(eq(modelTable.id, modelId));
+
+    await db
+      .update(modelImageTable)
+      .set({ isProfile: false })
+      .where(
+        and(
+          eq(modelImageTable.modelId, modelId),
+          not(eq(modelImageTable.fileId, fileId)),
+        ),
+      );
+  }
+
+  async getModelImages(modelId: string): Promise<ModelImage[]> {
+    const images = await this.db
+      .select()
+      .from(modelImageTable)
+      .where(eq(modelImageTable.modelId, modelId));
+    return images;
   }
 }
 

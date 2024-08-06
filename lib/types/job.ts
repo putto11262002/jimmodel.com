@@ -1,10 +1,10 @@
 import { bookingTable, jobStatuses, jobTable } from "@/db/schemas";
 import { UserWithoutSecrets } from "./user";
-import { Model } from "./model";
+import { Model, ModelProfile } from "./model";
 
 export type Job = typeof jobTable.$inferSelect & {
   owner: Pick<UserWithoutSecrets, "id" | "email" | "name" | "image">;
-  models: Pick<Model, "id" | "name" | "profileImage">[];
+  models: ModelProfile[];
 };
 
 export type JobStatus = (typeof jobStatuses)[number];

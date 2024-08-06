@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import { z } from "zod";
 import userUsecase from "../usecases/user";
 import { authMiddleware } from "./middlewares/auth";
-import { File } from "buffer";
 import { fileValidator } from "./validators/file";
 import { validationMiddleware } from "./middlewares/validator";
 import { NewUserSchema } from "../validators/user";

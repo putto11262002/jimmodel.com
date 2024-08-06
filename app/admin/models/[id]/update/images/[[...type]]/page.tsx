@@ -1,51 +1,46 @@
 "use client";
 import { ModelImage, modelImageTypes } from "@/db/schemas/model-images";
-import Image from "next/image";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
-import { Loader, Trash, UserCircle } from "lucide-react";
+import { Trash, UserCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import client from "@/lib/api/client";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import useToast from "@/components/toast";
 import ImageSkeleton from "./_components/image-skeleton";
-import { useRemoveModelImage } from "@/hooks/queries/model";
+import { useGetModelImages, useRemoveModelImage } from "@/hooks/queries/model";
 import ImageGrid from "@/components/model/image-grid";
+import useSession from "@/hooks/use-session";
+import permissions from "@/config/permission";
+import { ModelImageType } from "@/lib/types/model";
 
-export default function Page() {
-  const params = useParams<{ id: string; type?: string[] }>();
+export default function Page({ params }: { params: { id: string } }) {
+  const searchParams = useSearchParams();
+  const type = searchParams.get("type") || "all";
+  const session = useSession(permissions.models.getModelImagesById);
 
-  const type = params?.type ? params.type[0] : undefined;
-
-  const id = params.id;
-
-  const { data: images, isSuccess } = useQuery({
-    queryKey: ["models", id, "images"],
-    queryFn: async () => {
-      const res = await client.api.models[":modelId"].images.$get({
-        param: { modelId: id },
-      });
-      const images = await res.json();
-      return images;
-    },
+  const { data: images, isSuccess } = useGetModelImages({
+    modelId: params.id,
+    enabled: session.status === "authenticated",
   });
 
   const displayImages = useMemo(
     () =>
       images
-        ? images.filter((image) =>
-            type
-              ? type === "profile"
-                ? image.isProfile
-                : image.type === type
-              : true,
-          )
+        ? images.filter((image) => {
+            if (type === "profile") {
+              return image.isProfile;
+            } else if (modelImageTypes.includes(type as ModelImageType)) {
+              return image.type === type;
+            } else {
+              return true;
+            }
+          })
         : [],
     [images, type],
   );

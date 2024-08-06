@@ -33,9 +33,7 @@ export default function ModelTable({ job }: { job: Job }) {
                     size={"small"}
                     user={{
                       name: model.name,
-                      image: model.profileImage
-                        ? { id: model.profileImage.fileId }
-                        : null,
+                      image: model.image ? { id: model.image.fileId } : null,
                     }}
                   />
                 </div>

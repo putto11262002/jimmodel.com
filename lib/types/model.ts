@@ -7,7 +7,7 @@ import {
 } from "@/db/schemas";
 
 export type Model = typeof modelTable.$inferSelect & {
-  profileImage: ModelImage | null;
+  image: ModelImage | null;
 };
 
 export type ModelImage = typeof modelImageTable.$inferSelect;
@@ -37,7 +37,7 @@ export type ModelBlockWithPartialModel = ModelBlock & {
 export type ModelBlockCreateInput = typeof modelBlockTable.$inferInsert;
 
 export type ModelBlockWithModel = ModelBlock & {
-  model: Pick<Model, "name" | "id" | "email" | "profileImage">;
+  model: Pick<Model, "name" | "id" | "email" | "image">;
 };
 
 export type ModelExperience = typeof modelExperienceTable.$inferSelect;
@@ -48,7 +48,7 @@ export type ModelExperienceCreateInput =
 export type ModelImageType = (typeof modelImageTypes)[number];
 
 export type ModelImageCreateInput =
-  | { file: File; type: ModelImageType }
+  | { file: Blob; type: ModelImageType }
   | { fileId: string; type: ModelImageType };
 
 export const isExistingFile = (
@@ -61,7 +61,7 @@ export type ModelProfile = Pick<
   Model,
   "id" | "name" | "gender" | "dateOfBirth"
 > & {
-  profileImage: {
+  image: {
     fileId: string;
   } | null;
 };

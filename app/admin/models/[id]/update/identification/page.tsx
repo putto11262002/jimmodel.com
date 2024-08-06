@@ -24,11 +24,18 @@ import { Model } from "@/db/schemas/models";
 import { z } from "zod";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import FormSkeleton from "../form-skeleton";
+import useSession from "@/hooks/use-session";
+import permissions from "@/config/permission";
 
 const FormDataSchema = UpdateModelSchema;
 
 export default function Page({ params: { id } }: { params: { id: string } }) {
-  const { data, isSuccess } = useGetModel({ modelId: id });
+  const session = useSession(permissions.models.getModelById);
+  const { data, isSuccess } = useGetModel({
+    modelId: id,
+    enabled: session.status === "authenticated",
+  });
+
   if (!isSuccess) {
     return <FormSkeleton />;
   }

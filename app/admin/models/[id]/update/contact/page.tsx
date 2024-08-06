@@ -17,46 +17,59 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Model } from "@/db/schemas";
+import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import { UpdateModelSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import useGetModel from "../_hooks/use-get-model";
-import useUpdateModel from "../_hooks/use-update-model";
+import FormSkeleton from "../form-skeleton";
+import useSession from "@/hooks/use-session";
+import permissions from "@/config/permission";
 
 const FormDataSchema = UpdateModelSchema;
 
 export default function Page({ params: { id } }: { params: { id: string } }) {
-  const { data } = useGetModel({ modelId: id });
-  const { mutate } = useUpdateModel();
+  const session = useSession(permissions.models.getModelById);
+  const { data, isSuccess } = useGetModel({
+    modelId: id,
+    enabled: session.status === "authenticated",
+  });
 
+  if (!isSuccess) {
+    return <FormSkeleton />;
+  }
+  return <PageContent model={data} />;
+}
+function PageContent({ model }: { model: Model }) {
   const form = useForm<z.infer<typeof FormDataSchema>>({
     resolver: zodResolver(UpdateModelSchema),
-    defaultValues: data,
+    defaultValues: model,
   });
+  const { mutate } = useUpdateModel();
 
   return (
     <>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((formData) =>
-            mutate({ modelId: id, input: formData }),
+            mutate({ modelId: model.id, input: formData }),
           )}
           className=""
         >
           <Card>
             <CardHeader>
-              <CardTitle>Address Information</CardTitle>
-              <CardDescription>Model address information</CardDescription>
+              <CardTitle>Contact Info</CardTitle>
+              <CardDescription>Model Contact information</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
-                  name="address"
+                  name="phoneNumber"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>Address</FormLabel>
+                      <FormLabel>Phone Number</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -65,52 +78,78 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
                   )}
                 />
                 <FormField
-                  name="city"
+                  name="email"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>City</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value ?? ""} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
-                  name="region"
+                  name="lineId"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>State</FormLabel>
+                      <FormLabel>Line ID</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value ?? ""} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
-                  name="country"
+                  name="whatsapp"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>Country</FormLabel>
+                      <FormLabel>Whatsapp</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value ?? ""} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
-                  name="zipCode"
+                  name="wechat"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>Zip Code</FormLabel>
+                      <FormLabel>WeChat</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value ?? ""} />
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="instagram"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="col-span-full">
+                      <FormLabel>Instagram</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="facebook"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="col-span-full">
+                      <FormLabel>Facebook</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -119,7 +158,7 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
               </div>
             </CardContent>
             <CardFooter className="border-t px-6 py-4">
-              <Button type="submit">Save</Button>
+              <Button>Save</Button>
             </CardFooter>
           </Card>
         </form>

@@ -17,53 +17,52 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Model } from "@/db/schemas";
-import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import { UpdateModelSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import FormSkeleton from "../form-skeleton";
+import useUpdateModel from "../_hooks/use-update-model";
+import useSession from "@/hooks/use-session";
+import { useGetModel } from "@/hooks/queries/model";
+import permissions from "@/config/permission";
 
 const FormDataSchema = UpdateModelSchema;
 
 export default function Page({ params: { id } }: { params: { id: string } }) {
-  const { data, isSuccess } = useGetModel({ modelId: id });
-
-  if (!isSuccess) {
-    return <FormSkeleton />;
-  }
-  return <PageContent model={data} />;
-}
-function PageContent({ model }: { model: Model }) {
-  const form = useForm<z.infer<typeof FormDataSchema>>({
-    resolver: zodResolver(UpdateModelSchema),
-    defaultValues: model,
+  const session = useSession(permissions.models.getModelById);
+  const { data } = useGetModel({
+    modelId: id,
+    enabled: session.status === "authenticated",
   });
   const { mutate } = useUpdateModel();
+
+  const form = useForm<z.infer<typeof FormDataSchema>>({
+    resolver: zodResolver(UpdateModelSchema),
+    defaultValues: data,
+  });
 
   return (
     <>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((formData) =>
-            mutate({ modelId: model.id, input: formData }),
+            mutate({ modelId: id, input: formData }),
           )}
           className=""
         >
           <Card>
             <CardHeader>
-              <CardTitle>Contact Info</CardTitle>
-              <CardDescription>Model Contact information</CardDescription>
+              <CardTitle>Address Information</CardTitle>
+              <CardDescription>Model address information</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
-                  name="phoneNumber"
+                  name="address"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>Phone Number</FormLabel>
+                      <FormLabel>Address</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -72,78 +71,52 @@ function PageContent({ model }: { model: Model }) {
                   )}
                 />
                 <FormField
-                  name="email"
+                  name="city"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>City</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
-                  name="lineId"
+                  name="region"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>Line ID</FormLabel>
+                      <FormLabel>State</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
-                  name="whatsapp"
+                  name="country"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>Whatsapp</FormLabel>
+                      <FormLabel>Country</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
-                  name="wechat"
+                  name="zipCode"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>WeChat</FormLabel>
+                      <FormLabel>Zip Code</FormLabel>
                       <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="instagram"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="col-span-full">
-                      <FormLabel>Instagram</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="facebook"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="col-span-full">
-                      <FormLabel>Facebook</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -152,7 +125,7 @@ function PageContent({ model }: { model: Model }) {
               </div>
             </CardContent>
             <CardFooter className="border-t px-6 py-4">
-              <Button>Save</Button>
+              <Button type="submit">Save</Button>
             </CardFooter>
           </Card>
         </form>

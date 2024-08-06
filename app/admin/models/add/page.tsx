@@ -86,7 +86,7 @@ export default function Page() {
                 },
                 {
                   onSuccess: ({ id }) =>
-                    router.push(`/admin/models/update/${id}`),
+                    router.push(`/admin/models/${id}/update`),
                 },
               ),
             )}

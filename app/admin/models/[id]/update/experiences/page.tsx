@@ -1,5 +1,6 @@
 "use client";
 import AddNewExperienceDialog from "@/components/application/add-application-dialog";
+import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,28 +12,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import permissions from "@/config/permission";
 import {
   useAddModelExperience,
   useGetModelExperiences,
   useRemoveModelExperience,
 } from "@/hooks/queries/model";
+import useSession from "@/hooks/use-session";
 import { Plus, X } from "lucide-react";
 
 export default function Page({ params: { id } }: { params: { id: string } }) {
-  const { data, isLoading } = useGetModelExperiences({ modelId: id });
+  const session = useSession(permissions.models.getModelExperiencesById);
+  const { data, isLoading } = useGetModelExperiences({
+    modelId: id,
+    enabled: session.status === "authenticated",
+  });
   const { mutate: addExperience } = useAddModelExperience();
   const { mutate: removeExperience } = useRemoveModelExperience();
 
   if (isLoading || !data) {
-    return (
-      <div className="grid gap-4">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-      </div>
-    );
+    return <Loader />;
   }
 
   return (
