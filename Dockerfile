@@ -71,7 +71,7 @@ FROM base as initializer-runner
 
 WORKDIR /app
 
-COPY --from=initializer-builder /app/dist/migrate-seed/bundle.cjs ./
+COPY --from=initializer-builder /app/dist/migrate-seed/ ./
 
 CMD node ./bundle.cjs
 
