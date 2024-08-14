@@ -4,13 +4,13 @@ import {
   ApplicationCreateInputSchema,
   ApplicationImageCreateInputSchema,
 } from "../validators/application";
-import applicationUseCase from "../usecases/application";
+import { applicationUseCase } from "../usecases";
 import { z } from "zod";
-import { stringToNumberOrDefault } from "./util";
 import { HTTPException } from "hono/http-exception";
 import { applicationStatuses } from "@/db/schemas";
 import { authMiddleware } from "./middlewares/auth";
 import permissions from "@/config/permission";
+import { stringToNumber } from "../validators/req-query";
 
 const applicationRouter = new Hono()
   .basePath("applications")
@@ -20,8 +20,8 @@ const applicationRouter = new Hono()
     zValidator(
       "query",
       z.object({
-        page: stringToNumberOrDefault(1).optional(),
-        pageSize: stringToNumberOrDefault(10).optional(),
+        page: stringToNumber.optional(),
+        pageSize: stringToNumber.optional(),
         status: z.enum(applicationStatuses).optional(),
       }),
     ),

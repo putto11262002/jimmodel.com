@@ -1,14 +1,12 @@
-import db, { DB } from "@/db/client";
+import { DB } from "@/db";
 import { UserRole, userTable } from "@/db/schemas/users";
 import ConstraintViolationError from "../errors/contrain-violation-error";
-import { or, eq, and, arrayContains, count } from "drizzle-orm";
+import { or, eq, count } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { UserWithoutSecrets, UserCreateInput } from "../types/user";
-import { File } from "buffer";
-import FSFileUseCase, { FileUseCase, fileUseCase } from "./file";
+import { FileUseCase } from "./file";
 import { getOffset, getPagination } from "../utils/pagination";
 import { PaginatedData } from "../types/paginated-data";
-import { HTTPException } from "hono/http-exception";
 
 interface IUserUsecase {
   getById(id: string): Promise<UserWithoutSecrets | null>;
@@ -111,7 +109,7 @@ export class UserUsecase implements IUserUsecase {
     });
   }
   async updateUserRole(userId: string, roles: UserRole[]) {
-    await db
+    await this.db
       .update(userTable)
       .set({ roles: roles })
       .where(eq(userTable.id, userId))
@@ -121,104 +119,74 @@ export class UserUsecase implements IUserUsecase {
   async resetPassword(userId: string, newPassword: string): Promise<void> {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
-    await db
+    await this.db
       .update(userTable)
       .set({ password: hashedPassword })
       .where(eq(userTable.id, userId))
       .returning({ updatedId: userTable.id });
   }
-}
 
-const userUsecase = new UserUsecase(db, fileUseCase);
-export default userUsecase;
-
-export const updateUserRole = async (userId: string, roles: UserRole[]) => {
-  await db
-    .update(userTable)
-    .set({ roles: roles })
-    .where(eq(userTable.id, userId))
-    .returning({ updatedId: userTable.id });
-};
-
-export const findByUsernameOrEmail = async (
-  usernameOrEmail: string,
-): Promise<UserWithoutSecrets | null> => {
-  const user = await db.query.userTable.findFirst({
-    where: or(
-      eq(userTable.username, usernameOrEmail),
-      eq(userTable.email, usernameOrEmail),
-    ),
-    columns: { password: false },
-    with: {
-      image: true,
-    },
-  });
-  if (!user) {
-    return null;
+  async findByUsernameOrEmail(
+    usernameOrEmail: string,
+  ): Promise<UserWithoutSecrets | null> {
+    const user = await this.db.query.userTable.findFirst({
+      where: or(
+        eq(userTable.username, usernameOrEmail),
+        eq(userTable.email, usernameOrEmail),
+      ),
+      columns: { password: false },
+      with: {
+        image: true,
+      },
+    });
+    if (!user) {
+      return null;
+    }
+    return user;
   }
-  return user;
-};
 
-export const comparePassword = async (
-  userId: string,
-  password: string,
-): Promise<boolean> => {
-  const users = await db
-    .select({ password: userTable.password })
-    .from(userTable)
-    .where(eq(userTable.id, userId))
-    .limit(1);
-  if (users.length < 1) {
-    return Promise.resolve(true);
-  }
-  const hashedPassword = users[0].password;
-  return bcrypt.compare(password, hashedPassword);
-};
-
-export const resetPassword = async (
-  userId: string,
-  newPassword: string,
-): Promise<void> => {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(newPassword, salt);
-  await db
-    .update(userTable)
-    .set({ password: hashedPassword })
-    .where(eq(userTable.id, userId))
-    .returning({ updatedId: userTable.id });
-};
-
-export const getUsers = async ({
-  roles,
-  page,
-  pageSize = 10,
-}: {
-  roles: UserRole[];
-  page: number;
-  pageSize?: number;
-}) => {
-  const whereClause = and(
-    ...[...(roles.length > 0 ? [arrayContains(userTable.roles, roles)] : [])],
-  );
-  const offset = (page - 1) * pageSize;
-  const [users, userCounts] = await Promise.all([
-    db
-      .select()
+  async comparePassword(userId: string, password: string): Promise<boolean> {
+    const users = await this.db
+      .select({ password: userTable.password })
       .from(userTable)
-      .where(whereClause)
-      .offset(offset)
-      .limit(pageSize),
-    db.select({ total: count() }).from(userTable).where(whereClause),
-  ]);
+      .where(eq(userTable.id, userId))
+      .limit(1);
+    if (users.length < 1) {
+      return Promise.resolve(true);
+    }
+    const hashedPassword = users[0].password;
+    return bcrypt.compare(password, hashedPassword);
+  }
 
-  // Validate page input ?
-  const total = userCounts?.[0].total ?? 0;
-  const totalPages = Math.ceil(total / pageSize);
-  return {
-    users,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrevious: page > 1,
-  };
-};
+  // async getUsers({
+  //   roles,
+  //   page,
+  //   pageSize = 10,
+  // }: {
+  //   roles: UserRole[];
+  //   page: number;
+  //   pageSize?: number;
+  // }) {
+  //   const whereClause = and(
+  //     ...[...(roles.length > 0 ? [arrayContains(userTable.roles, roles)] : [])],
+  //   );
+  //   const offset = (page - 1) * pageSize;
+  //   const [users, userCounts] = await Promise.all([
+  //     this.db
+  //       .select()
+  //       .from(userTable)
+  //       .where(whereClause)
+  //       .offset(offset)
+  //       .limit(pageSize),
+  //     this.db.select({ total: count() }).from(userTable).where(whereClause),
+  //   ]);
+  //   const paginated = paginate({
+  //     data: users,
+  //     page,
+  //     pageSize,
+  //     total: userCounts[0].total,
+  //   });
+  //
+  //   return paginated;
+  // }
+}

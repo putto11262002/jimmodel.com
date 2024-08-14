@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Sidebar from "./_components/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import TopBar from "./_components/topbar";
@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="sm:pl-14">
         <TopBar />
         <main className="min-h-[calc(100vh-theme(spacing.14))]">
-          {children}
+          <Suspense>{children}</Suspense>
         </main>
       </div>
     </div>

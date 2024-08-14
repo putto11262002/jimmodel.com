@@ -6,7 +6,7 @@ import { useSession as _useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function useSession(roles?: UserRole[]) {
+export default function useSession(roles?: UserRole[], fn?: () => boolean) {
   const router = useRouter();
   const session = _useSession({
     required: true,
@@ -18,7 +18,8 @@ export default function useSession(roles?: UserRole[]) {
       if (
         roles &&
         roles.length > 0 &&
-        !hasPermission(roles, session.data.user.roles)
+        !hasPermission(roles, session.data.user.roles) &&
+        (!fn || !fn())
       ) {
         throw new AuthorisationError(
           "You are not authorised to access this page",

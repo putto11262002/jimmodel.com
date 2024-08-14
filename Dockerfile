@@ -26,14 +26,6 @@ COPY . .
 RUN pnpm build
 
 
-FROM base as initializer 
-
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-CMD pnpm db:migrate && pnpm db:seed
 
 # 3. Production image, copy all the files and run next
 FROM base AS runner
@@ -63,4 +55,23 @@ ENV PORT 3000
 
 CMD node server.js
 
+
+FROM base As initializer-builder
+
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN pnpm build:migrate-seed
+
+
+FROM base as initializer-runner
+
+WORKDIR /app
+
+COPY --from=initializer-builder /app/dist/migrate-seed/bundle.cjs ./
+
+CMD node ./bundle.cjs
 

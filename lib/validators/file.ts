@@ -37,5 +37,5 @@ export const fileValidator = ({
 export const imageValidator = () =>
   fileValidator({
     size: 5_000_000,
-    types: ["image/jpg", "image/jpeg", "image/webp"],
+    types: ["image/jpg", "image/jpeg", "image/webp", "image/png"],
   });

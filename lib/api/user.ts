@@ -1,27 +1,16 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-import userUsecase from "../usecases/user";
+import { userUsecase } from "../usecases";
 import { authMiddleware } from "./middlewares/auth";
-import { fileValidator } from "./validators/file";
-import { validationMiddleware } from "./middlewares/validator";
 import { NewUserSchema } from "../validators/user";
 import { imageValidator } from "../validators/file";
 import { HTTPException } from "hono/http-exception";
 import { userRoles } from "@/db/schemas";
 import permissions from "@/config/permission";
 
-const USER_IMAGE_SIZE_LIMIT = 1024 * 1024 * 2; // 2MB
-const USER_IMAGE_FILE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/svg",
-  "image/gif",
-  "image/webp",
-];
-
 const userRouter = new Hono()
-  .post("/users", validationMiddleware("json", NewUserSchema), async (c) => {
+  .post("/users", zValidator("json", NewUserSchema), async (c) => {
     const newUser = c.req.valid("json");
     await userUsecase.createUser(newUser);
     return c.newResponse(null, 201);
@@ -29,7 +18,7 @@ const userRouter = new Hono()
   .post(
     "/users/self/image",
     authMiddleware(),
-    validationMiddleware(
+    zValidator(
       "form",
       z.object({
         file: imageValidator(),
@@ -48,10 +37,7 @@ const userRouter = new Hono()
     zValidator(
       "form",
       z.object({
-        file: fileValidator({
-          sizeLimit: USER_IMAGE_SIZE_LIMIT,
-          mimetypes: USER_IMAGE_FILE_TYPES,
-        }),
+        file: imageValidator(),
       }),
     ),
     async (c) => {

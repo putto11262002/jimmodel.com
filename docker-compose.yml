@@ -106,7 +106,7 @@ services:
       context: .
       args:
         - NODE_ENV=production
-      target: initializer
+      target: initializer-runner
     container_name: jimmodel_app_initializer
     depends_on:
       postgres:

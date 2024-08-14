@@ -1,4 +1,4 @@
-import { fileUseCase } from "@/lib/usecases/file";
+import { fileUseCase } from "@/lib/usecases";
 
 export const GET = async (
   request: Request,

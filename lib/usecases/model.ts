@@ -1,4 +1,5 @@
-import db, { DB, TX } from "@/db/client";
+import { db } from "@/db/client";
+import { DB, TX } from "@/db";
 import {
   modelBlockTable,
   ModelCreateInput,
@@ -6,7 +7,11 @@ import {
   modelTable,
   ModelUpdateInput,
 } from "@/db/schemas/models";
-import { ModelImage, ModelProfile } from "../types/model";
+import {
+  ModelBlockWithModelProfile,
+  ModelImage,
+  ModelProfile,
+} from "../types/model";
 import {
   and,
   count,
@@ -20,12 +25,11 @@ import {
   or,
 } from "drizzle-orm";
 import { PaginatedData } from "../types/paginated-data";
-import { ModelImageType, modelImageTable } from "../../db/schemas/model-images";
+import { modelImageTable } from "../../db/schemas/model-images";
 import { getOffset, getPagination } from "../utils/pagination";
 import {
   isExistingFile,
   ModelBlock,
-  ModelBlockWithPartialModel,
   ModelExperienceCreateInput,
 } from "../types/model";
 import ConstraintViolationError from "../errors/contrain-violation-error";
@@ -33,8 +37,15 @@ import { isArray } from "lodash";
 import { ModelImageCreateInput } from "../types/model";
 import { NotFoundError } from "../errors/not-found-error";
 import { PostgresError } from "postgres";
-import { FileUseCase, fileUseCase } from "./file";
+import { FileUseCase } from "./file";
 
+export const modelProfileColumns = {
+  id: true,
+  name: true,
+  email: true,
+  gender: true,
+  dateOfBirth: true,
+} as const;
 /**
  * Add new model record. If the operation is successful a model id is returned. Otherwise, return null.
  **/
@@ -61,19 +72,6 @@ export const findModelById = async (modelId: string) => {
     return null;
   }
   return model[0];
-};
-
-export const deleteModelImage = async (modelId: string, fileId: string) => {
-  await db
-    .delete(modelImageTable)
-    .where(
-      and(
-        eq(modelImageTable.modelId, modelId),
-        eq(modelImageTable.fileId, fileId),
-      ),
-    );
-
-  await fileUseCase.deleteFile(fileId);
 };
 
 export const findModelProfileById = async (
@@ -360,6 +358,81 @@ export class ModelUseCase {
     }
     return block;
   }
+  async getBlocksWithModelProfile(
+    {
+      modelIds,
+      start,
+      end,
+      page = 1,
+      pageSize = 10,
+      pagination = true,
+    }: {
+      modelIds?: string[];
+      start?: Date;
+      end?: Date;
+      page?: number;
+      pageSize?: number;
+      pagination?: boolean;
+    } = { page: 1, pageSize: 10, pagination: true },
+  ): Promise<PaginatedData<ModelBlockWithModelProfile>> {
+    const where = and(
+      start && !end
+        ? gte(modelBlockTable.start, start.toISOString())
+        : undefined,
+      end && !start ? lte(modelBlockTable.end, end.toISOString()) : undefined,
+      start && end
+        ? or(
+            and(
+              lt(modelBlockTable.start, start.toISOString()),
+              gte(modelBlockTable.end, start.toISOString()),
+            ),
+            and(
+              gte(modelBlockTable.start, start.toISOString()),
+              lte(modelBlockTable.start, end.toISOString()),
+            ),
+          )
+        : undefined,
+
+      modelIds && modelIds.length > 0
+        ? inArray(modelBlockTable.modelId, modelIds)
+        : undefined,
+    );
+    const [blocks, blockCount] = await Promise.all([
+      this.db.query.modelBlockTable.findMany({
+        where,
+        ...(pagination
+          ? {
+              limit: pageSize,
+              offset: getOffset(page, pageSize),
+            }
+          : {}),
+        with: {
+          model: {
+            columns: {
+              id: true,
+              name: true,
+              email: true,
+              gender: true,
+              dateOfBirth: true,
+            },
+            with: {
+              image: true,
+            },
+          },
+        },
+      }),
+
+      this.db.select({ count: count() }).from(modelBlockTable),
+    ]);
+
+    const paginatedData = getPagination(
+      blocks,
+      page,
+      pageSize,
+      blockCount?.[0].count,
+    );
+    return paginatedData;
+  }
 
   async getBlocks(
     {
@@ -395,6 +468,7 @@ export class ModelUseCase {
             ),
           )
         : undefined,
+
       modelIds && modelIds.length > 0
         ? inArray(modelBlockTable.modelId, modelIds)
         : undefined,
@@ -532,7 +606,7 @@ export class ModelUseCase {
       );
 
     try {
-      await fileUseCase.deleteFile(fileId);
+      await this.fileUseCase.deleteFile(fileId);
     } catch (err) {
       // Ignore foreign key violation error as the file may still be referenced by the application
       if (err instanceof PostgresError && err.code === "23503") {
@@ -578,7 +652,3 @@ export class ModelUseCase {
     return images;
   }
 }
-
-const modelUseCase = new ModelUseCase(db, fileUseCase);
-
-export default modelUseCase;

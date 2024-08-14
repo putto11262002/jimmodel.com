@@ -69,8 +69,8 @@ export default function SearchModelDialog({
                     >
                       <Image
                         src={
-                          model.profileImage
-                            ? `/files/${model.profileImage?.fileId}`
+                          model.image
+                            ? `/files/${model.image?.fileId}`
                             : "/placeholder.svg"
                         }
                         alt="Model profile"

@@ -1,7 +1,7 @@
-import { hc } from "hono/client";
-import { ofetch } from "ofetch";
+import { ClientRequestOptions, ClientResponse, hc } from "hono/client";
 import { AppRouter } from ".";
 import HttpError from "../errors/http-error";
+import { StatusCode } from "hono/utils/http-status";
 
 const client = hc<AppRouter>(
   typeof window === "undefined" ? process.env.SERVER_BASE_URL! : "/",
@@ -18,3 +18,10 @@ const client = hc<AppRouter>(
   },
 );
 export default client;
+
+export type ResponseJsonType<
+  T extends (
+    args: any,
+    opts: ClientRequestOptions<unknown> | undefined,
+  ) => Promise<ClientResponse<unknown, StatusCode, "json">>,
+> = Awaited<ReturnType<Awaited<ReturnType<T>>["json"]>>;

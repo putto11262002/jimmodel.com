@@ -1,4 +1,4 @@
-import db, { DB } from "@/db/client";
+import { DB } from "@/db";
 import {
   ApplicationCreateInput,
   ApplicationExperienceCreateInput,
@@ -10,18 +10,17 @@ import {
   applicationImageTable,
   applicationTable,
 } from "@/db/schemas/application";
-import modelUseCase, { ModelUseCase } from "./model";
+import { ModelUseCase } from "./model";
 import { and, asc, count, eq, inArray } from "drizzle-orm";
 import { NotFoundError } from "../errors/not-found-error";
 import { getOffset, getPagination } from "../utils/pagination";
-import buffer from "buffer";
-import FSFileUseCase, { FileUseCase, fileUseCase } from "./file";
+import { FileUseCase } from "./file";
 import ConstraintViolationError from "../errors/contrain-violation-error";
 
 export class ApplictionUseCase {
   private db: DB;
   private modelUseCase: ModelUseCase;
-  private fileUseCase: FileUseCase
+  private fileUseCase: FileUseCase;
   constructor({
     db,
     modelUseCase,
@@ -29,7 +28,7 @@ export class ApplictionUseCase {
   }: {
     db: DB;
     modelUseCase: ModelUseCase;
-    fileUseCase: FileUseCase
+    fileUseCase: FileUseCase;
   }) {
     this.db = db;
     this.modelUseCase = modelUseCase;
@@ -241,11 +240,3 @@ export class ApplictionUseCase {
     return images;
   }
 }
-
-const applicationUseCase = new ApplictionUseCase({
-  db,
-  modelUseCase,
-  fileUseCase,
-});
-
-export default applicationUseCase;

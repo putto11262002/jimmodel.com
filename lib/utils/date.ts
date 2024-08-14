@@ -13,3 +13,7 @@ export function formatUTCDateStringWithoutTZ(date: string): string {
 export function formatISODateString(date: string): string {
   return dayjs(date).format(format);
 }
+
+export function milisecondToHour(ms: number): number {
+  return ms / (1000 * 60 * 60);
+}

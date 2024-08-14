@@ -45,7 +45,7 @@ export default function Layout({
     return <Loader />;
   }
   return (
-    <Container>
+    <Container max="md">
       <BreakcrumbSetter
         breadcrumbs={[
           { label: "Models", href: "/admin/models" },
@@ -55,13 +55,6 @@ export default function Layout({
       />
       <div className="w-full max-w-6xl flex flex-col gap-6">
         <div className="flex items-center gap-6">
-          {/* <Button */}
-          {/*   onClick={() => router.back()} */}
-          {/*   variant={"outline"} */}
-          {/*   size={"icon"} */}
-          {/* > */}
-          {/*   <ChevronLeft className="w-4 h-4" /> */}
-          {/* </Button> */}
           <h1 className="text-2xl font-semibold">{data.name}&apos;s Profile</h1>
         </div>
         <div className="flex gap-4">

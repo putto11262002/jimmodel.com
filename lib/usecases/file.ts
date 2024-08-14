@@ -1,4 +1,4 @@
-import db, { DB, TX } from "@/db/client";
+import { DB, TX } from "@/db";
 import { fileInfoTable } from "@/db/schemas/file-metadata";
 import { v4 as randomUUID } from "uuid";
 import { eq } from "drizzle-orm";
@@ -8,7 +8,6 @@ import path from "path";
 import { FileInfo } from "../types/file";
 import { newFile } from "../utils/file";
 import * as Minio from "minio";
-import config from "@/config/global";
 /**
  *  FileUseCase assumes that all files supplied are of appropriate size, e.g. not too large to be handled by the server.
  */
@@ -154,15 +153,3 @@ export default class FSFileUseCase {
     await fs.unlink(path.join(this.path, deleted[0].path));
   }
 }
-
-const minioClient = new Minio.Client({
-  accessKey: config.s3.accessKey,
-  secretKey: config.s3.secretKey,
-  endPoint: config.s3.endpoint,
-  useSSL: false,
-  ...(process.env.S3_PORT ? { port: config.s3.port } : {}),
-});
-
-export const fileUseCase = new S3FileUseCase(minioClient, db, {
-  defaultBucketName: config.s3.bucketName,
-});

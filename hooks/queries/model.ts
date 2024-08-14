@@ -5,7 +5,7 @@ import {
   Model,
   ModelBlock,
   ModelBlockCreateInput,
-  ModelBlockWithPartialModel,
+  ModelBlockWithModelProfile,
   ModelExperience,
   ModelExperienceCreateInput,
   ModelImage,
@@ -336,24 +336,19 @@ export function useGetBlock({
   start,
   end,
   modelIds,
+  page,
+  pageSize,
+  pagination,
   ...props
 }: {
   start?: Date;
   end?: Date;
-  modelIds: string[];
+  modelIds?: string[];
+  page?: number;
+  pageSize?: number;
+  pagination?: boolean;
 } & Omit<
-  UseQueryOptions<
-    ModelBlockWithPartialModel[],
-    Error,
-    ModelBlockWithPartialModel[],
-    (
-      | string
-      | {
-          start: any;
-          end: any;
-        }
-    )[]
-  >,
+  UseQueryOptions<PaginatedData<ModelBlock>, Error, PaginatedData<ModelBlock>>,
   "queryKey" | "queryFn"
 >) {
   return useQuery({
@@ -365,10 +360,55 @@ export function useGetBlock({
           start: start?.toISOString(),
           end: end?.toISOString(),
           modelIds,
-          include: ["model"],
+          page: page?.toString(),
+          pageSize: pageSize?.toString(),
+          pagination: pagination ? "true" : "false",
         },
       });
-      const data = (await res.json()) as ModelBlockWithPartialModel[];
+      const data = res.json();
+      return data;
+    },
+  });
+}
+
+export function useGetBlockWithModeProfile({
+  start,
+  end,
+  modelIds,
+  page,
+  pageSize,
+  pagination,
+  ...props
+}: {
+  start?: Date;
+  end?: Date;
+  page?: number;
+  pageSize?: number;
+  pagination?: boolean;
+  modelIds?: string[];
+} & Omit<
+  UseQueryOptions<
+    PaginatedData<ModelBlockWithModelProfile>,
+    Error,
+    PaginatedData<ModelBlockWithModelProfile>
+  >,
+  "queryKey" | "queryFn"
+>) {
+  return useQuery({
+    ...props,
+    queryKey: ["blocks", { start, end }],
+    queryFn: async () => {
+      const res = await client.api["blocks-with-model-profile"].$get({
+        query: {
+          start: start?.toISOString(),
+          end: end?.toISOString(),
+          modelIds,
+          page: page?.toString(),
+          pageSize: pageSize?.toString(),
+          pagination: pagination ? "true" : "false",
+        },
+      });
+      const data = res.json();
       return data;
     },
   });

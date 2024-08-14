@@ -1,4 +1,3 @@
-import { z } from "zod";
 import dotenv from "dotenv";
 import { ConfigSchema } from "@/lib/validators/config";
 dotenv.config({

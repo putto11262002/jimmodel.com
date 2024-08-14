@@ -1,9 +1,12 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import calendarRenderer, { CalendarRenderer, Event } from "../calendar";
+import calendar, { Event } from "../_calendar/calendar";
 import dayjs, { Dayjs } from "dayjs";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 import { useQuery } from "@tanstack/react-query";
+import useSession from "@/hooks/use-session";
+import permissions from "@/config/permission";
+import { combine } from "@/lib/utils/auth";
 dayjs.extend(weekOfYear);
 
 type CalendarContext = {
@@ -30,7 +33,7 @@ export const calendarContext = createContext<CalendarContext>({
   cur: () => {},
   calendar: {
     isLoading: true,
-    data: calendarRenderer.placeholder(dayjs().toISOString(), "month"),
+    data: calendar.placeholder(dayjs().toISOString(), "month"),
   },
   key: "",
 });
@@ -50,15 +53,19 @@ export const CalendarProvider = ({
 
   const [key, setKey] = useState("");
 
-  const {
-    data: calendar,
-    isSuccess,
-    isPending,
-  } = useQuery({
+  const session = useSession(
+    combine(
+      permissions.jobs.getBookingsWithJob,
+      permissions.models.getBlocksWithModel,
+    ),
+  );
+
+  const { data, isPending } = useQuery({
     queryKey: ["calendar", key],
     queryFn: async () => {
-      return calendarRenderer.render(now.toISOString(), "month");
+      return calendar.getCalendar(now.toISOString(), "month");
     },
+    enabled: session.status === "authenticated",
   });
 
   const view = ({ date, events }: { date: Date; events: Event[] }) => {
@@ -108,9 +115,7 @@ export const CalendarProvider = ({
         cur,
         calendar: {
           isLoading: isPending,
-          data: calendar
-            ? calendar
-            : calendarRenderer.placeholder(now.toISOString(), mode),
+          data: data ? data : calendar.placeholder(now.toISOString(), mode),
         },
       }}
     >

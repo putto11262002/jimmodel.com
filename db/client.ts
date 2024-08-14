@@ -1,41 +1,25 @@
-import { drizzle, PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
-import dotenv from "dotenv";
-import postgres from "postgres";
-import * as schema from "./schemas";
-import { PgTransaction } from "drizzle-orm/pg-core";
-import { ExtractTablesWithRelations } from "drizzle-orm";
-
-dotenv.config({ path: ".env" });
+import { getDrizzleDB, getPgClient, DB, PostgresClient } from ".";
+import config from "@/config/global";
 
 declare module globalThis {
-  let db: DB | undefined;
+  let db: { db: DB; pgClient: PostgresClient } | undefined;
 }
-
-const connectDB = () => {
-  const client = postgres({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT) || 5432,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+const connect = () => {
+  const pgClient = getPgClient({
+    host: config.db.host,
+    port: config.db.port,
+    user: config.db.user,
+    password: config.db.password,
+    database: config.db.name,
   });
-
-  return drizzle(client, {
-    schema,
-    logger: process.env.NODE_ENV === "development",
-  });
+  const db = getDrizzleDB(pgClient);
+  return { pgClient, db };
 };
 
-export type DB = ReturnType<typeof connectDB>;
+// db and pgClient with default configuration
+export const { db, pgClient } = globalThis.db ?? connect();
 
-export type TX = PgTransaction<
-  PostgresJsQueryResultHKT,
-  typeof schema,
-  ExtractTablesWithRelations<typeof schema>
->;
-
-const db = globalThis.db ?? connectDB();
-
-export default db;
-
-if (process.env.NODE_ENV !== "production") globalThis.db = db;
+// Cache the db and pgClient in development
+if (process.env.NODE_ENV !== "production") {
+  globalThis.db = { db, pgClient };
+}

@@ -6,20 +6,16 @@ import {
   jobTable,
   jobToModelTable,
 } from "../../db/schemas/jobs";
-import { and, count, eq, gte, inArray, lt, lte, or } from "drizzle-orm";
-import { getOffset, getPagination } from "../utils/pagination";
-import db, { DB } from "../../db/client";
-import {
-  fileInfoTable,
-  modelImageTable,
-  ModelProfile,
-  modelTable,
-  userTable,
-} from "@/db/schemas";
-import { getModelProfiles } from "./model";
+import { and, count, eq, gte, inArray, lt, lte, ne, or } from "drizzle-orm";
+import { getOffset, getPagination, paginate } from "../utils/pagination";
+import { db } from "../../db/client";
+import { DB } from "@/db";
+import { modelProfileColumns } from "./model";
 import { PaginatedData } from "../types/paginated-data";
-import { BookingWithJob, Job, JobUpdateInput } from "../types/job";
+import { Booking, BookingWithJob, Job, JobUpdateInput } from "../types/job";
 import { NotFoundError } from "../errors/not-found-error";
+import { Model } from "../types/model";
+import ConstraintViolationError from "../errors/contrain-violation-error";
 
 export class JobUsecase {
   private readonly db: DB;
@@ -99,15 +95,20 @@ export class JobUsecase {
     page = 1,
     pageSize = 10,
     statuses,
+    pagination = true,
+    jobIds,
   }: {
     page?: number;
     pageSize?: number;
     statuses?: JobStatus[];
+    pagination?: boolean;
+    jobIds?: string[];
   }): Promise<PaginatedData<Job>> {
     const whereClause = and(
       statuses && statuses.length > 0
         ? inArray(jobTable.status, statuses)
         : undefined,
+      jobIds && jobIds.length > 0 ? inArray(jobTable.id, jobIds) : undefined,
     );
     const [rawJobs, counts] = await Promise.all([
       this.db.query.jobTable.findMany({
@@ -140,8 +141,12 @@ export class JobUsecase {
             },
           },
         },
-        offset: getOffset(page, pageSize),
-        limit: pageSize,
+        ...(pagination
+          ? {
+              offset: getOffset(page, pageSize),
+              limit: pageSize,
+            }
+          : {}),
         orderBy: (jobTable, { desc }) => [desc(jobTable.createdAt)],
       }),
       this.db.select({ count: count() }).from(jobTable).where(whereClause),
@@ -163,19 +168,27 @@ export class JobUsecase {
       .insert(jobTable)
       .values(job)
       .returning({ id: jobTable.id });
-    if (createdJob.length < 1) {
-      return null;
-      job;
-    }
-    return createdJob[0].id;
+    return createdJob?.[0].id;
   }
 
   public async addModel(jobId: string, modelId: string) {
     const job = await this.db.query.jobTable.findFirst({
       where: eq(jobTable.id, jobId),
     });
+
     if (!job) {
       throw new NotFoundError("Job not found");
+    }
+
+    const bookings = await this.db
+      .select({ id: bookingTable.id })
+      .from(bookingTable)
+      .where(eq(bookingTable.jobId, jobId));
+
+    if (bookings.length > 0) {
+      throw new ConstraintViolationError(
+        "No more models can be added as this job alread has an associated bookings",
+      );
     }
 
     await this.db.insert(jobToModelTable).values({
@@ -253,52 +266,97 @@ export class JobUsecase {
     return updatedJob[0].id;
   }
 
-  public async getModels(
-    jobId: string,
-  ): Promise<PaginatedData<ModelProfile> | null> {
+  public async addBooking(jobId: string, booking: BookingCreateInput) {
+    const job = await this.db.query.jobTable.findFirst({
+      where: eq(jobTable.id, jobId),
+      columns: {
+        status: true,
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundError("Job not found");
+    }
+
     const jobModels = await this.db
-      .select()
+      .select({ modelId: jobToModelTable.modelId })
       .from(jobToModelTable)
       .where(eq(jobToModelTable.jobId, jobId));
 
     if (jobModels.length < 1) {
-      return null;
+      throw new ConstraintViolationError(
+        "Models must be added to job before booking can be made",
+      );
     }
 
-    const modelProfiles = await getModelProfiles({
-      ids: jobModels.map((m) => m.modelId),
-    });
-
-    return modelProfiles;
-  }
-
-  public async addBooking(booking: BookingCreateInput) {
     const res = await this.db
       .insert(bookingTable)
-      .values(booking)
+      .values({ ...booking, jobId, status: job.status })
       .returning({ id: bookingTable.id });
+
     return res[0];
+  }
+
+  public async getModels(jobId: string): Promise<Model[]> {
+    const models = await this.db.query.jobToModelTable.findMany({
+      where: eq(jobToModelTable.jobId, jobId),
+      with: {
+        models: {
+          with: {
+            image: true,
+          },
+        },
+      },
+    });
+    return models.map((jtm) => jtm.models);
   }
 
   public async removeBooking(bookingId: string) {
     await this.db.delete(bookingTable).where(eq(bookingTable.id, bookingId));
   }
 
-  public async getBookings({
-    jobIds,
-    page = 1,
-    pageSize = 10,
-    start,
-    end,
-    modelIds,
-  }: {
-    jobIds?: string[] | undefined;
-    page?: number;
-    pageSize?: number;
-    start?: Date;
-    end?: Date;
-    modelIds?: string[] | undefined;
-  }): Promise<PaginatedData<BookingWithJob>> {
+  public async getConflictingBookings(
+    jobId: string,
+    {
+      start,
+      end,
+    }: {
+      start: Date;
+      end: Date;
+    },
+  ): Promise<Booking[]> {
+    const job = await this.db.query.jobTable.findFirst({
+      where: and(eq(jobTable.id, jobId)),
+      with: {
+        jobsToModels: true,
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundError("Job not found");
+    }
+
+    const jobModelIds = job.jobsToModels.map((jtm) => jtm.modelId);
+
+    // Get jobs with overlapping models
+    const overlappingJobs = await this.db.query.jobTable.findMany({
+      columns: {
+        id: true,
+      },
+      where: ne(jobTable.status, "cancelled"),
+      with: {
+        jobsToModels: {
+          ...(job.jobsToModels.length > 0
+            ? {
+                where: inArray(jobToModelTable.modelId, jobModelIds),
+              }
+            : {}),
+        },
+      },
+    });
+
+    const overlappingJobIds = overlappingJobs.map((j) => j.id);
+
     const where = and(
       start && !end ? gte(bookingTable.start, start.toISOString()) : undefined,
       end && !start ? lte(bookingTable.end, end.toISOString()) : undefined,
@@ -314,68 +372,183 @@ export class JobUsecase {
             ),
           )
         : undefined,
-      jobIds && jobIds.length > 0 ? inArray(jobTable.id, jobIds) : undefined,
-      modelIds && modelIds.length > 0
-        ? inArray(jobToModelTable.modelId, modelIds)
+      // inArray(bookingTable.jobId, overlappingJobIds),
+    );
+    const bookings = await this.db.query.bookingTable.findMany({
+      where,
+    });
+    return bookings;
+  }
+
+  public async getBookingsWithJob({
+    start,
+    end,
+    page,
+    pageSize,
+    pagination = false,
+    jobIds,
+    statuses,
+  }: {
+    page?: number;
+    pageSize?: number;
+    start?: Date;
+    end?: Date;
+    jobIds?: string[];
+    pagination?: boolean;
+    statuses?: JobStatus[];
+  }): Promise<PaginatedData<BookingWithJob>> {
+    const bookingWhere = and(
+      start && !end ? gte(bookingTable.start, start.toISOString()) : undefined,
+      end && !start ? lte(bookingTable.end, end.toISOString()) : undefined,
+      start && end
+        ? or(
+            and(
+              lt(bookingTable.start, start.toISOString()),
+              gte(bookingTable.end, start.toISOString()),
+            ),
+            and(
+              gte(bookingTable.start, start.toISOString()),
+              lte(bookingTable.start, end.toISOString()),
+            ),
+          )
+        : undefined,
+      jobIds && jobIds.length > 0
+        ? inArray(bookingTable.jobId, jobIds)
+        : undefined,
+      statuses && statuses.length > 0
+        ? inArray(bookingTable.status, statuses)
         : undefined,
     );
 
-    const [rows, counts] = await Promise.all([
-      this.db
-        .select()
-        .from(bookingTable)
-        .innerJoin(jobTable, eq(jobTable.id, bookingTable.jobId))
-        .innerJoin(userTable, eq(userTable.id, jobTable.ownerId))
-        .leftJoin(fileInfoTable, eq(fileInfoTable.id, userTable.imageId))
-        .leftJoin(jobToModelTable, eq(jobTable.id, jobToModelTable.jobId))
-        .leftJoin(modelTable, eq(modelTable.id, jobToModelTable.modelId))
-        .leftJoin(modelImageTable, eq(modelTable.id, modelImageTable.modelId))
-        .where(and(where, eq(modelImageTable.isProfile, true))),
+    page = page ?? 1;
+    pageSize = pageSize ?? 10;
+    const result = await Promise.all([
+      this.db.query.bookingTable.findMany({
+        with: {
+          job: {
+            with: {
+              owner: {
+                with: {
+                  image: true,
+                },
+              },
+              jobsToModels: {
+                with: {
+                  models: {
+                    columns: modelProfileColumns,
+                    with: {
+                      image: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        where: bookingWhere,
+        ...(pagination
+          ? {
+              offset: getOffset(page, pageSize),
+            }
+          : {}),
+      }),
 
-      this.db
-        .select({ count: count() })
-        .from(bookingTable)
-        .innerJoin(jobTable, eq(bookingTable.jobId, jobTable.id))
-        .leftJoin(jobToModelTable, eq(jobTable.id, jobToModelTable.jobId))
-        .where(where),
+      ...(pagination
+        ? [
+            this.db
+              .select({ count: count() })
+              .from(bookingTable)
+              .where(bookingWhere),
+          ]
+        : []),
     ]);
-    let jobs = new Map<string, Job>();
-    let bookings: BookingWithJob[] = [];
-    rows.forEach((row) => {
-      if (!jobs.has(row.jobs.id)) {
-        jobs.set(row.jobs.id, {
-          ...row.jobs,
-          owner: { ...row.users, image: row.files },
-          models: [],
-        });
-      }
-      if (
-        row.models?.id &&
-        jobs
-          .get(row.jobs.id)
-          ?.models.findIndex((m) => m.id === row?.models?.id) === -1
-      ) {
-        jobs.get(row.jobs.id)?.models?.push({
-          id: row.models.id,
-          name: row.models.name,
-          image: row.model_images,
-          gender: row.models.gender,
-          dateOfBirth: row.models.dateOfBirth,
-        });
-      }
-      bookings.push({
-        ...row.bookings,
-        job: jobs.get(row.jobs.id)!,
-      });
+
+    const paginatedBooking = paginate({
+      data: result[0].map((booking) => ({
+        ...booking,
+        job: {
+          ...booking.job,
+          models: booking.job.jobsToModels.map((jtm) => jtm.models),
+        },
+      })),
+      page: pagination ? page : 1,
+      pageSize: pagination ? pageSize : result[0].length,
+      total: pagination ? result?.[1]?.[0].count : result[0].length,
     });
 
-    const paginatedBookings = getPagination(
-      bookings,
-      page,
-      pageSize,
-      counts[0].count,
+    return paginatedBooking;
+  }
+
+  public async getBookings({
+    start,
+    end,
+    page,
+    pageSize,
+    pagination = false,
+    jobIds,
+    statuses,
+  }: {
+    page?: number;
+    pageSize?: number;
+    start?: Date;
+    end?: Date;
+    jobIds?: string[];
+    pagination?: boolean;
+    statuses?: JobStatus[];
+  }): Promise<PaginatedData<Booking | BookingWithJob>> {
+    const bookingWhere = and(
+      start && !end ? gte(bookingTable.start, start.toISOString()) : undefined,
+      end && !start ? lte(bookingTable.end, end.toISOString()) : undefined,
+      start && end
+        ? or(
+            and(
+              lt(bookingTable.start, start.toISOString()),
+              gte(bookingTable.end, start.toISOString()),
+            ),
+            and(
+              gte(bookingTable.start, start.toISOString()),
+              lte(bookingTable.start, end.toISOString()),
+            ),
+          )
+        : undefined,
+      jobIds && jobIds.length > 0
+        ? inArray(bookingTable.jobId, jobIds)
+        : undefined,
+      statuses && statuses.length > 0
+        ? inArray(bookingTable.status, statuses)
+        : undefined,
     );
-    return paginatedBookings;
+
+    page = page ?? 1;
+    pageSize = pageSize ?? 10;
+    const result = await Promise.all([
+      this.db.query.bookingTable.findMany({
+        where: bookingWhere,
+        ...(pagination
+          ? {
+              offset: getOffset(page, pageSize),
+            }
+          : {}),
+      }),
+
+      ...(pagination
+        ? [
+            this.db
+              .select({ count: count() })
+              .from(bookingTable)
+              .where(bookingWhere),
+          ]
+        : []),
+    ]);
+
+    const paginatedBooking = paginate({
+      data: result[0],
+      page: pagination ? page : 1,
+      pageSize: pagination ? pageSize : result[0].length,
+      total: pagination ? result?.[1]?.[0].count : result[0].length,
+    });
+
+    return paginatedBooking;
   }
 
   public async checkConflicts({
@@ -421,28 +594,57 @@ export class JobUsecase {
   }
 
   public async confirmJob(jobId: string) {
-    await this.db
-      .update(jobTable)
-      .set({ status: "confirmed" })
-      .where(and(eq(jobTable.id, jobId), eq(jobTable.status, "pending")))
-      .returning({ id: jobTable.id });
+    this.db.transaction(async (tx) => {
+      const confirmedJob = await tx
+        .update(jobTable)
+        .set({ status: "confirmed" })
+        .where(and(eq(jobTable.id, jobId), eq(jobTable.status, "pending")))
+        .returning({ id: jobTable.id });
+      if (confirmedJob.length > 0) {
+        await tx
+          .update(bookingTable)
+          .set({ status: "confirmed" })
+          .where(eq(bookingTable.jobId, jobId));
+      }
+    });
   }
 
   public async cancelJob(jobId: string) {
-    await this.db
-      .update(jobTable)
-      .set({ status: "cancelled" })
-      .where(and(eq(jobTable.id, jobId), eq(jobTable.status, "confirmed")));
+    this.db.transaction(async (tx) => {
+      const cancelledJob = await tx
+        .update(jobTable)
+        .set({ status: "cancelled" })
+        .where(and(eq(jobTable.id, jobId), eq(jobTable.status, "confirmed")))
+        .returning({ id: jobTable.id });
+      if (cancelledJob.length > 0) {
+        await tx
+          .update(bookingTable)
+          .set({ status: "cancelled" })
+          .where(eq(bookingTable.jobId, jobId));
+      }
+    });
   }
 
   public async archiveJob(jobId: string) {
-    await this.db
-      .update(jobTable)
-      .set({ status: "archived" })
-      .where(and(eq(jobTable.id, jobId), eq(jobTable.status, "pending")));
+    this.db.transaction(async (tx) => {
+      const cancelledJob = await tx
+        .update(jobTable)
+        .set({ status: "archived" })
+        .where(and(eq(jobTable.id, jobId), eq(jobTable.status, "pending")))
+        .returning({ id: jobTable.id });
+      if (cancelledJob.length > 0) {
+        await tx
+          .update(bookingTable)
+          .set({ status: "archived" })
+          .where(eq(bookingTable.jobId, jobId));
+      }
+    });
+  }
+
+  public async getJobBookings(jobId: string): Promise<Booking[]> {
+    const bookings = await this.db.query.bookingTable.findMany({
+      where: eq(bookingTable.jobId, jobId),
+    });
+    return bookings;
   }
 }
-
-const jobUsecase = new JobUsecase(db);
-
-export default jobUsecase;

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import jobUsecase from "../usecases/job";
+import { jobUsecase } from "../usecases";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import {
@@ -7,16 +7,21 @@ import {
   JobCreateInputSchema,
   JobUpdateInputSchema,
 } from "../validators/job";
-import { stringToNumber, stringToNumberOrDefault } from "./util";
 import { authMiddleware } from "./middlewares/auth";
 import { HTTPException } from "hono/http-exception";
-import { validationMiddleware } from "./middlewares/validator";
 import { jobStatuses } from "@/db/schemas";
+import {
+  stringArray,
+  stringToBoolean,
+  stringToDate,
+  stringToNumber,
+} from "../validators/req-query";
+import permissions from "@/config/permission";
 
 const jobRouter = new Hono()
   .post(
     "/jobs",
-    authMiddleware(["admin", "staff"]),
+    authMiddleware(permissions.jobs.createJob),
     zValidator("json", JobCreateInputSchema.omit({ ownerId: true })),
     async (c) => {
       const input = c.req.valid("json");
@@ -33,25 +38,35 @@ const jobRouter = new Hono()
   )
   .get(
     "/jobs",
+    authMiddleware(permissions.jobs.getJobs),
     zValidator(
       "query",
       z.object({
         page: stringToNumber.optional(),
         pageSize: stringToNumber.optional(),
-        status: z.enum(jobStatuses).optional(),
+        statuses: z
+          .enum(jobStatuses)
+          .transform((v) => [v])
+          .or(z.array(z.enum(jobStatuses)))
+          .optional(),
+        jobIds: stringArray.optional(),
+        pagination: stringToBoolean.optional(),
       }),
     ),
     async (c) => {
-      const { page, pageSize, status } = c.req.valid("query");
+      const { page, pageSize, statuses, jobIds, pagination } =
+        c.req.valid("query");
       const jobs = await jobUsecase.getJobs({
         page,
         pageSize,
-        statuses: status ? [status] : undefined,
+        statuses,
+        jobIds,
+        pagination,
       });
       return c.json(jobs);
     },
   )
-  .get("/jobs/:id", async (c) => {
+  .get("/jobs/:id", authMiddleware(permissions.jobs.getJobById), async (c) => {
     const id = c.req.param("id");
     const job = await jobUsecase.getById(id);
     if (!job) {
@@ -59,22 +74,32 @@ const jobRouter = new Hono()
     }
     return c.json(job);
   })
-  .put("/jobs/:id", zValidator("json", JobUpdateInputSchema), async (c) => {
-    const id = c.req.param("id");
-    const job = c.req.valid("json");
-    const updateJobId = await jobUsecase.update(id, job);
-    if (!updateJobId) {
-      throw new HTTPException(404, { message: "Job not found" });
-    }
-    return c.json({ id: updateJobId });
-  })
-  .get("/jobs/:id/models", async (c) => {
-    const id = c.req.param("id");
-    const models = await jobUsecase.getModels(id);
-    return c.json(models);
-  })
+  .put(
+    "/jobs/:id",
+    authMiddleware(permissions.jobs.updateJobById),
+    zValidator("json", JobUpdateInputSchema),
+    async (c) => {
+      const id = c.req.param("id");
+      const job = c.req.valid("json");
+      const updateJobId = await jobUsecase.update(id, job);
+      if (!updateJobId) {
+        throw new HTTPException(404, { message: "Job not found" });
+      }
+      return c.json({ id: updateJobId });
+    },
+  )
+  .get(
+    "/jobs/:id/models",
+    authMiddleware(permissions.jobs.getJobModels),
+    async (c) => {
+      const id = c.req.param("id");
+      const models = await jobUsecase.getModels(id);
+      return c.json(models);
+    },
+  )
   .post(
     "/jobs/:id/models",
+    authMiddleware(permissions.jobs.addModels),
     zValidator(
       "json",
       z.object({
@@ -88,140 +113,153 @@ const jobRouter = new Hono()
       return c.text("", 201);
     },
   )
-  .delete("/jobs/:id/models/:modelId", async (c) => {
-    const jobId = c.req.param("id");
-    const modelId = c.req.param("modelId");
-    await jobUsecase.removeModel(jobId, modelId);
-    return c.newResponse(null, 204);
-  })
+  .delete(
+    "/jobs/:id/models/:modelId",
+    authMiddleware(permissions.jobs.removeModel),
+    async (c) => {
+      const jobId = c.req.param("id");
+      const modelId = c.req.param("modelId");
+      await jobUsecase.removeModel(jobId, modelId);
+      return c.newResponse(null, 204);
+    },
+  )
+
   .post(
-    "/bookings",
+    "/jobs/:id/bookings",
+    authMiddleware(permissions.jobs.getJobs),
     zValidator("json", BookingCreateInputSchema),
     async (c) => {
       const booking = c.req.valid("json");
-      const res = await jobUsecase.addBooking(booking);
+      const jobId = c.req.param("id");
+      const res = await jobUsecase.addBooking(jobId, booking);
       return c.json(res);
     },
   )
   .get(
     "/bookings",
+    authMiddleware(permissions.jobs.getBookings),
     zValidator(
       "query",
       z.object({
-        page: z
-          .string()
-          .transform((v) => {
-            const parsed = parseInt(v, 10);
-            if (isNaN(parsed)) {
-              undefined;
-            }
-            return parsed;
-          })
+        page: stringToNumber.optional(),
+        pageSize: stringToNumber.optional(),
+        start: stringToDate.optional(),
+        end: stringToDate.optional(),
+        pagination: stringToBoolean.optional(),
+        statuses: z
+          .enum(jobStatuses)
+          .transform((v) => [v])
+          .or(z.array(z.enum(jobStatuses)))
           .optional(),
-        pageSize: z
-          .string()
-          .transform((v) => {
-            const parsed = parseInt(v, 10);
-            if (isNaN(parsed)) {
-              return undefined;
-            }
-            return parsed;
-          })
-          .optional(),
-        jobIds: z.string().or(z.array(z.string())).optional(),
-        start: z
-          .string()
-          .datetime()
-          .transform((s) => new Date(s))
-          .optional(),
-        end: z
-          .string()
-          .datetime()
-          .transform((s) => new Date(s))
-          .optional(),
-        modelIds: z.string().or(z.array(z.string())).optional(),
       }),
     ),
     async (c) => {
-      const { page, pageSize, start, end, jobIds, modelIds } =
+      const { page, pageSize, start, end, pagination, statuses } =
         c.req.valid("query");
       const bookings = await jobUsecase.getBookings({
         page,
         pageSize,
         start,
         end,
-        jobIds: Array.isArray(jobIds) ? jobIds : jobIds ? [jobIds] : undefined,
-        modelIds: Array.isArray(modelIds)
-          ? modelIds
-          : modelIds
-            ? [modelIds]
-            : undefined,
+        pagination,
+        statuses,
       });
       return c.json(bookings);
     },
   )
   .get(
-    "/bookings/conflicts",
+    "/bookings-with-job",
+    authMiddleware(permissions.jobs.getBookingsWithJob),
     zValidator(
       "query",
       z.object({
-        start: z
-          .string()
-          .datetime()
-          .transform((s) => new Date(s)),
-        end: z
-          .string()
-          .datetime()
-          .transform((s) => new Date(s)),
-        models: z
-          .string()
+        page: stringToNumber.optional(),
+        pageSize: stringToNumber.optional(),
+        start: stringToDate.optional(),
+        end: stringToDate.optional(),
+        pagination: stringToBoolean.optional(),
+        statuses: z
+          .enum(jobStatuses)
           .transform((v) => [v])
-          .or(z.array(z.string())),
+          .or(z.array(z.enum(jobStatuses)))
+          .optional(),
       }),
     ),
     async (c) => {
-      const { start, end, models } = c.req.valid("query");
-      const conflicts = await jobUsecase.checkConflicts({ start, end, models });
-      return c.json(conflicts);
+      const { page, pageSize, start, end, pagination, statuses } =
+        c.req.valid("query");
+      const bookings = await jobUsecase.getBookingsWithJob({
+        page,
+        pageSize,
+        start,
+        end,
+        pagination,
+        statuses,
+      });
+      return c.json(bookings);
     },
   )
-  .delete("/bookings/:id", async (c) => {
-    const bookingId = c.req.param("id");
-    await jobUsecase.removeBooking(bookingId);
-    return c.newResponse(null, 204);
-  })
-  .post("/jobs/:id/confirm", async (c) => {
-    await jobUsecase.confirmJob(c.req.param("id"));
-    return c.newResponse(null, 204);
-  })
-  .post("/jobs/:id/archive", async (c) => {
-    await jobUsecase.archiveJob(c.req.param("id"));
-    return c.newResponse(null, 204);
-  })
-  .post("/jobs/:id/cancel", async (c) => {
-    await jobUsecase.cancelJob(c.req.param("id"));
-    return c.newResponse(null, 204);
-  })
+
   .get(
-    "/bookings/range",
-    validationMiddleware(
+    "/jobs/:id/bookings",
+    authMiddleware(permissions.jobs.getJobBookings),
+    async (c) => {
+      const jobId = c.req.param("id");
+      const bookings = await jobUsecase.getJobBookings(jobId);
+      return c.json(bookings);
+    },
+  )
+  .get(
+    "/jobs/:id/bookings/conflicts",
+    authMiddleware(permissions.jobs.getConflictingBookings),
+    zValidator(
       "query",
       z.object({
-        start: z
-          .string()
-          .datetime()
-          .transform((s) => new Date(s)),
-        end: z
-          .string()
-          .datetime()
-          .transform((s) => new Date(s)),
+        start: stringToDate,
+        end: stringToDate,
       }),
     ),
     async (c) => {
       const { start, end } = c.req.valid("query");
-      const bookings = await jobUsecase.getBookingsBetweenRange({ start, end });
-      return c.json(bookings);
+      const jobId = c.req.param("id");
+      const conflicts = await jobUsecase.getConflictingBookings(jobId, {
+        start,
+        end,
+      });
+      return c.json(conflicts);
+    },
+  )
+  .delete(
+    "/bookings/:id",
+    authMiddleware(permissions.jobs.removeBooking),
+    async (c) => {
+      const bookingId = c.req.param("id");
+      await jobUsecase.removeBooking(bookingId);
+      return c.newResponse(null, 204);
+    },
+  )
+  .post(
+    "/jobs/:id/confirm",
+    authMiddleware(permissions.jobs.confirmJob),
+    async (c) => {
+      await jobUsecase.confirmJob(c.req.param("id"));
+      return c.newResponse(null, 204);
+    },
+  )
+  .post(
+    "/jobs/:id/archive",
+    authMiddleware(permissions.jobs.archiveJob),
+    async (c) => {
+      await jobUsecase.archiveJob(c.req.param("id"));
+      return c.newResponse(null, 204);
+    },
+  )
+  .post(
+    "/jobs/:id/cancel",
+    authMiddleware(permissions.jobs.cancelJob),
+    async (c) => {
+      await jobUsecase.cancelJob(c.req.param("id"));
+      return c.newResponse(null, 204);
     },
   );
-
 export default jobRouter;

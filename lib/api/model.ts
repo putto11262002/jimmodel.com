@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import modelUseCase from "../usecases/model";
+import { modelUseCase } from "../usecases";
 import { z } from "zod";
 import { modelImageTypes } from "@/db/schemas";
 import {
@@ -10,13 +10,14 @@ import {
   UpdateModelSchema,
 } from "../validators/model";
 import { imageValidator } from "../validators/file";
-import { stringToNumber } from "./util";
 import { authMiddleware } from "./middlewares/auth";
 import permissions from "@/config/permission";
-
-export const MODEL_IMAGE_FILE_TYPES = ["image/webp", "image/jpeg", "image/jpg"];
-
-export const MODEL_IMAGE_SIZE_LIMIT = 5_000_000;
+import {
+  stringArray,
+  stringToBoolean,
+  stringToDate,
+  stringToNumber,
+} from "../validators/req-query";
 
 const modelRouter = new Hono()
   .post(
@@ -160,43 +161,57 @@ const modelRouter = new Hono()
     },
   )
   .get(
+    "/blocks-with-model-profile",
+    authMiddleware(permissions.models.getBlocksWithModel),
+    zValidator(
+      "query",
+      z.object({
+        start: stringToDate.optional(),
+        end: stringToDate.optional(),
+        modelIds: stringArray.optional(),
+        pagination: stringToBoolean.optional(),
+        page: stringToNumber.optional(),
+        pageSize: stringToNumber.optional(),
+      }),
+    ),
+    async (c) => {
+      const { start, end, modelIds, pagination, page, pageSize } =
+        c.req.valid("query");
+      const blocks = await modelUseCase.getBlocksWithModelProfile({
+        start,
+        end,
+        modelIds,
+        pagination,
+        page,
+        pageSize,
+      });
+      return c.json(blocks);
+    },
+  )
+  .get(
     "/blocks",
     authMiddleware(permissions.models.getBlocks),
     zValidator(
       "query",
       z.object({
-        start: z
-          .string()
-          .datetime()
-          .transform((v) => new Date(v))
-          .optional(),
-        end: z
-          .string()
-          .datetime()
-          .transform((v) => new Date(v))
-          .optional(),
-        include: z
-          .enum(["model"])
-          .or(z.array(z.enum(["model"])))
-          .optional(),
-        modelIds: z
-          .string()
-          .transform((v) => [v])
-          .or(z.array(z.string()))
-          .optional(),
-        pagination: z
-          .string()
-          .transform((v) => v === "true")
-          .optional(),
+        start: stringToDate.optional(),
+        end: stringToDate.optional(),
+        modelIds: stringArray.optional(),
+        pagination: stringToBoolean.optional(),
+        page: stringToNumber.optional(),
+        pageSize: stringToNumber.optional(),
       }),
     ),
     async (c) => {
-      const { start, end, modelIds, pagination } = c.req.valid("query");
+      const { page, pageSize, start, end, modelIds, pagination } =
+        c.req.valid("query");
       const blocks = await modelUseCase.getBlocks({
         start,
         end,
         modelIds,
         pagination,
+        page,
+        pageSize,
       });
       return c.json(blocks);
     },

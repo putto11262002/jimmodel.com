@@ -34,6 +34,10 @@ export type ModelBlockWithPartialModel = ModelBlock & {
   model: PartialModel;
 };
 
+export type ModelBlockWithModelProfile = ModelBlock & {
+  model: ModelProfile;
+};
+
 export type ModelBlockCreateInput = typeof modelBlockTable.$inferInsert;
 
 export type ModelBlockWithModel = ModelBlock & {

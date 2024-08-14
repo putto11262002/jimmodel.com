@@ -15,8 +15,9 @@ export default function FormMenu({
       className="grid gap-4 text-sm text-muted-foreground"
       x-chunk="dashboard-04-chunk-0"
     >
-      {items.map(({ id, label }) => (
+      {items.map(({ id, label }, index) => (
         <Link
+          key={index}
           replace
           href={`./${id}`}
           className={cn(

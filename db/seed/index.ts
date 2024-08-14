@@ -1,8 +1,11 @@
+import { DB } from "..";
 import seedRootUser from "./root-user";
-async function seed(...fns: (() => Promise<void>)[]) {
-  await Promise.all(fns.map((fn) => fn()));
-  console.log("Seed completed");
-  process.exit(0);
+
+// Add seed functions here
+const seedFns: ((db: DB) => Promise<void>)[] = [seedRootUser];
+
+async function seed(db: DB) {
+  await Promise.all(seedFns.map((fn) => fn(db)));
 }
 
-seed(seedRootUser);
+export default seed;

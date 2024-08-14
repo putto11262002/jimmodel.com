@@ -1,16 +1,12 @@
-import NextAuth, { DefaultSession } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import NextAuth from "next-auth";
+import "next-auth/jwt";
+import { userUsecase } from "@/lib/usecases";
 import Credentials from "next-auth/providers/credentials";
-import userUsecase, {
-  comparePassword,
-  findByUsernameOrEmail,
-} from "../usecases/user";
 import { AuthenticationError } from "../errors/authentication-error";
 import { UserRole } from "@/db/schemas/users";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { intersection } from "lodash";
-import AuthorisationError from "../errors/authorisation-error";
 
 declare module "next-auth" {
   /**
@@ -45,14 +41,14 @@ const authFns = NextAuth({
         password: {},
       },
       authorize: async (credentails) => {
-        const user = await findByUsernameOrEmail(
+        const user = await userUsecase.findByUsernameOrEmail(
           credentails.username as string,
         );
         if (user === null) {
           throw new AuthenticationError("invalid credentials");
         }
 
-        const matched = await comparePassword(
+        const matched = await userUsecase.comparePassword(
           user.id,
           credentails.password as string,
         );
