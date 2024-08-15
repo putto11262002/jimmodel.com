@@ -2,12 +2,13 @@ name: Build
 
 on:
   push:
-    branches-ignore:
-      - main
+    branches:
+      - master
   pull_request:
-
+    branches:
+      - master
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Set up QEMU
@@ -28,11 +29,11 @@ jobs:
           target: runner
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: putto2002/jimmodel_app
+          tags: ${{ vars.APP_IMAGE }}:lastest
       - name: Build and push initializer
         uses: docker/build-push-action@v6
         with:
           target: initializer-runner
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: putto2002/jimmodel_initializer
+          tags: ${{ vars.INITIALIZER_IMAGE }}:latest

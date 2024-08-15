@@ -12,7 +12,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.postgres.address=:5432/tcp"
       - "--certificatesresolvers.defaultresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.defaultresolver.acme.email=jim@jimmodel.com"
+      - "--certificatesresolvers.defaultresolver.acme.email=${LETSENCRYPT_EMAIL}"
       - "--certificatesresolvers.defaultresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
@@ -21,7 +21,7 @@ services:
       - "5432:5432"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${LETSENCRYPT_DIR:-letsencrypt}:/letsencrypt
+      - ${LETSENCRYPT_DATA:-letsencrypt}:/letsencrypt
   postgres:
     image: postgres:16-alpine
     container_name: jimmodel_postgres
@@ -90,7 +90,7 @@ services:
     #   args:
     #     - NODE_ENV=production
     #   target: runner
-    image: putto2002/jimmodel_app:latest
+    image: ${APP_IMAGE}
     container_name: jimmodel_app
     restart: always
     depends_on:
@@ -120,7 +120,7 @@ services:
     #   args:
     #     - NODE_ENV=production
     #   target: initializer-runner
-    image: putto2002/jimmodel_initializer:latest
+    image: ${INITIALIZER_IMAGE}
     container_name: jimmodel_app_initializer
     depends_on:
       postgres:
