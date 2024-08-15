@@ -1,15 +1,25 @@
 name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      example_input:
+        description: "An example input"
+        required: false
+        default: "default value"
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Generate .env
         run: |
-          echo "INITIALIZER_IMAGE=${{ vars.INITIALIZER_IMAGE }}" > .env
-          echo "APP_IMAGE=${{ vars.APP_IMAGE }}" >> .env
+          echo "Generating .env file"
+          echo "INITIALIZER_IMAGE=${{ vars.INITIALIZER_IMAGE }}:latest" > .env
+          echo "APP_IMAGE=${{ vars.APP_IMAGE }}:latest" >> .env
 
           echo "ROOT_USER=${{ secrets.ROOT_USER }}" >> .env
           echo "ROOT_PASSWORD=${{ secrets.ROOT_PASSWORD }}" >> .env
@@ -20,7 +30,7 @@ jobs:
           echo "DB_USER=${{ secrets.DB_USER }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_HOST=${{secrets.DB_HOST}}" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
           echo "DB_DATA=${{ vars.DB_DATA }}" >> .env
 
           echo "MINIO_ROOT_USER=${{ secrets.MINIO_ROOT_USER }}" >> .env
@@ -30,15 +40,16 @@ jobs:
           echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> .env
           echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> .env
           echo "S3_ENDPOINT=${{ secrets.S3_ENDPOINT }}" >> .env
-          echho "S3_PORT=${{ secrets.S3_PORT }}" >> .env
+          echo "S3_PORT=${{ secrets.S3_PORT }}" >> .env
           echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> .env
 
           echo "LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}" >> .env
           echo "LETSENCRYPT_DATA=${{ secrets.LETSENCRYPT_DATA }}" >> .env
 
           echo "APP_HOSTNAME=${{ vars.APP_HOSTNAME }}" >> .env
-          echo "POSTGRES_HOSTNAME=${{ vars.POSTGRES_HOSTNAME}}" >> .env
+          echo "POSTGRES_HOSTNAME=${{ vars.POSTGRES_HOSTNAME }}" >> .env
           echo "MINIO_HOSTNAME=${{ vars.MINIO_HOSTNAME }}" >> .env
+
       - name: Copy files to target server
         uses: appleboy/scp-action@master
         with:
@@ -47,5 +58,18 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           passphrase: ${{ secrets.DEPLOY_PASSPHRASE }}
           port: 22
-          source: "/docker-compose.yml,.env,scripts"
+          rm: true
+          source: "./docker-compose.yml,.env,scripts"
           target: ${{ secrets.DEPLOY_TARGET }}
+
+      - name: remote docker-compose up via ssh
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          passphrase: ${{ secrets.DEPLOY_PASSPHRASE }}
+          port: 22
+          script: |
+            cd ${{ secrets.DEPLOY_TARGET }}
+            sudo ./scripts/deploy.sh
