@@ -19,12 +19,12 @@ while getopts "v" opt; do
 done
 
 echo "Stopping and removing Docker Compose services for project: $PROJECT_NAME"
-docker-compose -p $PROJECT_NAME down $VOLUME_OPTION || echo "No running Docker Compose services found for project: $PROJECT_NAME. Continuing..."
+docker compose -p $PROJECT_NAME down $VOLUME_OPTION || echo "No running Docker Compose services found for project: $PROJECT_NAME. Continuing..."
 
 echo "Pulling updated versions of the containers for project: $PROJECT_NAME"
-docker-compose -p $PROJECT_NAME pull
+docker compose -p $PROJECT_NAME pull
 
 echo "Starting Docker Compose services for project: $PROJECT_NAME"
-docker-compose -p $PROJECT_NAME up --build -d --wait
+docker compose -p $PROJECT_NAME up --build -d --wait
 
 echo "Docker Compose services for project: $PROJECT_NAME have been updated and started."
