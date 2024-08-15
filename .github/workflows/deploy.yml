@@ -1,4 +1,12 @@
 name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      example_input:
+        description: "An example input"
+        required: false
+        default: "default value"
 jobs:
   deploy:
     runs-on: ubuntu-latest
