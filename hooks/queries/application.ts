@@ -40,6 +40,7 @@ export function useApproveApplication() {
         queryKey: ["applications", args[1].applicationId],
       });
       queryClient.invalidateQueries({ queryKey: ["applications"] });
+      queryClient.invalidateQueries({ queryKey: ["models"] });
       ok("Application approved");
     },
   });
