@@ -36,6 +36,7 @@ export const ModelCreateInputSchema = z.object({
   occupation: z.string().nullable().optional(),
   highestLevelOfEducation: z.string().nullable().optional(),
   medicalInfo: z.string().nullable().optional(),
+  motherAgency: z.string().nullable().optional(),
 
   passportNumber: z.string().nullable().optional(),
   idCardNumber: z.string().nullable().optional(),

@@ -50,6 +50,7 @@ export const modelTable = pgTable(
     passportNumber: varchar("passport_number"),
     idCardNumber: varchar("id_card_number"),
     taxId: varchar("tax_id"),
+    motherAgency: varchar("mother_agency"),
 
     address: varchar("address"),
     city: varchar("city"),

@@ -35,6 +35,7 @@ import { countryNames } from "@/db/data/countries";
 import { ethnicities } from "@/db/data/ethnicities";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
+import MultipleSelect from "@/components/muliple-select";
 
 const FormDataSchema = UpdateModelSchema;
 export default function Page({ params: { id } }: { params: { id: string } }) {
@@ -73,6 +74,20 @@ function PageContent({ model }: { model: Model }) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  name="motherAgency"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="col-span-full">
+                      <FormLabel>Mother agency</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   name="nationality"
                   control={form.control}
@@ -177,6 +192,23 @@ function PageContent({ model }: { model: Model }) {
                       <FormLabel>Highest Level of Education</FormLabel>
                       <FormControl>
                         <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="spokenLanguages"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="col-span-full">
+                      <FormLabel>Spoken laguages</FormLabel>
+                      <FormControl>
+                        <MultipleSelect
+                          options={countryNames.map((v) => v)}
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
