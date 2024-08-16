@@ -41,6 +41,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { BreakcrumbSetter } from "@/components/breadcrumb";
 import { useCreateModel } from "@/hooks/queries/model";
+import DatetimePicker from "@/components/datetime-picker";
 
 const CreateModelFormSchema = ModelCreateInputSchema.pick({
   gender: true,
@@ -156,38 +157,11 @@ export default function Page() {
                     render={({ field }) => (
                       <FormItem className="flex flex-col col-span-full">
                         <FormLabel>Date of Birth</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground",
-                                )}
-                                variant={"outline"}
-                              >
-                                {field.value ? ( // format(field.value, "PPP")
-                                  dayjs(field.value).format("MMM DD, YYYY")
-                                ) : (
-                                  <span>Pick a date</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value ?? undefined}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date > new Date() ||
-                                date < new Date("1900-01-01")
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <DatetimePicker
+                          onChange={field.onChange}
+                          value={field.value}
+                          showTime={false}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}

@@ -65,9 +65,12 @@ const years = getYearList();
 export default function DatetimePicker({
   value,
   onChange,
+
+  showTime = true,
 }: {
   value?: Date;
   onChange: (value: Date) => void;
+  showTime?: boolean;
 }) {
   const [viewDate, setViewDate] = useState(new Date());
   useEffect(() => {
@@ -84,7 +87,11 @@ export default function DatetimePicker({
           )}
         >
           {value ? (
-            dayjs(value).format("DD MMM YYYY HH:mm")
+            showTime ? (
+              dayjs(value).format("DD MMM YYYY HH:mm")
+            ) : (
+              dayjs(value).format("DD MM YYYY")
+            )
           ) : (
             <span>Pick a date</span>
           )}
@@ -99,9 +106,11 @@ export default function DatetimePicker({
           <div>
             <MonthSelect value={value} onChange={onChange} />
           </div>
-          <div className="col-span-full">
-            <TimeSelect value={value} onChange={onChange} />
-          </div>
+          {showTime && (
+            <div className="col-span-full">
+              <TimeSelect value={value} onChange={onChange} />
+            </div>
+          )}
         </div>
         <Calendar
           className="p-0 w-full"

@@ -43,6 +43,7 @@ import FormSkeleton from "../form-skeleton";
 import { Model } from "@/db/schemas";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
+import DatetimePicker from "@/components/datetime-picker";
 
 const FormDataSchema = UpdateModelSchema.omit({
   dateOfBirth: true,
@@ -155,37 +156,11 @@ function PageContent({ model }: { model: Model }) {
                   render={({ field }) => (
                     <FormItem className="flex flex-col col-span-full">
                       <FormLabel>Date of Birth</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                              variant={"outline"}
-                            >
-                              {field.value ? ( // format(field.value, "PPP")
-                                dayjs(field.value).format("MMM DD, YYYY")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value!}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <DatetimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        showTime={false}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}

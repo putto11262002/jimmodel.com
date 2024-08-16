@@ -29,7 +29,11 @@ export const modelTable = pgTable(
 
     name: varchar("name").notNull(),
     nickname: varchar("nickname"),
-    dateOfBirth: date("date_of_birth"),
+    dateOfBirth: timestamp("date_of_birth", {
+      mode: "string",
+      withTimezone: true,
+    }),
+
     gender: genderEnum("gender").notNull(),
 
     phoneNumber: varchar("phone_number"),

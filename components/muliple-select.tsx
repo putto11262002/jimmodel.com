@@ -23,8 +23,11 @@ export default function MultipleSelect<T extends string>({
   return (
     <div className="grid gap-4 w-full">
       <ul className="flex flex-wrap gap-2">
-        {value?.map((v) => (
-          <li className="py-1 px-2 border rounded-md text-sm flex items-center gap-1">
+        {value?.map((v, index) => (
+          <li
+            key={index}
+            className="py-1 px-2 border rounded-md text-sm flex items-center gap-1"
+          >
             <span>{v}</span>
             <Button
               type="button"
