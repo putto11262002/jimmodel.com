@@ -113,55 +113,12 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
               </TableCell>
 
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Toggle menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <Link href={`/admin/jobs/${job.id}/update`}>
-                      <DropdownMenuItem>Update</DropdownMenuItem>
-                    </Link>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>Bookings</DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <Link href={`/admin/jobs/${job.id}/bookings/add`}>
-                            <DropdownMenuItem>Add</DropdownMenuItem>
-                          </Link>
-                          <Link href={`/admin/jobs/${job.id}/bookings`}>
-                            <DropdownMenuItem>View</DropdownMenuItem>
-                          </Link>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
-
-                    {job.status === "pending" && (
-                      <DropdownMenuItem
-                        onClick={() => confirm({ jobId: job.id })}
-                      >
-                        Confirm
-                      </DropdownMenuItem>
-                    )}
-                    {job.status === "confirmed" && (
-                      <DropdownMenuItem
-                        onClick={() => cancel({ jobId: job.id })}
-                      >
-                        Cancel
-                      </DropdownMenuItem>
-                    )}
-                    {job.status === "pending" && (
-                      <DropdownMenuItem
-                        onClick={() => archive({ jobId: job.id })}
-                      >
-                        Archive
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Link href={`/admin/jobs/${job.id}/update`}>
+                  <Button aria-haspopup="true" size="icon" variant="ghost">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Toggle menu</span>
+                  </Button>
+                </Link>
               </TableCell>
             </TableRow>
           ))

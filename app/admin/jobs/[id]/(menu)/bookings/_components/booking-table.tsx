@@ -52,8 +52,8 @@ export default function BookingTable({ bookings }: { bookings: Booking[] }) {
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant={"outline"} size={"icon"}>
-                      <MoreHorizontal className="w-4 h-4" />
+                    <Button variant={"ghost"} className="w-7 h-7" size={"icon"}>
+                      <MoreHorizontal className="w-3.5 h-3.5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>

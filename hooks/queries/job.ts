@@ -2,6 +2,7 @@ import useToast from "@/components/toast";
 import { BookingCreateInput, JobUpdateInput } from "@/db/schemas";
 import client from "@/lib/api/client";
 import { Booking, Job, JobCreateInput, JobStatus } from "@/lib/types/job";
+import { Model } from "@/lib/types/model";
 import { PaginatedData } from "@/lib/types/paginated-data";
 import {
   QueryClient,
@@ -70,7 +71,24 @@ export const useDeleteModel = ({
     queryClient,
   );
 };
-
+export const useGetJobModels = ({
+  jobId,
+  ...opts
+}: { jobId: string } & Omit<
+  UseQueryOptions<Model[], Error, Model[]>,
+  "queryFn" | "queryKey"
+>) => {
+  return useQuery({
+    ...opts,
+    queryKey: ["jobs", jobId, "models"],
+    queryFn: async () => {
+      const res = await client.api.jobs[":id"].models.$get({
+        param: { id: jobId },
+      });
+      return res.json();
+    },
+  });
+};
 export const useGetJob = ({
   jobId,
   ...opts
@@ -280,7 +298,7 @@ export function useGetJobBookings({
 >) {
   return useQuery({
     ...props,
-    queryKey: ["job", jobId, "bookings"],
+    queryKey: ["jobs", jobId, "bookings"],
     queryFn: async () => {
       const res = await client.api.jobs[":id"].bookings.$get({
         param: { id: jobId },
