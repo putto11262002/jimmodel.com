@@ -34,7 +34,7 @@ export default function Layout({
     );
   }
   return (
-    <Container className="grid gap-6">
+    <Container max="md" className="grid gap-6">
       <div className="flex items-center gap-4">
         <Button
           onClick={() => router.back()}

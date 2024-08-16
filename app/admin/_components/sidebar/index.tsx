@@ -1,42 +1,16 @@
+"use client";
 import Link from "next/link";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Briefcase, Dock, Lock, User } from "lucide-react";
 import UserMenu from "./user-menu";
-import { DashboardIcon } from "@radix-ui/react-icons";
-
-const iconClasses = "h-5 w-5";
-
-const navMenuItems = [
-  {
-    label: "Dashbaord",
-    href: "/admin",
-    icon: <DashboardIcon className={iconClasses} />,
-  },
-  {
-    label: "Models",
-    href: "/admin/models",
-    icon: <User className={iconClasses} />,
-  },
-  {
-    label: "Jobs",
-    href: "/admin/jobs",
-    icon: <Briefcase className={iconClasses} />,
-  },
-  {
-    label: "Users",
-    href: "/admin/users",
-    icon: <Lock className={iconClasses} />,
-  },
-  {
-    label: "Applications",
-    href: "/admin/applications",
-    icon: <Dock className={iconClasses} />,
-  },
-];
+import { navMenuItems } from "../../nav-menu";
+import useSession from "@/hooks/use-session";
+import { Skeleton } from "@/components/ui/skeleton";
+import { hasPermission } from "@/lib/utils/auth";
+import { UserRole } from "@/db/schemas";
 
 export default function Sidebar() {
   return (
@@ -54,16 +28,39 @@ function NavMenu<T extends { className?: string | undefined }>({
     label: string;
     href: string;
     icon: React.ComponentElement<T, any>;
+    permissions: UserRole[];
   }[];
 }) {
+  const session = useSession();
+  if (session.status === "loading") {
+    return (
+      <nav>
+        <ul className="flex flex-col items-center gap-6 sm:py-5">
+          {new Array(5).fill(0, 0, 5).map((_, index) => (
+            <li key={index}>
+              <Skeleton className="rounded-md w-6 h-6" />
+            </li>
+          ))}
+        </ul>
+      </nav>
+    );
+  }
   return (
     <nav className="">
       <ul className="flex flex-col items-center gap-6 sm:py-5">
-        {navItems.map((item) => (
-          <li key={item.label}>
-            <NavMenuItem label={item.label} href={item.href} icon={item.icon} />
-          </li>
-        ))}
+        {navItems
+          .filter((item) =>
+            hasPermission(item.permissions, session.data.user.roles),
+          )
+          .map((item) => (
+            <li key={item.label}>
+              <NavMenuItem
+                label={item.label}
+                href={item.href}
+                icon={item.icon}
+              />
+            </li>
+          ))}
       </ul>
     </nav>
   );
