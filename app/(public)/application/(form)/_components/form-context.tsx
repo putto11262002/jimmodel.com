@@ -16,6 +16,7 @@ export type Form =
   | "general"
   | "contact"
   | "measurements"
+  | "talents"
   | "experiences"
   | "images"
   | "submit";
@@ -49,6 +50,7 @@ export const forms: Form[] = [
   "general",
   "contact",
   "measurements",
+  "talents",
   "experiences",
   "images",
   "submit",

@@ -60,19 +60,6 @@ function PageContent({ model }: { model: Model }) {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
-                  name="talents"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="col-span-full">
-                      <FormLabel>Talents</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
                   name="aboutMe"
                   control={form.control}
                   render={({ field }) => (

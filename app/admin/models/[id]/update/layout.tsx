@@ -18,7 +18,7 @@ const items: { label?: string; id: string }[] = [
   { id: "background" },
   { id: "identification" },
   { id: "address" },
-  { id: "modeling" },
+  { id: "talents" },
   { id: "measurement" },
   { id: "experiences" },
   { id: "images" },
@@ -61,7 +61,7 @@ export default function Layout({
           <div className="min-w-40">
             <FormMenu items={items} />
           </div>
-          <div className="grow">{children}</div>
+          <div className="grow min-w-0">{children}</div>
         </div>
       </div>
     </Container>

@@ -66,9 +66,19 @@ export default function ExpereicensForm() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Experience</CardTitle>
-        <CardDescription>Model experiences</CardDescription>
+      <CardHeader className="">
+        <div className="flex-1 justify-between flex items-center flex-row">
+          <div>
+            <CardTitle>Experience</CardTitle>
+            <CardDescription>Model experiences</CardDescription>
+          </div>
+
+          <AddNewExperienceDialog onSubmit={(data) => experiences.append(data)}>
+            <Button className="h-7" size={"sm"} variant={"outline"}>
+              <Plus className="w-3.5 h-3.5" />{" "}
+            </Button>
+          </AddNewExperienceDialog>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-4">
         <Table>
@@ -85,32 +95,39 @@ export default function ExpereicensForm() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {experiences.fields.map((experience, index) => (
-              <TableRow key={index}>
-                <TableCell>{experience.year}</TableCell>
-                <TableCell>{experience.product}</TableCell>
-                <TableCell>{experience.media}</TableCell>
-                <TableCell>{experience.country}</TableCell>
-                <TableCell>{experience.details}</TableCell>
-                <TableCell>
-                  <Button
-                    onClick={() => experiences.remove(index)}
-                    size={"icon"}
-                    variant={"outline"}
-                    className="w-7 h-7"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
+            {experiences.fields.length > 0 ? (
+              experiences.fields.map((experience, index) => (
+                <TableRow key={index}>
+                  <TableCell>{experience.year}</TableCell>
+                  <TableCell>{experience.product}</TableCell>
+                  <TableCell>{experience.media}</TableCell>
+                  <TableCell>{experience.country}</TableCell>
+                  <TableCell>{experience.details}</TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => experiences.remove(index)}
+                      size={"icon"}
+                      variant={"outline"}
+                      className="w-7 h-7"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-4 text-muted-foreground"
+                >
+                  No experiences added
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
-        <div className="flex justify-center mt-4">
-          <AddNewExperienceDialog
-            onSubmit={(data) => experiences.append(data)}
-          />
-        </div>
+        <div className="flex justify-center mt-4"></div>
       </CardContent>
       <CardFooter className="py-4 border-t">
         <Button
@@ -139,8 +156,10 @@ const newExperienceFormDataSchema = ApplicationExperienceCreateInputSchema.omit(
 );
 function AddNewExperienceDialog({
   onSubmit,
+  children,
 }: {
   onSubmit: (data: ApplicationExperienceCreateInput) => void;
+  children: React.ReactNode;
 }) {
   const form = useForm<z.infer<typeof newExperienceFormDataSchema>>({
     resolver: zodResolver(newExperienceFormDataSchema),
@@ -155,12 +174,7 @@ function AddNewExperienceDialog({
   const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="h-7" size={"sm"} variant={"outline"}>
-          <Plus className="w-3.5 h-3.5" />{" "}
-          <span className="ml-2">Experience</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <Form {...form}>
           <form

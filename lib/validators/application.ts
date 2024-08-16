@@ -38,7 +38,7 @@ export const ApplicationCreateInputSchema = z.object({
   region: z.string().nullable().optional(),
   zipCode: z.string().nullable().optional(),
   country: z.enum(countryNames).nullable().optional(),
-  talents: z.string().nullable().optional(),
+  talents: z.array(z.string()).nullable().optional(),
   aboutMe: z.string().nullable().optional(),
   height: z.number().nullable().optional(),
   weight: z.number().nullable().optional(),

@@ -61,7 +61,7 @@ export const modelTable = pgTable(
     emergencyContactPhoneNumber: varchar("emergency_contact_phone_number"),
     emergencyContactRelationship: varchar("emergency_contact_relationship"),
 
-    talents: varchar("talents"),
+    talents: varchar("talents").array(),
     aboutMe: varchar("about_me"),
     underwareShooting: boolean("underware_shooting"),
 

@@ -12,7 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:seed": "pnpm tsx ./db/seed/index.ts",
+    "db:seed": "pnpm tsx ./db/scripts/seed.ts",
     "build:migrate-seed": "tsc -p tsconfig.migrate-seed.json && tsc-alias -p tsconfig.migrate-seed.json && pnpm rollup -c rollup.config.db.js"
   },
   "dependencies": {

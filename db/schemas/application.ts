@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   integer,
+  PgArray,
   pgEnum,
   pgTable,
   real,
@@ -45,7 +46,7 @@ export const applicationTable = pgTable("applications", {
   region: varchar("region"),
   zipCode: varchar("zip_code"),
   country: countryEnum("country"),
-  talents: varchar("talents"),
+  talents: varchar("talents").array(),
   aboutMe: varchar("about_me"),
   height: real("height"),
   weight: real("weight"),

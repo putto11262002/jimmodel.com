@@ -7,11 +7,13 @@ import GeneralForm from "./_components/general-form";
 import ImagesForm from "./_components/images-form";
 import MeausrementForm from "./_components/measurement-form";
 import Submit from "./_components/submit";
+import TalentForm from "./_components/talent-form";
 
 const forms: Record<Form, JSX.Element> = {
   general: <GeneralForm />,
   contact: <ContactForm />,
   measurements: <MeausrementForm />,
+  talents: <TalentForm />,
   experiences: <ExpereicensForm />,
   images: <ImagesForm />,
   submit: <Submit />,

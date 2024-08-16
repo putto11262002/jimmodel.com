@@ -51,7 +51,7 @@ export const ModelCreateInputSchema = z.object({
   emergencyContactPhoneNumber: z.string().nullable().optional(),
   emergencyContactRelationship: z.string().nullable().optional(),
 
-  talents: z.string().nullable().optional(),
+  talents: z.array(z.string()).nullable().optional(),
   aboutMe: z.string().nullable().optional(),
   underwareShooting: z.boolean().nullable().optional(),
 

@@ -8,7 +8,7 @@ export default function Container({
   max?: "sm" | "md" | "lg" | "xl" | "liquid";
 } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <main className="p-4 ">
+    <div className="p-4 ">
       <div
         {...props}
         className={cn(
@@ -23,6 +23,6 @@ export default function Container({
       >
         {children}
       </div>
-    </main>
+    </div>
   );
 }

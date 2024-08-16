@@ -8,14 +8,6 @@ import ImageGrid from "@/components/model/image-grid";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   useApproveApplication,
   useGetApplication,
   useGetApplicationImages,
@@ -26,6 +18,8 @@ import dayjs from "dayjs";
 import { ChevronLeft, CircleCheck, CircleX } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import InfoField from "@/components/info-field";
+import TalentTable from "@/components/model/talent-table";
+import ExperienceTable from "@/components/model/experience-table";
 
 export default function Page() {
   const { id } = useParams<{ id: string }>();
@@ -139,6 +133,15 @@ export default function Page() {
             <InfoField label="Hair Color" value={data.hairColor} />
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Talents</CardTitle>
+          </CardHeader>
+
+          <CardContent className="grid gap-3">
+            <TalentTable talents={data.talents || []} />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -146,39 +149,7 @@ export default function Page() {
           </CardHeader>
 
           <CardContent className="grid gap-3">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Year</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Media</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.experiences && data.experiences.length > 0 ? (
-                  data.experiences.map((experience, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{experience.year}</TableCell>
-                      <TableCell>{experience.product}</TableCell>
-                      <TableCell>{experience.media}</TableCell>
-                      <TableCell>{experience.country}</TableCell>
-                      <TableCell>{experience.details}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="py-4 text-muted-foreground text-center"
-                    >
-                      No experiences
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <ExperienceTable experiences={data.experiences || []} />
           </CardContent>
         </Card>
         <Card>
