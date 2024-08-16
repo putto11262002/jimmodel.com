@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS "applications" (
 	"region" varchar,
 	"zip_code" varchar,
 	"country" "country",
-	"talents" varchar,
+	"talents" varchar[],
 	"about_me" varchar,
 	"height" real,
 	"weight" real,
@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS "bookings" (
 	"end" timestamp with time zone NOT NULL,
 	"type" "booking_type" NOT NULL,
 	"notes" varchar,
+	"status" "job_status" NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now()
 );
@@ -201,7 +202,7 @@ CREATE TABLE IF NOT EXISTS "models" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar NOT NULL,
 	"nickname" varchar,
-	"date_of_birth" date,
+	"date_of_birth" timestamp with time zone,
 	"gender" "gender" NOT NULL,
 	"phone_number" varchar,
 	"email" varchar,
@@ -220,6 +221,7 @@ CREATE TABLE IF NOT EXISTS "models" (
 	"passport_number" varchar,
 	"id_card_number" varchar,
 	"tax_id" varchar,
+	"mother_agency" varchar,
 	"address" varchar,
 	"city" varchar,
 	"region" varchar,
@@ -228,7 +230,7 @@ CREATE TABLE IF NOT EXISTS "models" (
 	"emergency_contact_name" varchar,
 	"emergency_contact_phone_number" varchar,
 	"emergency_contact_relationship" varchar,
-	"talents" varchar,
+	"talents" varchar[],
 	"about_me" varchar,
 	"underware_shooting" boolean,
 	"height" real,
@@ -270,7 +272,7 @@ CREATE TABLE IF NOT EXISTS "models" (
 	"public" boolean DEFAULT false,
 	"inactive" boolean DEFAULT true,
 	"tags" varchar[],
-	"profile_file_id" uuid
+	"image_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "model_images" (
@@ -326,7 +328,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "models" ADD CONSTRAINT "profile_image_fk" FOREIGN KEY ("id","profile_file_id") REFERENCES "public"."model_images"("model_id","file_id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "models" ADD CONSTRAINT "image_fk" FOREIGN KEY ("id","image_id") REFERENCES "public"."model_images"("model_id","file_id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

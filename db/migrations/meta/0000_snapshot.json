@@ -1,5 +1,5 @@
 {
-  "id": "dee32f7c-18c3-4a74-89f4-3b76a7c4c4e1",
+  "id": "ff72fa6a-c875-4499-a83b-fbba81c53bac",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -247,7 +247,7 @@
         },
         "talents": {
           "name": "talents",
-          "type": "varchar",
+          "type": "varchar[]",
           "primaryKey": false,
           "notNull": false
         },
@@ -513,6 +513,13 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "job_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -879,7 +886,7 @@
         },
         "date_of_birth": {
           "name": "date_of_birth",
-          "type": "date",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -995,6 +1002,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "mother_agency": {
+          "name": "mother_agency",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "address": {
           "name": "address",
           "type": "varchar",
@@ -1046,7 +1059,7 @@
         },
         "talents": {
           "name": "talents",
-          "type": "varchar",
+          "type": "varchar[]",
           "primaryKey": false,
           "notNull": false
         },
@@ -1305,8 +1318,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "profile_file_id": {
-          "name": "profile_file_id",
+        "image_id": {
+          "name": "image_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -1314,13 +1327,13 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "profile_image_fk": {
-          "name": "profile_image_fk",
+        "image_fk": {
+          "name": "image_fk",
           "tableFrom": "models",
           "tableTo": "model_images",
           "columnsFrom": [
             "id",
-            "profile_file_id"
+            "image_id"
           ],
           "columnsTo": [
             "model_id",

@@ -36,7 +36,7 @@ import ConstraintViolationError from "../errors/contrain-violation-error";
 import { isArray } from "lodash";
 import { ModelImageCreateInput } from "../types/model";
 import { NotFoundError } from "../errors/not-found-error";
-import { PostgresError } from "postgres";
+import postgres from "postgres";
 import { FileUseCase } from "./file";
 
 export const modelProfileColumns = {
@@ -609,7 +609,7 @@ export class ModelUseCase {
       await this.fileUseCase.deleteFile(fileId);
     } catch (err) {
       // Ignore foreign key violation error as the file may still be referenced by the application
-      if (err instanceof PostgresError && err.code === "23503") {
+      if (err instanceof postgres.PostgresError && err.code === "23503") {
         console.log(err);
         return;
       }

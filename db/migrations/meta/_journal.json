@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1722091256520,
-      "tag": "0000_productive_dorian_gray",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1723535417935,
-      "tag": "0001_friendly_magma",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1723777970012,
-      "tag": "0002_nice_maggott",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1723786061751,
-      "tag": "0003_shiny_agent_zero",
+      "when": 1723800758452,
+      "tag": "0000_zippy_vulture",
       "breakpoints": true
     }
   ]
