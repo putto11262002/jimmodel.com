@@ -18,7 +18,7 @@ export const navItems: NavItem[] = [
     title: "Models",
     children: [
       {
-        href: "models/male",
+        href: "/models/male",
         title: "Male",
         icon: (className: string) => (
           <FontAwesomeIcon className={className} icon={faMars} />
@@ -32,7 +32,7 @@ export const navItems: NavItem[] = [
         ),
       },
       {
-        href: "/models/lgbtq",
+        href: "/models/non-binary",
         title: "LGBTQ",
         icon: (className: string) => (
           <FontAwesomeIcon className={className} icon={faTransgender} />

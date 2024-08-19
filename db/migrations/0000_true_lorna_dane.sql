@@ -29,7 +29,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."gender" AS ENUM('Male', 'Female', 'Non-binary', 'Genderfluid');
+ CREATE TYPE "public"."gender" AS ENUM('male', 'female', 'non-binary');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

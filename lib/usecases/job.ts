@@ -8,7 +8,6 @@ import {
 } from "../../db/schemas/jobs";
 import { and, count, eq, gte, inArray, lt, lte, ne, or } from "drizzle-orm";
 import { getOffset, getPagination, paginate } from "../utils/pagination";
-import { db } from "../../db/client";
 import { DB } from "@/db";
 import { modelProfileColumns } from "./model";
 import { PaginatedData } from "../types/paginated-data";
@@ -59,13 +58,7 @@ export class JobUsecase {
             jobsToModels: {
               with: {
                 models: {
-                  columns: {
-                    name: true,
-                    id: true,
-                    email: true,
-                    gender: true,
-                    dateOfBirth: true,
-                  },
+                  columns: modelProfileColumns,
                   with: {
                     image: true,
                   },
@@ -127,13 +120,7 @@ export class JobUsecase {
           jobsToModels: {
             with: {
               models: {
-                columns: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  gender: true,
-                  dateOfBirth: true,
-                },
+                columns: modelProfileColumns,
                 with: {
                   image: true,
                 },
@@ -225,13 +212,7 @@ export class JobUsecase {
         jobsToModels: {
           with: {
             models: {
-              columns: {
-                id: true,
-                name: true,
-                email: true,
-                gender: true,
-                dateOfBirth: true,
-              },
+              columns: modelProfileColumns,
               with: {
                 image: true,
               },

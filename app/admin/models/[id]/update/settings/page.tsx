@@ -2,11 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  useUpdateModel,
-  useSuspenseGetModel,
-  useGetModel,
-} from "@/hooks/queries/model";
+import { useUpdateModel, useGetModel } from "@/hooks/queries/model";
 import { useParams } from "next/navigation";
 import FormSkeleton from "../form-skeleton";
 
@@ -52,7 +48,7 @@ export default function _Page() {
                 </div>
               )}
 
-              {!data.local && data.inTown && (
+              {!data.local && !data.inTown && (
                 <div className="space-y-4">
                   <Label>Direct Booking</Label>
                   <Switch

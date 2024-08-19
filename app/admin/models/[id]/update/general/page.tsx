@@ -31,11 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { genders } from "@/db/data/genders";
-import { cn } from "@/lib/utils";
+import { genders } from "@/lib/types/common";
 import { UpdateModelSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
@@ -44,6 +42,7 @@ import { Model } from "@/db/schemas";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
 import DatetimePicker from "@/components/datetime-picker";
+import { upperFirst } from "lodash";
 
 const FormDataSchema = UpdateModelSchema.omit({
   dateOfBirth: true,
@@ -141,7 +140,7 @@ function PageContent({ model }: { model: Model }) {
                         <SelectContent>
                           {genders.map((gender) => (
                             <SelectItem key={gender} value={gender}>
-                              {gender}
+                              {upperFirst(gender)}
                             </SelectItem>
                           ))}
                         </SelectContent>

@@ -38,6 +38,7 @@ import { ModelImageCreateInput } from "../types/model";
 import { NotFoundError } from "../errors/not-found-error";
 import postgres from "postgres";
 import { FileUseCase } from "./file";
+import { Gender } from "../types/common";
 
 export const modelProfileColumns = {
   id: true,
@@ -45,6 +46,10 @@ export const modelProfileColumns = {
   email: true,
   gender: true,
   dateOfBirth: true,
+  active: true,
+  published: true,
+  inTown: true,
+  directBooking: true,
 } as const;
 /**
  * Add new model record. If the operation is successful a model id is returned. Otherwise, return null.
@@ -79,6 +84,7 @@ export const findModelProfileById = async (
 ): Promise<ModelProfile | null> => {
   const modelProfile = await db.query.modelTable.findFirst({
     where: (model, { eq }) => eq(model.id, modelId),
+    columns: modelProfileColumns,
     with: {
       images: {
         columns: {
@@ -98,6 +104,10 @@ export const findModelProfileById = async (
     dateOfBirth: modelProfile?.dateOfBirth,
     gender: modelProfile.gender,
     image: modelProfile?.images?.[0] || null,
+    active: modelProfile.active,
+    published: modelProfile.published,
+    directBooking: modelProfile.directBooking,
+    inTown: modelProfile.inTown,
   };
 };
 
@@ -137,71 +147,94 @@ export const getModels = async ({
   return paginatedData;
 };
 
-export const getModelProfiles = async ({
-  page = 1,
-  pageSize = 10,
-  q,
-  ids,
-}: {
-  page?: number;
-  pageSize?: number;
-  q?: string;
-  ids?: string[];
-}): Promise<PaginatedData<ModelProfile>> => {
-  const whereClause = and(
-    q ? ilike(modelTable.name, `%${q}%`) : undefined,
-    ids?.length && ids.length > 0 ? inArray(modelTable.id, ids) : undefined,
-  );
-
-  const [modelProfiles, counts] = await Promise.all([
-    db.query.modelTable.findMany({
-      columns: {
-        id: true,
-        name: true,
-        gender: true,
-        dateOfBirth: true,
-      },
-      where: whereClause,
-      with: {
-        images: {
-          columns: {
-            fileId: true,
-          },
-          orderBy: (images, { desc }) => [desc(images.isProfile)],
-          limit: 1,
-        },
-      },
-      orderBy: (model, { asc }) => [asc(model.name)],
-      limit: pageSize,
-      offset: getOffset(page, pageSize),
-    }),
-    db.select({ count: count() }).from(modelTable).where(whereClause),
-  ]);
-
-  const total = counts?.[0]?.count || 0;
-
-  const paginatedData = getPagination(
-    modelProfiles.map((modelProfile) => ({
-      id: modelProfile.id,
-      name: modelProfile.name,
-      gender: modelProfile.gender,
-      dateOfBirth: modelProfile.dateOfBirth,
-      image: modelProfile.images?.[0] || null,
-    })),
-    page,
-    pageSize,
-    total,
-  );
-
-  return paginatedData;
-};
-
 export class ModelUseCase {
   private db: DB;
   private fileUseCase: FileUseCase;
   constructor(db: DB, fileUseCase: FileUseCase) {
     this.db = db;
     this.fileUseCase = fileUseCase;
+  }
+
+  async getModelProfiles({
+    page = 1,
+    pageSize = 10,
+    q,
+    ids,
+    active,
+    published,
+    genders,
+    local,
+    directBooking,
+    inTown,
+  }: {
+    page?: number;
+    pageSize?: number;
+    q?: string;
+    ids?: string[];
+    active?: boolean;
+    published?: boolean;
+    genders?: Gender[];
+    local?: boolean;
+    directBooking?: boolean;
+    inTown?: boolean;
+  }): Promise<PaginatedData<ModelProfile>> {
+    const whereClause = and(
+      q ? ilike(modelTable.name, `%${q}%`) : undefined,
+      ids?.length && ids.length > 0 ? inArray(modelTable.id, ids) : undefined,
+      typeof active === "boolean" ? eq(modelTable.active, active) : undefined,
+      typeof published === "boolean"
+        ? eq(modelTable.published, published)
+        : undefined,
+      typeof local === "boolean" ? eq(modelTable.inTown, local) : undefined,
+      typeof directBooking === "boolean"
+        ? eq(modelTable.directBooking, directBooking)
+        : undefined,
+      typeof inTown === "boolean" ? eq(modelTable.inTown, inTown) : undefined,
+      genders && genders.length > 0
+        ? inArray(modelTable.gender, genders)
+        : undefined,
+    );
+
+    const [modelProfiles, counts] = await Promise.all([
+      db.query.modelTable.findMany({
+        columns: modelProfileColumns,
+        where: whereClause,
+        with: {
+          images: {
+            columns: {
+              fileId: true,
+            },
+            orderBy: (images, { desc }) => [desc(images.isProfile)],
+            limit: 1,
+          },
+        },
+        orderBy: (model, { asc }) => [asc(model.name)],
+        limit: pageSize,
+        offset: getOffset(page, pageSize),
+      }),
+      db.select({ count: count() }).from(modelTable).where(whereClause),
+    ]);
+
+    const total = counts?.[0]?.count || 0;
+
+    const paginatedData = getPagination(
+      modelProfiles.map((modelProfile) => ({
+        id: modelProfile.id,
+        name: modelProfile.name,
+        gender: modelProfile.gender,
+        dateOfBirth: modelProfile.dateOfBirth,
+        image: modelProfile.images?.[0] || null,
+        active: modelProfile.active,
+        published: modelProfile.published,
+        directBooking: modelProfile.directBooking,
+        inTown: modelProfile.inTown,
+      })),
+      page,
+      pageSize,
+      total,
+    );
+
+    return paginatedData;
   }
 
   /**
@@ -408,13 +441,7 @@ export class ModelUseCase {
           : {}),
         with: {
           model: {
-            columns: {
-              id: true,
-              name: true,
-              email: true,
-              gender: true,
-              dateOfBirth: true,
-            },
+            columns: modelProfileColumns,
             with: {
               image: true,
             },

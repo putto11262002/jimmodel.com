@@ -5,7 +5,6 @@ import {
   pgTable,
   timestamp,
   real,
-  date,
   uuid,
   foreignKey,
   integer,

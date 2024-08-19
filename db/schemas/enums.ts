@@ -1,9 +1,9 @@
 import { pgEnum } from "drizzle-orm/pg-core";
-import { genders } from "../data/genders";
 import { eyeColors } from "../data/eye-colors";
 import { hairColors } from "../data/hair-colors";
 import { ethnicities } from "../data/ethnicities";
 import { countryNames } from "../data/countries";
+import { genders } from "@/lib/types/common";
 
 export const genderEnum = pgEnum("gender", genders);
 

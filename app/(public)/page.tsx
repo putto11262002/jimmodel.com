@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Container from "@/components/container";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -13,9 +14,11 @@ export default function Page() {
         with Thailand’s Leading Agency, Backed by Over 40 Years of Experience
       </h2>
       <div className="w-full flex pt-6 justify-center">
-        <Button className="" size={"sm"}>
-          Apply Now
-        </Button>
+        <Link href={"/application"}>
+          <Button className="" size={"sm"}>
+            Apply Now
+          </Button>
+        </Link>
       </div>
       <div className="w-full min-h-[200px] relative mt-12 md:mt-20 opacity-70">
         <Image

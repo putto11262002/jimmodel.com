@@ -63,7 +63,14 @@ export const isExistingFile = (
 
 export type ModelProfile = Pick<
   Model,
-  "id" | "name" | "gender" | "dateOfBirth"
+  | "id"
+  | "name"
+  | "gender"
+  | "dateOfBirth"
+  | "published"
+  | "active"
+  | "inTown"
+  | "directBooking"
 > & {
   image: {
     fileId: string;

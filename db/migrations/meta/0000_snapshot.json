@@ -1,5 +1,5 @@
 {
-  "id": "ff72fa6a-c875-4499-a83b-fbba81c53bac",
+  "id": "b679f448-ef3f-4123-988d-d595b2995f32",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1748,10 +1748,9 @@
       "name": "gender",
       "schema": "public",
       "values": [
-        "Male",
-        "Female",
-        "Non-binary",
-        "Genderfluid"
+        "male",
+        "female",
+        "non-binary"
       ]
     },
     "public.hair_color": {
