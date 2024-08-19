@@ -87,6 +87,7 @@ export default function ModelFilterDialog({
     router.push(
       `/models/${data.gender || parsedPathParams.gender}?${mutatbleSearchParams.toString()}`,
     );
+    setOpen(false);
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -175,7 +176,7 @@ export default function ModelFilterDialog({
                 />
               )}
 
-              {local !== "local" && inTown !== "in town" && (
+              {local !== "local" && (
                 <FormField
                   name="directBooking"
                   control={form.control}

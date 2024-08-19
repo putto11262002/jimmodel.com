@@ -6,6 +6,11 @@ import Image from "next/image";
 import ModelFilterDialog from "./_components/model-filter-dialog";
 import Link from "next/link";
 import { PathParamsSchema, SearchParamsSchema } from "./_lib.ts/schemas";
+import { Badge } from "@/components/ui/badge";
+
+// Force full route cache and revalidate every 1 hour
+export const dynamic = "force-static";
+export const revalidate = 3600;
 
 export default async function Page({
   params,
@@ -68,17 +73,33 @@ export default async function Page({
           data.map((profile, index) => (
             <div
               key={index}
-              className="relative h-[18em] md:h-[22em] rounded-md overflow-hidden"
+              className="relative h-[18em] md:h-[22em] rounded-md overflow-hidden group"
             >
-              <div className="absolute bottom-0 w-full p-2 z-10 space-x-2">
-                {/* {profile.inTown && ( */}
-                {/*   <Badge className="bg-green-200 text-green-800 ">In Town</Badge> */}
-                {/* )} */}
-                {/* {profile.directBooking && ( */}
-                {/*   <Badge className="bg-yellow-200 text-yellow-800"> */}
-                {/*     Direct Booking */}
-                {/*   </Badge> */}
-                {/* )} */}
+              <div className="text-center absolute inset-0 w-full h-full z-20 bg-black/50 text-white items-center justify-center group-hover:flex hidden flex-col">
+                <p className="font-bold">{profile.name}</p>
+                <div className="grid gap-2 mt-4">
+                  <div>
+                    <p className="text-xs">height</p>
+                    <p>{profile.height}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs">weight</p>
+                    <p>{profile.weight}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute bottom-0 w-full p-2 z-10 space-x-2 flex group-hover:hidden">
+                {!profile.local && profile.inTown && (
+                  <Badge className="bg-green-200 text-green-800 ">
+                    In Town
+                  </Badge>
+                )}
+                {!profile.local && !profile.inTown && profile.directBooking && (
+                  <Badge className="bg-yellow-200 text-yellow-800">
+                    Direct Booking
+                  </Badge>
+                )}
               </div>
               {profile.image ? (
                 <Image

@@ -50,6 +50,9 @@ export const modelProfileColumns = {
   published: true,
   inTown: true,
   directBooking: true,
+  local: true,
+  height: true,
+  weight: true,
 } as const;
 /**
  * Add new model record. If the operation is successful a model id is returned. Otherwise, return null.
@@ -82,7 +85,7 @@ export const findModelById = async (modelId: string) => {
 export const findModelProfileById = async (
   modelId: string,
 ): Promise<ModelProfile | null> => {
-  const modelProfile = await db.query.modelTable.findFirst({
+  const model = await db.query.modelTable.findFirst({
     where: (model, { eq }) => eq(model.id, modelId),
     columns: modelProfileColumns,
     with: {
@@ -95,19 +98,22 @@ export const findModelProfileById = async (
       },
     },
   });
-  if (!modelProfile) {
+  if (!model) {
     return null;
   }
   return {
-    id: modelProfile.id,
-    name: modelProfile.name,
-    dateOfBirth: modelProfile?.dateOfBirth,
-    gender: modelProfile.gender,
-    image: modelProfile?.images?.[0] || null,
-    active: modelProfile.active,
-    published: modelProfile.published,
-    directBooking: modelProfile.directBooking,
-    inTown: modelProfile.inTown,
+    id: model.id,
+    name: model.name,
+    gender: model.gender,
+    dateOfBirth: model.dateOfBirth,
+    published: model.published,
+    active: model.active,
+    inTown: model.inTown,
+    directBooking: model.directBooking,
+    local: model.local,
+    image: model.images?.[0] || null,
+    height: model.height,
+    weight: model.weight,
   };
 };
 
@@ -185,7 +191,7 @@ export class ModelUseCase {
       typeof published === "boolean"
         ? eq(modelTable.published, published)
         : undefined,
-      typeof local === "boolean" ? eq(modelTable.inTown, local) : undefined,
+      typeof local === "boolean" ? eq(modelTable.local, local) : undefined,
       typeof directBooking === "boolean"
         ? eq(modelTable.directBooking, directBooking)
         : undefined,
@@ -228,6 +234,9 @@ export class ModelUseCase {
         published: modelProfile.published,
         directBooking: modelProfile.directBooking,
         inTown: modelProfile.inTown,
+        local: modelProfile.local,
+        height: modelProfile.height,
+        weight: modelProfile.weight,
       })),
       page,
       pageSize,

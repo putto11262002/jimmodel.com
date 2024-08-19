@@ -42,6 +42,7 @@ const FormDataSchema = z
     weight: stringToNumber.nullable().optional(),
     collar: stringToNumber.nullable().optional(),
     chest: stringToNumber.nullable().optional(),
+    bust: stringToNumber.nullable().optional(),
     chestHeight: stringToNumber.nullable().optional(),
     chestWidth: stringToNumber.nullable().optional(),
     waist: stringToNumber.nullable().optional(),
@@ -167,6 +168,19 @@ function PageContent({ model }: { model: Model }) {
                 />
                 <FormField
                   name="chest"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="col-span-full">
+                      <FormLabel>Chest (inches)</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="bust"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">

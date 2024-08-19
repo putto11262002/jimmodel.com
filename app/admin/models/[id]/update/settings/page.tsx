@@ -48,7 +48,7 @@ export default function _Page() {
                 </div>
               )}
 
-              {!data.local && !data.inTown && (
+              {!data.local && (
                 <div className="space-y-4">
                   <Label>Direct Booking</Label>
                   <Switch

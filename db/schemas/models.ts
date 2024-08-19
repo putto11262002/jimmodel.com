@@ -74,6 +74,7 @@ export const modelTable = pgTable(
 
     collar: real("collar"),
     chest: real("chest"),
+    bust: real("bust"),
 
     chestHeight: real("chest_height"),
     chestWidth: real("chest_width"),

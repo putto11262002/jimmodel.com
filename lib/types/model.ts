@@ -71,6 +71,9 @@ export type ModelProfile = Pick<
   | "active"
   | "inTown"
   | "directBooking"
+  | "local"
+  | "height"
+  | "weight"
 > & {
   image: {
     fileId: string;

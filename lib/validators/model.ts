@@ -61,6 +61,7 @@ export const ModelCreateInputSchema = z.object({
   // bust: z.string().nullable().optional(), // inch
   collar: z.number().positive().nullable().optional(),
   chest: z.number().positive().nullable().optional(),
+  bust: z.number().positive().nullable().optional(),
   chestHeight: z.number().positive().nullable().optional(),
   chestWidth: z.number().positive().nullable().optional(),
 
