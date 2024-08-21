@@ -26,14 +26,13 @@ export const modelImageTypeEnum = pgEnum("model_image_type", modelImageTypes);
 export const modelImageTable = pgTable(
   "model_images",
   {
-    fileId: uuid("file_id")
+    fileId: uuid("original_file_id")
       .references(() => fileInfoTable.id, {})
       .notNull(),
     modelId: uuid("model_id")
       .references((): AnyPgColumn => modelTable.id, {})
       .notNull(),
     type: modelImageTypeEnum("image_type"),
-    isProfile: boolean("is_profile"),
     createdAt: timestamp("created_at", {
       mode: "string",
       withTimezone: true,
@@ -53,6 +52,10 @@ export const modelImageRelatios = relations(modelImageTable, ({ one }) => ({
   model: one(modelTable, {
     fields: [modelImageTable.modelId],
     references: [modelTable.id],
+  }),
+  file: one(fileInfoTable, {
+    fields: [modelImageTable.fileId],
+    references: [fileInfoTable.id],
   }),
 }));
 

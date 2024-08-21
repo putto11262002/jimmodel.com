@@ -30,7 +30,7 @@ export default function _Page() {
                   className="block"
                   checked={Boolean(data.local)}
                   onCheckedChange={(local) =>
-                    mutate({ modelId: id, input: { local } })
+                    mutate({ modelId: id, input: { ...data, local } })
                   }
                 />
               </div>
@@ -42,7 +42,7 @@ export default function _Page() {
                     className="block"
                     checked={data!.inTown}
                     onCheckedChange={(inTown) =>
-                      mutate({ modelId: id, input: { inTown } })
+                      mutate({ modelId: id, input: { ...data, inTown } })
                     }
                   />
                 </div>
@@ -55,7 +55,7 @@ export default function _Page() {
                     className="block"
                     checked={data!.directBooking}
                     onCheckedChange={(directBooking) =>
-                      mutate({ modelId: id, input: { directBooking } })
+                      mutate({ modelId: id, input: { ...data, directBooking } })
                     }
                   />
                 </div>
@@ -77,7 +77,7 @@ export default function _Page() {
                   className="block"
                   checked={data!.published}
                   onCheckedChange={(published) =>
-                    mutate({ modelId: id, input: { published } })
+                    mutate({ modelId: id, input: { ...data, published } })
                   }
                 />
               </div>
@@ -89,7 +89,7 @@ export default function _Page() {
                 className="block"
                 checked={data!.active}
                 onCheckedChange={(active) =>
-                  mutate({ modelId: id, input: { active } })
+                  mutate({ modelId: id, input: { ...data, active } })
                 }
               />
             </div>

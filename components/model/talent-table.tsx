@@ -32,9 +32,9 @@ export default function TalentTable({
         {talents.length > 0 ? (
           talents.map((talent, index) => (
             <TableRow key={index}>
-              <TableCell>{talent}</TableCell>
+              <TableCell className="whitespace-nowrap">{talent}</TableCell>
               {onRemove && (
-                <TableCell align="right">
+                <TableCell className="whitespace-nowrap" align="right">
                   <Button
                     onClick={() => onRemove({ index, value: talent })}
                     className="h-7 w-7"

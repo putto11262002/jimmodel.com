@@ -9,6 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { upperFirst } from "lodash";
 import Link from "next/link";
 import { formatISODateString } from "@/lib/utils/date";
+import JobOwnerBadge from "@/components/job/job-owner-badge";
+import KeyValueItem from "@/components/key-value/key-value-item";
+import ModelProfileList from "@/components/model/model-list";
 
 class BookingEvent implements Event {
   private booking: Omit<BookingWithJob, "start" | "end"> & {
@@ -45,7 +48,7 @@ class BookingEvent implements Event {
           <Briefcase className="h-[20px] w-[20px]" />
           <Link
             className="hover:underline flex items-baseline font-medium"
-            href={`/admin/jobs/update/${this.booking.job.id}`}
+            href={`/admin/jobs/${this.booking.job.id}/update`}
           >
             {this.booking.job.name}
           </Link>
@@ -54,47 +57,24 @@ class BookingEvent implements Event {
           <Badge variant={"outline"}>{upperFirst(this.booking.type)}</Badge>
           <JobStatusBadge status={this.booking.job.status} />
         </div>
-        <div className="grid gap-1 text-muted-foreground">
-          <p className="text-xs flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5 text-foreground" />
-            <span>
-              {formatISODateString(this.booking.start.toISOString())} -{" "}
-              {formatISODateString(this.booking.end.toISOString())}
-            </span>
-          </p>
-          <p className="text-xs flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 text-foreground" />
-            <span>{this.booking.job.owner.name}</span>
-          </p>
-          <p className="text-xs flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-foreground" />
-            <span>
-              {dayjs(this.booking.createdAt).format("DD MMM YY HH:mm a")}
-            </span>
-          </p>
+        <div className="grid gap-2 text-muted-foreground">
+          <KeyValueItem
+            size={"xs"}
+            _key={<Calendar className="h-4 w-4 text-foreground" />}
+            value={`${formatISODateString(this.booking.start.toISOString())} - ${formatISODateString(this.booking.end.toISOString())}`}
+          />
+          <KeyValueItem
+            size="xs"
+            _key={<User className="h-4 w-4 text-foreground" />}
+            value={<JobOwnerBadge owner={this.booking.job.owner} />}
+          />
+          <KeyValueItem
+            size="xs"
+            _key={<Clock className="h-4 w-4 text-foreground" />}
+            value={dayjs(this.booking.createdAt).format("DD MMM YY HH:mm a")}
+          />
         </div>
-        <ul className="grid gap-2">
-          {this.booking.job.models.map((model, index) => (
-            <li
-              key={index}
-              className="flex items-center gap-4 rounded border p-2"
-            >
-              <UserAvatar
-                size={"small"}
-                user={{
-                  name: model.name,
-                  image: model.image ? { id: model.image.fileId } : null,
-                }}
-              />
-              <Link
-                href={`/models/update/${model.id}`}
-                className="text-sm flex items-center gap-1 hover:underline"
-              >
-                <span className="">{model.name}</span>{" "}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <ModelProfileList models={this.booking.job.models} />
       </div>
     );
   }
@@ -102,16 +82,20 @@ class BookingEvent implements Event {
     return (
       <div className="flex items-center gap-1 h-full">
         {this.booking.job.status === "pending" && (
-          <UserAvatar
-            rounded
-            width={10}
-            height={10}
-            user={this.booking.job.owner}
-          />
+          <div className="">
+            <div className="relative w-[11px] h-[11px]">
+              <UserAvatar
+                rounded
+                width={10}
+                height={10}
+                user={this.booking.job.owner}
+              />
+            </div>
+          </div>
         )}
         {this.booking.job.status === "confirmed" && (
-          <div>
-            <CircleCheck className="h-[10px] w-[10px] text-black" />
+          <div className="rounded-full flex items-center justify-center">
+            <CircleCheck className="h-[10px] w-[10px] p-0 m-0 text-white bg-green-700 rounded-full" />
           </div>
         )}
         <p className="text-[10px] overflow-ellipsis text-nowrap">

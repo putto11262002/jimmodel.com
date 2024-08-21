@@ -42,10 +42,12 @@ export default function BookingTable({ bookings }: { bookings: Booking[] }) {
         {bookings.length > 0 ? (
           bookings.map((booking, index) => (
             <TableRow key={index}>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
                 {formatUTCDateStringWithoutTZ(booking.start)}
               </TableCell>
-              <TableCell>{formatUTCDateStringWithoutTZ(booking.end)}</TableCell>
+              <TableCell className="whitespace-nowrap">
+                {formatUTCDateStringWithoutTZ(booking.end)}
+              </TableCell>
               <TableCell>
                 <Badge variant={"outline"}>{upperFirst(booking.type)}</Badge>
               </TableCell>

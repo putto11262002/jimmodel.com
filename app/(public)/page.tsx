@@ -5,8 +5,8 @@ import Link from "next/link";
 
 export default function Page() {
   return (
-    <Container className="mx-auto h-[calc(100vh-theme(spacing.16))] box-content">
-      <h1 className="mt-20 text-4xl font-bold text-center">
+    <Container className="mx-auto h-[calc(100vh-theme(spacing.16))] box-border">
+      <h1 className="pt-20 text-4xl font-bold text-center">
         Unleash Your Full Potential With Us
       </h1>
       <h2 className="pt-2 text-sm max-w-lg w-full mx-auto text-center text-muted-foreground">

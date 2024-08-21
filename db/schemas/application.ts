@@ -51,6 +51,7 @@ export const applicationTable = pgTable("applications", {
   height: real("height"),
   weight: real("weight"),
   bust: real("bust"),
+  chest: real("chest"),
   hips: real("hips"),
   suitDressSize: varchar("suit_dress_size"),
   shoeSize: real("shoe_size"),

@@ -5,34 +5,28 @@ import {
   modelImageTypes,
   modelTable,
 } from "@/db/schemas";
+import { FileInfo } from "./file";
+import { Gender } from "./common";
 
 export type Model = typeof modelTable.$inferSelect & {
-  image: ModelImage | null;
+  profileImage: FileInfo | null;
 };
 
-export type ModelImage = typeof modelImageTable.$inferSelect;
+export type ModelImage = typeof modelImageTable.$inferSelect & {
+  file: Omit<FileInfo, "height" | "width"> & { height: number; width: number };
+};
 
 export type ModelCreateInput = Omit<
   typeof modelTable.$inferInsert,
-  "profileFileId" | "createdAt" | "updatedAt"
+  "createdAt" | "updatedAt"
 >;
 
-export type ModelUpdateInput = ModelCreateInput;
-
-export type PartialModel = Pick<
-  Model,
-  "id" | "name" | "gender" | "dateOfBirth"
-> & {
-  profileImage: {
-    fileId: string;
-  } | null;
+export type ModelUpdateInput = Omit<ModelCreateInput, "name" | "gender"> & {
+  name?: string;
+  gender?: Gender;
 };
 
 export type ModelBlock = typeof modelBlockTable.$inferSelect;
-
-export type ModelBlockWithPartialModel = ModelBlock & {
-  model: PartialModel;
-};
 
 export type ModelBlockWithModelProfile = ModelBlock & {
   model: ModelProfile;
@@ -41,7 +35,7 @@ export type ModelBlockWithModelProfile = ModelBlock & {
 export type ModelBlockCreateInput = typeof modelBlockTable.$inferInsert;
 
 export type ModelBlockWithModel = ModelBlock & {
-  model: Pick<Model, "name" | "id" | "email" | "image">;
+  model: Model;
 };
 
 export type ModelExperience = typeof modelExperienceTable.$inferSelect;
@@ -50,10 +44,14 @@ export type ModelExperienceCreateInput =
   typeof modelExperienceTable.$inferInsert;
 
 export type ModelImageType = (typeof modelImageTypes)[number];
-
 export type ModelImageCreateInput =
-  | { file: Blob; type: ModelImageType }
+  | {
+      file: Blob;
+      type: ModelImageType;
+    }
   | { fileId: string; type: ModelImageType };
+
+export type ModelProfileImageUpdateInput = { file: Blob } | { fileId: string };
 
 export const isExistingFile = (
   i: ModelImageCreateInput,
@@ -74,8 +72,8 @@ export type ModelProfile = Pick<
   | "local"
   | "height"
   | "weight"
-> & {
-  image: {
-    fileId: string;
-  } | null;
-};
+  | "hips"
+  | "chest"
+  | "bust"
+  | "profileImage"
+>;

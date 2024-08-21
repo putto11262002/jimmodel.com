@@ -1,3 +1,4 @@
+import { useJobPreview } from "@/components/job/job-preview-sheet";
 import JobStatusBadge from "@/components/job/job-status-badge";
 import Loader from "@/components/loader";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,8 @@ const BookingsCard = memo(
     const enabled = Boolean(
       start && end && milisecondToHour(end.getTime() - start.getTime()) > 0,
     );
+
+    const { preview } = useJobPreview();
 
     const { data, isFetching } = useGetConflictingBookings({
       start: start || new Date(),
@@ -98,11 +101,15 @@ const BookingsCard = memo(
                       <JobStatusBadge status={conflict.status} />
                     </TableCell>
                     <TableCell>
-                      <Link href={`/admin/jobs/${conflict.jobId}/update`}>
-                        <Button size={"icon"} variant={"ghost"}>
-                          <SquareArrowOutUpRight className="w-4 h-4" />
-                        </Button>
-                      </Link>
+                      {/* <Link href={`/admin/jobs/${conflict.jobId}/update`}> */}
+                      <Button
+                        onClick={() => preview(conflict.jobId)}
+                        size={"icon"}
+                        variant={"ghost"}
+                      >
+                        <SquareArrowOutUpRight className="w-4 h-4" />
+                      </Button>
+                      {/* </Link> */}
                     </TableCell>
                   </TableRow>
                 ))

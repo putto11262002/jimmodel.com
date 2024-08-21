@@ -60,7 +60,7 @@ export class JobUsecase {
                 models: {
                   columns: modelProfileColumns,
                   with: {
-                    image: true,
+                    profileImage: true,
                   },
                 },
               },
@@ -122,7 +122,7 @@ export class JobUsecase {
               models: {
                 columns: modelProfileColumns,
                 with: {
-                  image: true,
+                  profileImage: true,
                 },
               },
             },
@@ -214,7 +214,7 @@ export class JobUsecase {
             models: {
               columns: modelProfileColumns,
               with: {
-                image: true,
+                profileImage: true,
               },
             },
           },
@@ -284,7 +284,7 @@ export class JobUsecase {
       with: {
         models: {
           with: {
-            image: true,
+            profileImage: true,
           },
         },
       },
@@ -318,23 +318,21 @@ export class JobUsecase {
     }
 
     const jobModelIds = job.jobsToModels.map((jtm) => jtm.modelId);
+    console.log(jobModelIds);
 
     // Get jobs with overlapping models
-    const overlappingJobs = await this.db.query.jobTable.findMany({
-      columns: {
-        id: true,
-      },
-      where: ne(jobTable.status, "cancelled"),
-      with: {
-        jobsToModels: {
-          ...(job.jobsToModels.length > 0
-            ? {
-                where: inArray(jobToModelTable.modelId, jobModelIds),
-              }
-            : {}),
-        },
-      },
-    });
+    const overlappingJobs = await this.db
+      .select({ id: jobTable.id })
+      .from(jobTable)
+      .innerJoin(jobToModelTable, eq(jobTable.id, jobToModelTable.jobId))
+      .where(
+        and(
+          ne(jobTable.status, "cancelled"),
+          jobModelIds.length > 0
+            ? inArray(jobToModelTable.modelId, jobModelIds)
+            : undefined,
+        ),
+      );
 
     const overlappingJobIds = overlappingJobs.map((j) => j.id);
 
@@ -353,7 +351,7 @@ export class JobUsecase {
             ),
           )
         : undefined,
-      // inArray(bookingTable.jobId, overlappingJobIds),
+      inArray(bookingTable.jobId, overlappingJobIds),
     );
     const bookings = await this.db.query.bookingTable.findMany({
       where,
@@ -418,7 +416,7 @@ export class JobUsecase {
                   models: {
                     columns: modelProfileColumns,
                     with: {
-                      image: true,
+                      profileImage: true,
                     },
                   },
                 },

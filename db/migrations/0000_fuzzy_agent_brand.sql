@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS "applications" (
 	"height" real,
 	"weight" real,
 	"bust" real,
+	"chest" real,
 	"hips" real,
 	"suit_dress_size" varchar,
 	"shoe_size" real,
@@ -120,6 +121,10 @@ CREATE TABLE IF NOT EXISTS "files" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"path" varchar NOT NULL,
 	"mime_type" varchar NOT NULL,
+	"size" integer,
+	"orginal" uuid,
+	"height" integer,
+	"width" integer,
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now()
 );
@@ -169,8 +174,8 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"contract_details" varchar,
 	"status" "job_status" NOT NULL,
 	"created_by_id" uuid NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "jobs_models" (
@@ -237,6 +242,7 @@ CREATE TABLE IF NOT EXISTS "models" (
 	"weight" real,
 	"collar" real,
 	"chest" real,
+	"bust" real,
 	"chest_height" real,
 	"chest_width" real,
 	"waist" real,
@@ -272,17 +278,16 @@ CREATE TABLE IF NOT EXISTS "models" (
 	"public" boolean DEFAULT false,
 	"inactive" boolean DEFAULT true,
 	"tags" varchar[],
-	"image_id" uuid
+	"profile_image_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "model_images" (
-	"file_id" uuid NOT NULL,
+	"original_file_id" uuid NOT NULL,
 	"model_id" uuid NOT NULL,
 	"image_type" "model_image_type",
-	"is_profile" boolean,
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now(),
-	CONSTRAINT "model_images_file_id_model_id_pk" PRIMARY KEY("file_id","model_id")
+	CONSTRAINT "model_images_original_file_id_model_id_pk" PRIMARY KEY("original_file_id","model_id")
 );
 --> statement-breakpoint
 DO $$ BEGIN
@@ -293,6 +298,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "application_images" ADD CONSTRAINT "application_images_application_id_applications_id_fk" FOREIGN KEY ("application_id") REFERENCES "public"."applications"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "files" ADD CONSTRAINT "files_orginal_files_id_fk" FOREIGN KEY ("orginal") REFERENCES "public"."files"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -328,13 +339,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "models" ADD CONSTRAINT "image_fk" FOREIGN KEY ("id","image_id") REFERENCES "public"."model_images"("model_id","file_id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "models" ADD CONSTRAINT "models_profile_image_id_files_id_fk" FOREIGN KEY ("profile_image_id") REFERENCES "public"."files"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "model_images" ADD CONSTRAINT "model_images_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "model_images" ADD CONSTRAINT "model_images_original_file_id_files_id_fk" FOREIGN KEY ("original_file_id") REFERENCES "public"."files"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

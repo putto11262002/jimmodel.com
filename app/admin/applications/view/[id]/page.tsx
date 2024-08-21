@@ -20,6 +20,25 @@ import { useParams, useRouter } from "next/navigation";
 import InfoField from "@/components/info-field";
 import TalentTable from "@/components/model/talent-table";
 import ExperienceTable from "@/components/model/experience-table";
+import KeyValueItem from "@/components/key-value/key-value-item";
+
+const CustomKeyValueItem = ({
+  _key,
+  value,
+}: {
+  _key: string;
+  value: string | undefined | null | number;
+}) => {
+  return (
+    <KeyValueItem
+      hideWhenEmpty
+      _key={_key}
+      value={value}
+      size="md"
+      sameLine={false}
+    />
+  );
+};
 
 export default function Page() {
   const { id } = useParams<{ id: string }>();
@@ -88,12 +107,12 @@ export default function Page() {
             <CardTitle>General Info</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <InfoField label="Name" value={data.name} />
-            <InfoField label="Gender" value={data.gender} />
-            <InfoField label="Ethnicity" value={data.ethnicity} />
-            <InfoField label="Nationality" value={data.nationality} />
-            <InfoField
-              label="Date of Birth"
+            <CustomKeyValueItem _key="Name" value={data.name} />
+            <CustomKeyValueItem _key="Gender" value={data.gender} />
+            <CustomKeyValueItem _key="Ethnicity" value={data.ethnicity} />
+            <CustomKeyValueItem _key="Nationality" value={data.nationality} />
+            <CustomKeyValueItem
+              _key="Date of Birth"
               value={
                 data.dateOfBirth
                   ? dayjs(data.dateOfBirth).format("DD MMM YY")
@@ -108,13 +127,13 @@ export default function Page() {
           </CardHeader>
 
           <CardContent className="grid gap-3">
-            <InfoField label="Email" value={data.email} />
-            <InfoField label="Phone Number" value={data.phoneNumber} />
-            <InfoField label="Line ID" value={data.lineId} />
-            <InfoField label="WeChat" value={data.wechat} />
-            <InfoField label="WhatsApp" value={data.whatsapp} />
-            <InfoField label="Instagram" value={data.instagram} />
-            <InfoField label="Facebook" value={data.facebook} />
+            <CustomKeyValueItem _key="Email" value={data.email} />
+            <CustomKeyValueItem _key="Phone Number" value={data.phoneNumber} />
+            <CustomKeyValueItem _key="Line ID" value={data.lineId} />
+            <CustomKeyValueItem _key="WeChat" value={data.wechat} />
+            <CustomKeyValueItem _key="WhatsApp" value={data.whatsapp} />
+            <CustomKeyValueItem _key="Instagram" value={data.instagram} />
+            <CustomKeyValueItem _key="Facebook" value={data.facebook} />
           </CardContent>
         </Card>
         <Card>
@@ -123,14 +142,18 @@ export default function Page() {
           </CardHeader>
 
           <CardContent className="grid gap-3">
-            <InfoField label="Height" value={data.height} />
-            <InfoField label="Weight" value={data.weight} />
-            <InfoField label="Bust" value={data.bust} />
-            <InfoField label="Hips" value={data.hips} />
-            <InfoField label="Suite/Dress Size" value={data.suitDressSize} />
-            <InfoField label="Shoe Size" value={data.shoeSize} />
-            <InfoField label="Eye Color" value={data.eyeColor} />
-            <InfoField label="Hair Color" value={data.hairColor} />
+            <CustomKeyValueItem _key="Height" value={data.height} />
+            <CustomKeyValueItem _key="Weight" value={data.weight} />
+            <CustomKeyValueItem _key="Bust" value={data.bust} />
+            <CustomKeyValueItem _key="Chest" value={data.chest} />
+            <CustomKeyValueItem _key="Hips" value={data.hips} />
+            <CustomKeyValueItem
+              _key="Suite/Dress Size"
+              value={data.suitDressSize}
+            />
+            <CustomKeyValueItem _key="Shoe Size" value={data.shoeSize} />
+            <CustomKeyValueItem _key="Eye Color" value={data.eyeColor} />
+            <CustomKeyValueItem _key="Hair Color" value={data.hairColor} />
           </CardContent>
         </Card>
         <Card>

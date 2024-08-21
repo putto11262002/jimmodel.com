@@ -13,10 +13,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 const modelImageMenuItems = [
   { label: "All", href: "all" },
-  {
-    label: "Profile",
-    href: "profile",
-  },
   ...modelImageTypes.map((type) => ({
     label: upperFirst(type),
     href: `${type}`,

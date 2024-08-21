@@ -1,4 +1,5 @@
 "use client";
+import JobOwnerBadge from "@/components/job/job-owner-badge";
 import JobStatusBadge from "@/components/job/job-status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ import {
 import UserAvatar from "@/components/user/user-avatar";
 import { useArchive, useCancelJob, useConfrirmJob } from "@/hooks/queries/job";
 import { Job } from "@/lib/types/job";
+import { formatISODateString } from "@/lib/utils/date";
 import dayjs from "dayjs";
 import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -41,10 +43,10 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
-          <TableHead>Owner</TableHead>
+          <TableHead className="hidden md:table-cell">Owner</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Models</TableHead>
-          <TableHead>Created At</TableHead>
+          <TableHead className="hidden md:table-cell">Models</TableHead>
+          <TableHead className="hidden md:table-cell">Created At</TableHead>
           <TableHead>
             <span className="sr-only">Actions</span>
           </TableHead>
@@ -55,11 +57,13 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
           jobs.map((job) => (
             <TableRow key={job.id}>
               <TableCell className="font-medium">{job.name}</TableCell>
-              <TableCell className="underline">{job.owner.name}</TableCell>
+              <TableCell className="hidden md:table-cell">
+                <JobOwnerBadge owner={job.owner} />
+              </TableCell>
               <TableCell>
                 <JobStatusBadge status={job.status} />
               </TableCell>
-              <TableCell className="">
+              <TableCell className="hidden md:table-cell">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center">
@@ -76,8 +80,8 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
                             size={"small"}
                             user={{
                               name: model.name,
-                              image: model.image
-                                ? { id: model.image.fileId }
+                              image: model.profileImage
+                                ? { id: model.profileImage.id }
                                 : null,
                             }}
                           />
@@ -93,8 +97,8 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
                             size={"small"}
                             user={{
                               name: model.name,
-                              image: model.image
-                                ? { id: model.image.fileId }
+                              image: model.profileImage
+                                ? { id: model.profileImage.id }
                                 : null,
                             }}
                           />
@@ -108,8 +112,8 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell>
-                {dayjs(job.createdAt).format("DD MMM YY HH:mm")}
+              <TableCell className="whitespace-nowrap hidden md:table-cell">
+                {formatISODateString(job.createdAt)}
               </TableCell>
 
               <TableCell>

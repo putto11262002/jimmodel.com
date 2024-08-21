@@ -32,9 +32,9 @@ import { eyeColors } from "@/db/data/eye-colors";
 import { hairColors } from "@/db/data/hair-colors";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import FormSkeleton from "../form-skeleton";
-import { Model } from "@/db/schemas";
 import { stringToNumber } from "@/lib/utils/validator";
 import { Switch } from "@/components/ui/switch";
+import { Model } from "@/lib/types/model";
 
 const FormDataSchema = z
   .object({
@@ -184,7 +184,7 @@ function PageContent({ model }: { model: Model }) {
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="col-span-full">
-                      <FormLabel>Chest (inches)</FormLabel>
+                      <FormLabel>Bust (inches)</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>

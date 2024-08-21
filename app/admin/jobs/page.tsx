@@ -37,9 +37,9 @@ export default function Page() {
   }
 
   return (
-    <Container className="grid gap-4">
+    <Container className="grid gap-4 w-screen">
       <SearchBar />
-      <Card x-chunk="dashboard-06-chunk-0">
+      <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Jobs</CardTitle>
         </CardHeader>

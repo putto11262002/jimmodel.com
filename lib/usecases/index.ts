@@ -6,6 +6,7 @@ import { S3FileUseCase } from "./file";
 import { JobUsecase } from "./job";
 import { ModelUseCase } from "./model";
 import { UserUsecase } from "./user";
+import { EditableImageFactory, ImageUseCase } from "./image";
 
 const minioClient = new Minio.Client({
   accessKey: config.s3.accessKey,
@@ -21,7 +22,12 @@ export const fileUseCase = new S3FileUseCase(minioClient, db, {
 
 export const jobUsecase = new JobUsecase(db);
 
-export const modelUseCase = new ModelUseCase(db, fileUseCase);
+export const imageUseCase = new ImageUseCase({
+  fileUseCase,
+  editableImageFactory: new EditableImageFactory(),
+});
+
+export const modelUseCase = new ModelUseCase({ db, fileUseCase, imageUseCase });
 
 export const userUsecase = new UserUsecase(db, fileUseCase);
 

@@ -21,6 +21,7 @@ const items: { label?: string; id: string }[] = [
   { id: "talents" },
   { id: "measurement" },
   { id: "experiences" },
+  { id: "profile-image", label: "profile image" },
   { id: "images" },
   { id: "tags" },
   { id: "settings" },

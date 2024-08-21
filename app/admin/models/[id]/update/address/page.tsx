@@ -21,9 +21,8 @@ import { UpdateModelSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import useUpdateModel from "../_hooks/use-update-model";
 import useSession from "@/hooks/use-session";
-import { useGetModel } from "@/hooks/queries/model";
+import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import permissions from "@/config/permission";
 
 const FormDataSchema = UpdateModelSchema;

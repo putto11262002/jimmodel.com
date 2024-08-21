@@ -117,7 +117,12 @@ export const ModelCreateInputSchema = z.object({
   active: z.boolean().nullable().optional(),
 });
 
-export const UpdateModelSchema = ModelCreateInputSchema.partial();
+export const UpdateModelSchema = ModelCreateInputSchema.omit({
+  name: true,
+  gender: true,
+}).merge(
+  z.object({ name: z.string().optional(), gender: z.enum(genders).optional() }),
+);
 
 export const ModelBlockCreateInputSchema = z.object({
   start: z.string().date().or(z.string().datetime()),

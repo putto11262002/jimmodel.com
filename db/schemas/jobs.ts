@@ -37,8 +37,11 @@ export const jobTable = pgTable("jobs", {
   createdAt: timestamp("created_at", {
     mode: "string",
     withTimezone: true,
-  }).defaultNow(),
+  })
+    .notNull()
+    .defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
+    .notNull()
     .defaultNow()
     .$onUpdateFn(() => new Date().toISOString()),
 });

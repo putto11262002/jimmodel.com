@@ -84,14 +84,14 @@ const modelRouter = new Hono()
       return c.newResponse(null, 204);
     },
   )
-  .post(
-    "models/:modelId/images/profile",
+  .put(
+    "/models/:modelId/images/profile",
     authMiddleware(permissions.models.setProfileImageById),
-    zValidator("json", z.object({ fileId: z.string() })),
+    zValidator("form", z.object({ file: imageValidator() })),
     async (c) => {
-      const { fileId } = c.req.valid("json");
+      const { file } = c.req.valid("form");
       const modelId = c.req.param("modelId");
-      await modelUseCase.setProfileImage(modelId, fileId);
+      await modelUseCase.updateProfileImage(modelId, { file });
       c.status(204);
       return c.body(null);
     },

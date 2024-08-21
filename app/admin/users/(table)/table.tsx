@@ -17,6 +17,7 @@ import { upperFirst } from "lodash";
 import Link from "next/link";
 import { combine, hasPermission } from "@/lib/utils/auth";
 import useSession from "@/hooks/use-session";
+import Avatar from "@/components/avatar";
 export default function UserTable({ users }: { users: UserWithoutSecrets[] }) {
   const session = useSession();
 
@@ -24,12 +25,12 @@ export default function UserTable({ users }: { users: UserWithoutSecrets[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="hidden sm:table-cell">
+          <TableHead className="">
             <span className="sr-only">Image</span>
           </TableHead>
-          <TableHead>Name</TableHead>
+          <TableHead className="hidden md:table-cell">Name</TableHead>
           <TableHead>Username</TableHead>
-          <TableHead>Email</TableHead>
+          <TableHead className="hidden md:table-cell">Email</TableHead>
           <TableHead className="hidden md:table-cell">Roles</TableHead>
           <TableHead>
             <span className="sr-only">Actions</span>
@@ -40,12 +41,12 @@ export default function UserTable({ users }: { users: UserWithoutSecrets[] }) {
         {users.map((user) => (
           <TableRow key={user.id}>
             <TableCell>
-              <UserAvatar user={user} />
+              <Avatar name={user.name} fileId={user.image?.id} />
             </TableCell>
-            <TableCell className="hidden sm:table-cell">{user.name}</TableCell>
-            <TableCell className="font-medium">{user.username}</TableCell>
-            <TableCell>{user.email}</TableCell>
-            <TableCell className="space-x-2 h-full">
+            <TableCell className="hidden md:table-cell">{user.name}</TableCell>
+            <TableCell className="">{user.username}</TableCell>
+            <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+            <TableCell className="hidden md:table-cell space-x-2 h-full">
               <div className="space-x-1 inline">
                 {user.roles
                   ?.filter((_, i) => i < 2)

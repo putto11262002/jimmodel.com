@@ -44,6 +44,7 @@ const formDataSchema = ApplicationCreateInputSchema.pick({
     bust: stringToNumber.optional(),
     hips: stringToNumber.optional(),
     shoeSize: stringToNumber.optional(),
+    chest: stringToNumber.optional(),
   }),
 );
 
@@ -52,7 +53,7 @@ export default function MeausrementForm() {
     resolver: zodResolver(formDataSchema),
   });
 
-  const { setApplication, next } = useFormContext();
+  const { setApplication, next, application } = useFormContext();
 
   return (
     <Form {...form}>
@@ -95,19 +96,36 @@ export default function MeausrementForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              name="bust"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bust (inches)</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {application.gender !== "female" && (
+              <FormField
+                name="chest"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Chest (inches)</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {application.gender !== "male" && (
+              <FormField
+                name="bust"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bust (inches)</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               name="hips"
               control={form.control}

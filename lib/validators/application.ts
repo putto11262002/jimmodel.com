@@ -43,6 +43,7 @@ export const ApplicationCreateInputSchema = z.object({
   height: z.number().nullable().optional(),
   weight: z.number().nullable().optional(),
   bust: z.number().nullable().optional(),
+  chest: z.number().nullable().optional(),
   hips: z.number().nullable().optional(),
   suitDressSize: z.string().nullable().optional(),
   shoeSize: z.number().nullable().optional(),

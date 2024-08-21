@@ -38,11 +38,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import FormSkeleton from "../form-skeleton";
-import { Model } from "@/db/schemas";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
 import DatetimePicker from "@/components/datetime-picker";
 import { upperFirst } from "lodash";
+import { Model } from "@/lib/types/model";
 
 const FormDataSchema = UpdateModelSchema.omit({
   dateOfBirth: true,

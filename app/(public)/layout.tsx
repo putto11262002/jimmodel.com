@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="flex min-h-screen w-full flex-col">
-        <header className="sticky top-0 h-16 gap-8 z-50 bg-background px-4">
+        <header className="sticky top-0 h-16 gap-8 z-50 bg-background">
           <Container className="flex items-center justify-between">
             <Link
               href="/"

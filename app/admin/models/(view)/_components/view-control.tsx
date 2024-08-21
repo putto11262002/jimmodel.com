@@ -31,6 +31,7 @@ export default function ViewControl() {
             data.q
               ? setParam("q", [data.q], params)
               : removeAllParams("q", params);
+            setParam("page", ["1"], params);
             router.push(`/admin/models?${params.toString()}`);
           })}
         >
@@ -42,8 +43,8 @@ export default function ViewControl() {
               className="h-7  px-2 text-sm"
             />
             <Button size={"sm"} className="h-7 ">
-              <Search className="h-3.5 w-3.5 mr-1" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              <Search className="h-3.5 w-3.5" />
+              <span className="ml-2 sr-only sm:not-sr-only sm:whitespace-nowrap">
                 Search
               </span>
             </Button>

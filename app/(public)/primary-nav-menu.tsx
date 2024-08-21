@@ -41,6 +41,6 @@ export const navItems: NavItem[] = [
     ],
   },
   { href: "/portfolio", title: "Portfolio" },
-  { href: "/about", title: "About Us" },
+  { href: "/about-us", title: "About Us" },
   { href: "/contact", title: "Contact Us" },
 ];

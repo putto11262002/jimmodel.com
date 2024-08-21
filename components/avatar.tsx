@@ -4,6 +4,7 @@ import { placeholder } from "drizzle-orm";
 import Image from "next/image";
 
 const sizes = {
+  xs: 15,
   small: 32,
   medium: 60,
   large: 100,
@@ -13,7 +14,7 @@ type AvatarProps = {
   fileId?: string | null;
   name: string;
   rounded?: boolean;
-  size?: "small" | "medium" | "large";
+  size?: "xs" | "small" | "medium" | "large";
   width?: number;
   height?: number;
 };
@@ -41,16 +42,19 @@ export default function Avatar(props: AvatarProps) {
     );
   }
   return (
-    <Image
-      className={cn("rounded object-cover", props.rounded && "rounded-full")}
+    <div
+      className="relative"
       style={{
         width: props.width || sizes[props.size || "medium"],
         height: props.height || sizes[props.size || "medium"],
       }}
-      src={`/files/${props.fileId}`}
-      alt={props.name}
-      width={width}
-      height={height}
-    />
+    >
+      <Image
+        className={cn("rounded object-cover", props.rounded && "rounded-full")}
+        src={`/files/${props.fileId}`}
+        alt={props.name}
+        fill
+      />
+    </div>
   );
 }

@@ -29,13 +29,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import FormSkeleton from "../form-skeleton";
-import { Model } from "@/db/schemas";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import { countryNames } from "@/db/data/countries";
 import { ethnicities } from "@/db/data/ethnicities";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
 import MultipleSelect from "@/components/muliple-select";
+import { Model } from "@/lib/types/model";
 
 const FormDataSchema = UpdateModelSchema;
 export default function Page({ params: { id } }: { params: { id: string } }) {

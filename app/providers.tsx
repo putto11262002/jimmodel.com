@@ -3,6 +3,7 @@ import { TooltipProvider } from "../components/ui/tooltip";
 import { SessionProvider } from "next-auth/react";
 import { BreadcrumbProvider } from "@/components/breadcrumb";
 import QueryClientProvider from "./query-client-provider";
+import { JobPreviewSheetProvider } from "@/components/job/job-preview-sheet";
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -10,7 +11,9 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
       <SessionProvider>
         <BreadcrumbProvider>
           <TooltipProvider>
-            <QueryClientProvider>{children}</QueryClientProvider>
+            <QueryClientProvider>
+              <JobPreviewSheetProvider>{children}</JobPreviewSheetProvider>
+            </QueryClientProvider>
           </TooltipProvider>
         </BreadcrumbProvider>
       </SessionProvider>

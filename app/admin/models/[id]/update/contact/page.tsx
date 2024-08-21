@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Model } from "@/db/schemas";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import { UpdateModelSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +25,7 @@ import { z } from "zod";
 import FormSkeleton from "../form-skeleton";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
+import { Model } from "@/lib/types/model";
 
 const FormDataSchema = UpdateModelSchema;
 

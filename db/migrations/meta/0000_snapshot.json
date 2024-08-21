@@ -1,5 +1,5 @@
 {
-  "id": "b679f448-ef3f-4123-988d-d595b2995f32",
+  "id": "cdde88d0-21a8-4097-abba-d0411a404103",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -275,6 +275,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "chest": {
+          "name": "chest",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
         "hips": {
           "name": "hips",
           "type": "real",
@@ -357,6 +363,30 @@
           "primaryKey": false,
           "notNull": true
         },
+        "size": {
+          "name": "size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "orginal": {
+          "name": "orginal",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -373,7 +403,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "files_orginal_files_id_fk": {
+          "name": "files_orginal_files_id_fk",
+          "tableFrom": "files",
+          "tableTo": "files",
+          "columnsFrom": [
+            "orginal"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -673,14 +717,14 @@
           "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "now()"
         }
       },
@@ -1099,6 +1143,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "bust": {
+          "name": "bust",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
         "chest_height": {
           "name": "chest_height",
           "type": "real",
@@ -1318,8 +1368,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "image_id": {
-          "name": "image_id",
+        "profile_image_id": {
+          "name": "profile_image_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -1327,17 +1377,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "image_fk": {
-          "name": "image_fk",
+        "models_profile_image_id_files_id_fk": {
+          "name": "models_profile_image_id_files_id_fk",
           "tableFrom": "models",
-          "tableTo": "model_images",
+          "tableTo": "files",
           "columnsFrom": [
-            "id",
-            "image_id"
+            "profile_image_id"
           ],
           "columnsTo": [
-            "model_id",
-            "file_id"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -1350,8 +1398,8 @@
       "name": "model_images",
       "schema": "",
       "columns": {
-        "file_id": {
-          "name": "file_id",
+        "original_file_id": {
+          "name": "original_file_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -1366,12 +1414,6 @@
           "name": "image_type",
           "type": "model_image_type",
           "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_profile": {
-          "name": "is_profile",
-          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -1392,12 +1434,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "model_images_file_id_files_id_fk": {
-          "name": "model_images_file_id_files_id_fk",
+        "model_images_original_file_id_files_id_fk": {
+          "name": "model_images_original_file_id_files_id_fk",
           "tableFrom": "model_images",
           "tableTo": "files",
           "columnsFrom": [
-            "file_id"
+            "original_file_id"
           ],
           "columnsTo": [
             "id"
@@ -1420,10 +1462,10 @@
         }
       },
       "compositePrimaryKeys": {
-        "model_images_file_id_model_id_pk": {
-          "name": "model_images_file_id_model_id_pk",
+        "model_images_original_file_id_model_id_pk": {
+          "name": "model_images_original_file_id_model_id_pk",
           "columns": [
-            "file_id",
+            "original_file_id",
             "model_id"
           ]
         }

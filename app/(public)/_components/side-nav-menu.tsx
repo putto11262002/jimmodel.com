@@ -46,7 +46,7 @@ export default function SideNavMenu({ items }: { items: NavItem[] }) {
                               {item.children.map((child, index) => (
                                 <li key={index}>
                                   <Link
-                                    href={"#"}
+                                    href={child.href}
                                     className="text-base font-medium text-muted-foreground hover:text-foreground"
                                   >
                                     {child.title}
@@ -62,7 +62,7 @@ export default function SideNavMenu({ items }: { items: NavItem[] }) {
                   return (
                     <li key={index}>
                       <Link
-                        href={"#"}
+                        href={item.href}
                         className="font-medium text-muted-foreground hover:text-foreground"
                       >
                         {item.title}

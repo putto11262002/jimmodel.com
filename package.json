@@ -63,12 +63,15 @@
     "react": "^18",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18",
+    "react-grid-gallery": "^1.0.1",
     "react-hook-form": "^7.52.0",
+    "sharp": "^0.33.5",
     "superjson": "^2.2.1",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^10.0.0",
+    "yet-another-react-lightbox": "^3.21.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -94,6 +97,7 @@
     "eslint-config-prettier": "^9.1.0",
     "lucide-react": "^0.396.0",
     "postcss": "^8",
+    "react-photo-album": "^3.0.1",
     "rimraf": "^6.0.1",
     "rollup": "^4.20.0",
     "rollup-plugin-copy": "^3.5.0",

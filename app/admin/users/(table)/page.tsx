@@ -40,7 +40,7 @@ export default function Page() {
   }
 
   return (
-    <Card x-chunk="dashboard-06-chunk-0">
+    <Card className="min-w-0">
       <CardHeader>
         <CardTitle>Users</CardTitle>
       </CardHeader>

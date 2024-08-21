@@ -5,6 +5,7 @@ import Loader from "../loader";
 import client from "../../lib/api/client";
 import Image from "next/image";
 import { Checkbox } from "../ui/checkbox";
+import Avatar from "../avatar";
 
 export default function SearchModelDialog({
   children,
@@ -67,16 +68,21 @@ export default function SearchModelDialog({
                       key={index}
                       className="py-2 px-4 flex items-center gap-2 hover:bg-muted rounded"
                     >
-                      <Image
-                        src={
-                          model.image
-                            ? `/files/${model.image?.fileId}`
-                            : "/placeholder.svg"
-                        }
-                        alt="Model profile"
-                        className="object-cover w-[32px] h-[32px] rounded"
-                        height={32}
-                        width={32}
+                      {/* <Image */}
+                      {/*   src={ */}
+                      {/*     model.profileImage */}
+                      {/*       ? `/files/${model.profileImage.id}` */}
+                      {/*       : "/placeholder.svg" */}
+                      {/*   } */}
+                      {/*   alt="Model profile" */}
+                      {/*   className="object-cover w-[32px] h-[32px] rounded" */}
+                      {/*   height={32} */}
+                      {/*   width={32} */}
+                      {/* /> */}
+                      <Avatar
+                        size={"small"}
+                        fileId={model.profileImage?.id}
+                        name={model.name}
                       />
                       <span className="text-sm">{model.name}</span>
 

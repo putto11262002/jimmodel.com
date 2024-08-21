@@ -20,12 +20,12 @@ import { Input } from "@/components/ui/input";
 import { UpdateModelSchema } from "@/lib/validators/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Model } from "@/db/schemas/models";
 import { z } from "zod";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import FormSkeleton from "../form-skeleton";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
+import { Model } from "@/lib/types/model";
 
 const FormDataSchema = UpdateModelSchema;
 

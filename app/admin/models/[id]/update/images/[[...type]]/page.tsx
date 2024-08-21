@@ -1,23 +1,28 @@
 "use client";
-import { ModelImage, modelImageTypes } from "@/db/schemas/model-images";
+import { modelImageTypes } from "@/db/schemas/model-images";
 import { Button } from "@/components/ui/button";
-import { Trash, UserCircle } from "lucide-react";
+import { MoreHorizontal, Trash } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import client from "@/lib/api/client";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import useToast from "@/components/toast";
 import ImageSkeleton from "./_components/image-skeleton";
 import { useGetModelImages, useRemoveModelImage } from "@/hooks/queries/model";
-import ImageGrid from "@/components/model/image-grid";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
-import { ModelImageType } from "@/lib/types/model";
+import ImageGridGallery from "@/components/image-grid-gallery";
+import routes from "@/config/routes";
+import { useGridImageGalleryContext } from "@/components/image-grid-gallery";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Loader from "@/components/loader";
 
 export default function Page({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams();
@@ -28,19 +33,27 @@ export default function Page({ params }: { params: { id: string } }) {
     modelId: params.id,
     enabled: session.status === "authenticated",
   });
+  const { setIndex } = useGridImageGalleryContext();
+
+  const { mutate: deleteImage } = useRemoveModelImage();
 
   const displayImages = useMemo(
     () =>
       images
-        ? images.filter((image) => {
-            if (type === "profile") {
-              return image.isProfile;
-            } else if (modelImageTypes.includes(type as ModelImageType)) {
-              return image.type === type;
-            } else {
-              return true;
-            }
-          })
+        ? images
+            .filter((image) => {
+              if (modelImageTypes.includes(type as any)) {
+                return image.type === type;
+              } else {
+                return true;
+              }
+            })
+            .map((image, index) => ({
+              src: routes.getFiles(image.file.id),
+              width: image.file.width ?? 0,
+              height: image.file.height ?? 0,
+              fileId: image.fileId,
+            }))
         : [],
     [images, type],
   );
@@ -48,78 +61,53 @@ export default function Page({ params }: { params: { id: string } }) {
   return (
     <>
       {isSuccess ? (
-        <ImageGrid images={displayImages} Overlay={ImageActions} />
+        displayImages.length > 0 ? (
+          <ImageGridGallery
+            Overlay={({ index }) => (
+              <div className="flex justify-center items-center gap-4 absolute top-1 right-1 z-20">
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button
+                      className="rounded-full w-6 h-6"
+                      variant={"outline"}
+                      size={"icon"}
+                    >
+                      <MoreHorizontal className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() =>
+                        deleteImage({
+                          modelId: params.id,
+                          fileId: displayImages[index].fileId,
+                        })
+                      }
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIndex(index)}>
+                      View
+                    </DropdownMenuItem>
+                    <a href={displayImages[index].src} download>
+                      <DropdownMenuItem>Download</DropdownMenuItem>
+                    </a>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+            images={displayImages}
+          />
+        ) : (
+          <div className="py-8 text-center text-muted-foreground text-sm">
+            No images found
+          </div>
+        )
       ) : (
-        <div className="grid grid-cols-3 gap-4">
-          <ImageSkeleton />
-          <ImageSkeleton />
-          <ImageSkeleton />
-          <ImageSkeleton />
-          <ImageSkeleton />
+        <div className="py-8">
+          <Loader />
         </div>
       )}
     </>
   );
 }
-
-const ImageActions = ({ image }: { image: ModelImage }) => {
-  const queryClient = useQueryClient();
-  const { ok, error } = useToast();
-  const { mutate: deleteImage } = useRemoveModelImage();
-  const { mutate: setProfile } = useMutation({
-    mutationFn: async () => {
-      await client.api.models[":modelId"].images.profile.$post({
-        json: { fileId: image.fileId },
-        param: { modelId: image.modelId },
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["models"],
-      });
-      ok("Profile image set successfully");
-    },
-    onError: () => {
-      error("Failed to set as profile");
-    },
-  });
-
-  return (
-    <div className="flex justify-center items-center gap-4 w-full h-full bg-gray-800/50">
-      <Tooltip>
-        <TooltipTrigger>
-          <Button
-            className="rounded-full"
-            variant={"outline"}
-            size={"icon"}
-            onClick={() =>
-              deleteImage({ modelId: image.modelId, fileId: image.fileId })
-            }
-          >
-            <Trash className="w-4 h-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Delete</p>
-        </TooltipContent>
-      </Tooltip>
-      {!image.isProfile && (
-        <Tooltip>
-          <TooltipTrigger>
-            <Button
-              onClick={() => setProfile()}
-              className="rounded-full"
-              variant={"outline"}
-              size={"icon"}
-            >
-              <UserCircle className="w-4 h-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Set as Profile</p>
-          </TooltipContent>
-        </Tooltip>
-      )}
-    </div>
-  );
-};

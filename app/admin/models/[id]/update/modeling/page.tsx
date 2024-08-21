@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetModel, useUpdateModel } from "@/hooks/queries/model";
 import FormSkeleton from "../form-skeleton";
-import { Model } from "@/db/schemas";
+import { Model } from "@/lib/types/model";
 
 const FormDataSchema = UpdateModelSchema;
 

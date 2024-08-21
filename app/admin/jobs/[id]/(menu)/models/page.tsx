@@ -1,4 +1,5 @@
 "use client";
+import Avatar from "@/components/avatar";
 import Loader from "@/components/loader";
 import SearchModelDialog from "@/components/model/search-model-dialog";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,6 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
           <TableHeader>
             <TableRow>
               <TableHead></TableHead>
-              <TableHead>Name</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
@@ -65,15 +65,14 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
             {models.length > 0 ? (
               models.map((model) => (
                 <TableRow className="hover:bg-background" key={model.id}>
-                  <TableCell>
-                    <UserAvatar
-                      user={{
-                        name: model.name,
-                        image: model.image ? { id: model.image.fileId } : null,
-                      }}
+                  <TableCell className="flex items-center gap-2">
+                    <Avatar
+                      name={model.name}
+                      fileId={model.profileImage?.id}
+                      size={"small"}
                     />
+                    <span className="ml-2 font-medium">{model.name}</span>
                   </TableCell>
-                  <TableCell className="pl-0">{model.name}</TableCell>
                   <TableCell className="pr-0" align="right">
                     <Button
                       onClick={() =>

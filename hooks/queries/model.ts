@@ -1,5 +1,5 @@
 import useToast from "@/components/toast";
-import { ModelCreateInput, ModelUpdateInput } from "@/db/schemas/models";
+import { ModelCreateInput, ModelUpdateInput } from "@/lib/types/model";
 import client from "@/lib/api/client";
 import {
   Model,

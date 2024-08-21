@@ -2,28 +2,17 @@ import { db } from "@/db/client";
 import { DB, TX } from "@/db";
 import {
   modelBlockTable,
-  ModelCreateInput,
   modelExperienceTable,
   modelTable,
-  ModelUpdateInput,
 } from "@/db/schemas/models";
+import { ModelCreateInput, ModelUpdateInput } from "../types/model";
 import {
   ModelBlockWithModelProfile,
   ModelImage,
   ModelProfile,
+  ModelProfileImageUpdateInput,
 } from "../types/model";
-import {
-  and,
-  count,
-  eq,
-  gte,
-  ilike,
-  inArray,
-  lt,
-  lte,
-  not,
-  or,
-} from "drizzle-orm";
+import { and, count, eq, gte, ilike, inArray, lt, lte, or } from "drizzle-orm";
 import { PaginatedData } from "../types/paginated-data";
 import { modelImageTable } from "../../db/schemas/model-images";
 import { getOffset, getPagination } from "../utils/pagination";
@@ -39,6 +28,9 @@ import { NotFoundError } from "../errors/not-found-error";
 import postgres from "postgres";
 import { FileUseCase } from "./file";
 import { Gender } from "../types/common";
+import { ImageUseCase } from "./image";
+import { imageDim } from "@/config/image";
+import { FileInfo } from "../types/file";
 
 export const modelProfileColumns = {
   id: true,
@@ -53,112 +45,27 @@ export const modelProfileColumns = {
   local: true,
   height: true,
   weight: true,
+  chest: true,
+  bust: true,
+  hips: true,
 } as const;
-/**
- * Add new model record. If the operation is successful a model id is returned. Otherwise, return null.
- **/
-export const addModel = async (
-  input: ModelCreateInput,
-): Promise<string | null> => {
-  const createdModel = await db
-    .insert(modelTable)
-    .values(input)
-    .returning({ id: modelTable.id });
-
-  return createdModel[0].id;
-};
-
-/**
- * Retreive a model by id. A model is returned if exist. Otherwise, return null. */
-export const findModelById = async (modelId: string) => {
-  const model = await db
-    .select()
-    .from(modelTable)
-    .where(eq(modelTable.id, modelId))
-    .limit(1);
-  if (model.length < 1) {
-    return null;
-  }
-  return model[0];
-};
-
-export const findModelProfileById = async (
-  modelId: string,
-): Promise<ModelProfile | null> => {
-  const model = await db.query.modelTable.findFirst({
-    where: (model, { eq }) => eq(model.id, modelId),
-    columns: modelProfileColumns,
-    with: {
-      images: {
-        columns: {
-          fileId: true,
-        },
-        orderBy: (image, { asc }) => [asc(image.isProfile)],
-        limit: 1,
-      },
-    },
-  });
-  if (!model) {
-    return null;
-  }
-  return {
-    id: model.id,
-    name: model.name,
-    gender: model.gender,
-    dateOfBirth: model.dateOfBirth,
-    published: model.published,
-    active: model.active,
-    inTown: model.inTown,
-    directBooking: model.directBooking,
-    local: model.local,
-    image: model.images?.[0] || null,
-    height: model.height,
-    weight: model.weight,
-  };
-};
-
-export const getModels = async ({
-  page = 1,
-  pageSize = 10,
-  q,
-  ids,
-}: {
-  page?: number;
-  pageSize?: number;
-  q?: string;
-  ids?: string[];
-}): Promise<PaginatedData<ModelProfile>> => {
-  const whereClause = and(
-    q ? ilike(modelTable.name, `%${q}%`) : undefined,
-    ids?.length && ids.length > 0 ? inArray(modelTable.id, ids) : undefined,
-  );
-
-  const [modelProfiles, counts] = await Promise.all([
-    db.query.modelTable.findMany({
-      where: whereClause,
-      with: {
-        image: true,
-      },
-      orderBy: (model, { asc }) => [asc(model.name)],
-      limit: pageSize,
-      offset: getOffset(page, pageSize),
-    }),
-    db.select({ count: count() }).from(modelTable).where(whereClause),
-  ]);
-
-  const total = counts?.[0]?.count || 0;
-
-  const paginatedData = getPagination(modelProfiles, page, pageSize, total);
-
-  return paginatedData;
-};
 
 export class ModelUseCase {
   private db: DB;
   private fileUseCase: FileUseCase;
-  constructor(db: DB, fileUseCase: FileUseCase) {
+  private imageUseCase: ImageUseCase;
+  constructor({
+    imageUseCase,
+    db,
+    fileUseCase,
+  }: {
+    db: DB;
+    imageUseCase: ImageUseCase;
+    fileUseCase: FileUseCase;
+  }) {
     this.db = db;
     this.fileUseCase = fileUseCase;
+    this.imageUseCase = imageUseCase;
   }
 
   async getModelProfiles({
@@ -206,13 +113,7 @@ export class ModelUseCase {
         columns: modelProfileColumns,
         where: whereClause,
         with: {
-          images: {
-            columns: {
-              fileId: true,
-            },
-            orderBy: (images, { desc }) => [desc(images.isProfile)],
-            limit: 1,
-          },
+          profileImage: true,
         },
         orderBy: (model, { asc }) => [asc(model.name)],
         limit: pageSize,
@@ -224,20 +125,7 @@ export class ModelUseCase {
     const total = counts?.[0]?.count || 0;
 
     const paginatedData = getPagination(
-      modelProfiles.map((modelProfile) => ({
-        id: modelProfile.id,
-        name: modelProfile.name,
-        gender: modelProfile.gender,
-        dateOfBirth: modelProfile.dateOfBirth,
-        image: modelProfile.images?.[0] || null,
-        active: modelProfile.active,
-        published: modelProfile.published,
-        directBooking: modelProfile.directBooking,
-        inTown: modelProfile.inTown,
-        local: modelProfile.local,
-        height: modelProfile.height,
-        weight: modelProfile.weight,
-      })),
+      modelProfiles.map((modelProfile) => modelProfile),
       page,
       pageSize,
       total,
@@ -252,7 +140,7 @@ export class ModelUseCase {
     const model = await this.db.query.modelTable.findFirst({
       where: eq(modelTable.id, modelId),
       with: {
-        image: true,
+        profileImage: true,
       },
     });
     if (!model) {
@@ -312,7 +200,7 @@ export class ModelUseCase {
       this.db.query.modelTable.findMany({
         where: whereClause,
         with: {
-          image: true,
+          profileImage: true,
         },
         orderBy: (model, { asc }) => [asc(model.name)],
         limit: pageSize,
@@ -452,7 +340,7 @@ export class ModelUseCase {
           model: {
             columns: modelProfileColumns,
             with: {
-              image: true,
+              profileImage: true,
             },
           },
         },
@@ -576,6 +464,7 @@ export class ModelUseCase {
     });
     return experiences;
   }
+
   async addModelImage(modelId: string, input: ModelImageCreateInput, tx?: TX) {
     const model = await (tx ? tx : this.db).query.modelTable.findFirst({
       where: eq(modelTable.id, modelId),
@@ -583,37 +472,27 @@ export class ModelUseCase {
     if (!model) {
       throw new Error("Model not found");
     }
-    let fileId: string;
+    let fileInfo: FileInfo;
     if (isExistingFile(input)) {
-      fileId = input.fileId;
+      fileInfo = await this.fileUseCase.copy(input.fileId);
     } else {
-      const { id } = await this.fileUseCase.writeFile(input.file, tx);
-      fileId = id;
+      fileInfo = await this.fileUseCase.writeFile(input.file);
     }
 
-    await (tx ? tx : this.db)
-      .insert(modelImageTable)
-      .values({ type: input.type, fileId, modelId });
-  }
+    const file = await this.fileUseCase.readFile(fileInfo.id);
+    const editableImage = await this.imageUseCase.getEditableImage(file);
+    const metadata = await editableImage.getMetadata();
 
-  async addModelImages(modelId: string, input: ModelImageCreateInput) {
-    const model = await this.db.query.modelTable.findFirst({
-      where: eq(modelTable.id, modelId),
+    await this.fileUseCase.updateFileMetaData(fileInfo.id, {
+      height: metadata.height,
+      width: metadata.width,
     });
-    if (!model) {
-      throw new Error("Model not found");
-    }
-    let fileId: string;
-    if (isExistingFile(input)) {
-      fileId = input.fileId;
-    } else {
-      const { id } = await this.fileUseCase.writeFile(input.file);
-      fileId = id;
-    }
 
-    await db
-      .insert(modelImageTable)
-      .values({ type: input.type, fileId, modelId });
+    await (tx ? tx : this.db).insert(modelImageTable).values({
+      type: input.type,
+      fileId: fileInfo.id,
+      modelId,
+    });
   }
 
   async removeImage(modelId: string, fileId: string) {
@@ -626,10 +505,6 @@ export class ModelUseCase {
 
     if (!modelImage) {
       throw new NotFoundError("Model image not found");
-    }
-
-    if (modelImage.isProfile) {
-      throw new ConstraintViolationError("Cannot delete profile image");
     }
 
     await this.db
@@ -653,38 +528,52 @@ export class ModelUseCase {
     }
   }
 
-  async setProfileImage(modelId: string, fileId: string) {
-    await this.db
-      .update(modelImageTable)
-      .set({ isProfile: true })
-      .where(
-        and(
-          eq(modelImageTable.modelId, modelId),
-          eq(modelImageTable.fileId, fileId),
-        ),
-      );
+  async updateProfileImage(
+    modelId: string,
+    input: ModelProfileImageUpdateInput,
+    tx?: TX,
+  ) {
+    const model = await (tx ? tx : this.db).query.modelTable.findFirst({
+      where: eq(modelTable.id, modelId),
+    });
+    if (!model) {
+      throw new Error("Model not found");
+    }
 
-    await db
+    const existingProfileId = model.profileImageId;
+
+    let fileInfo: FileInfo;
+    if ("fileId" in input) {
+      fileInfo = await this.fileUseCase.copy(input.fileId);
+    } else {
+      fileInfo = await this.fileUseCase.writeFile(input.file);
+    }
+    const file = await this.fileUseCase.readFile(fileInfo.id);
+    const editableImage = await this.imageUseCase.getEditableImage(file);
+    const metadata = await editableImage.getMetadata();
+
+    await this.fileUseCase.updateFileMetaData(fileInfo.id, {
+      height: metadata.height,
+      width: metadata.width,
+    });
+
+    await this.db
       .update(modelTable)
-      .set({ imageId: fileId })
+      .set({
+        profileImageId: fileInfo.id,
+      })
       .where(eq(modelTable.id, modelId));
 
-    await db
-      .update(modelImageTable)
-      .set({ isProfile: false })
-      .where(
-        and(
-          eq(modelImageTable.modelId, modelId),
-          not(eq(modelImageTable.fileId, fileId)),
-        ),
-      );
+    if (existingProfileId) {
+      await this.fileUseCase.deleteFile(existingProfileId);
+    }
   }
 
   async getModelImages(modelId: string): Promise<ModelImage[]> {
-    const images = await this.db
-      .select()
-      .from(modelImageTable)
-      .where(eq(modelImageTable.modelId, modelId));
-    return images;
+    const images = await this.db.query.modelImageTable.findMany({
+      where: eq(modelImageTable.modelId, modelId),
+      with: { file: true },
+    });
+    return images as ModelImage[];
   }
 }

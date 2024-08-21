@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import UserAvatar from "@/components/user/user-avatar";
 import { ModelProfile } from "@/lib/types/model";
+import { upperFirst } from "lodash";
 import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
@@ -33,7 +34,7 @@ export default function UserTable({ models }: { models: ModelProfile[] }) {
             <span className="sr-only">Profile Image</span>
           </TableHead>
           <TableHead>Name</TableHead>
-          <TableHead>Gender</TableHead>
+          <TableHead className="hidden md:table-cell">Gender</TableHead>
           <TableHead>
             <span className="sr-only">Actions</span>
           </TableHead>
@@ -47,14 +48,16 @@ export default function UserTable({ models }: { models: ModelProfile[] }) {
                 <UserAvatar
                   user={{
                     name: model.name,
-                    image: model.image ? { id: model.image.fileId } : null,
+                    image: model.profileImage
+                      ? { id: model.profileImage.id }
+                      : null,
                   }}
                 />
               </TableCell>
-              <TableCell className="hidden sm:table-cell">
-                {model.name}
+              <TableCell className="font-medium">{model.name}</TableCell>
+              <TableCell className="hidden md:table-cell">
+                {upperFirst(model.gender)}
               </TableCell>
-              <TableCell className="font-medium">{model.gender}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

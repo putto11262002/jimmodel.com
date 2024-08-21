@@ -9,7 +9,7 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   return (
-    <Container className="grid gap-4">
+    <Container className="grid gap-4 w-screen">
       <BreakcrumbSetter breadcrumbs={[{ label: "Users" }]} />
       <Suspense>
         <SearchBar />
