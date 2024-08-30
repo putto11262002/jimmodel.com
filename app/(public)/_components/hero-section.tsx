@@ -8,7 +8,7 @@ export default async function HeroSection() {
   const images = await webAssetUseCase.getWebAssets({
     published: true,
     page: 1,
-    pageSize: 10,
+    pageSize: 20,
   });
   return (
     <section className="relative h-[calc(100vh-theme(spacing.20))] ">
@@ -25,8 +25,19 @@ export default async function HeroSection() {
         {/*   </Link> */}
         {/* </div> */}
       </div>
-      <div className="w-ful h-full">
-        <ImageSlider images={images.data} />
+      <div className="w-ful h-full block md:hidden">
+        <ImageSlider
+          images={images.data.filter(
+            (asset) => (asset.height ?? 0) > (asset.width ?? 0),
+          )}
+        />
+      </div>
+      <div className="w-ful h-full hidden md:block">
+        <ImageSlider
+          images={images.data.filter(
+            (asset) => (asset.height ?? 0) < (asset.width ?? 0),
+          )}
+        />
       </div>
     </section>
   );
