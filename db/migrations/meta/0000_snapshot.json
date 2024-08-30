@@ -1,5 +1,5 @@
 {
-  "id": "cdde88d0-21a8-4097-abba-d0411a404103",
+  "id": "1fde4be5-2038-4cfd-8f3d-a410ac0ecfc4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -333,6 +333,68 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.contact_messages": {
+      "name": "contact_messages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "read": {
+          "name": "read",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
           "default": "now()"
         }
       },
@@ -1362,6 +1424,13 @@
           "notNull": false,
           "default": true
         },
+        "category": {
+          "name": "category",
+          "type": "model_category",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "tags": {
           "name": "tags",
           "type": "varchar[]",
@@ -1470,6 +1539,304 @@
           ]
         }
       },
+      "uniqueConstraints": {}
+    },
+    "public.showcase_images": {
+      "name": "showcase_images",
+      "schema": "",
+      "columns": {
+        "file_id": {
+          "name": "file_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "showcase_id": {
+          "name": "showcase_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "showcase_images_file_id_files_id_fk": {
+          "name": "showcase_images_file_id_files_id_fk",
+          "tableFrom": "showcase_images",
+          "tableTo": "files",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "showcase_images_showcase_id_showcases_id_fk": {
+          "name": "showcase_images_showcase_id_showcases_id_fk",
+          "tableFrom": "showcase_images",
+          "tableTo": "showcases",
+          "columnsFrom": [
+            "showcase_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "showcase_images_file_id_showcase_id_pk": {
+          "name": "showcase_images_file_id_showcase_id_pk",
+          "columns": [
+            "file_id",
+            "showcase_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "public.showcases": {
+      "name": "showcases",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cover_image": {
+          "name": "cover_image",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "published": {
+          "name": "published",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "video_links": {
+          "name": "video_links",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "showcases_cover_image_files_id_fk": {
+          "name": "showcases_cover_image_files_id_fk",
+          "tableFrom": "showcases",
+          "tableTo": "files",
+          "columnsFrom": [
+            "cover_image"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.showcase_to_model": {
+      "name": "showcase_to_model",
+      "schema": "",
+      "columns": {
+        "showcase_id": {
+          "name": "showcase_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "showcase_to_model_showcase_id_showcases_id_fk": {
+          "name": "showcase_to_model_showcase_id_showcases_id_fk",
+          "tableFrom": "showcase_to_model",
+          "tableTo": "showcases",
+          "columnsFrom": [
+            "showcase_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "showcase_to_model_model_id_models_id_fk": {
+          "name": "showcase_to_model_model_id_models_id_fk",
+          "tableFrom": "showcase_to_model",
+          "tableTo": "models",
+          "columnsFrom": [
+            "model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "showcase_to_model_showcase_id_model_id_pk": {
+          "name": "showcase_to_model_showcase_id_model_id_pk",
+          "columns": [
+            "showcase_id",
+            "model_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "public.web_assets": {
+      "name": "web_assets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "web_asset_types",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alt": {
+          "name": "alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tag": {
+          "name": "tag",
+          "type": "web_asset_tags",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published": {
+          "name": "published",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "web_assets_file_id_files_id_fk": {
+          "name": "web_assets_file_id_files_id_fk",
+          "tableFrom": "web_assets",
+          "tableTo": "files",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     }
   },
@@ -1836,8 +2203,17 @@
         "pending",
         "confirmed",
         "cancelled",
-        "completed",
         "archived"
+      ]
+    },
+    "public.model_category": {
+      "name": "model_category",
+      "schema": "public",
+      "values": [
+        "male",
+        "female",
+        "non-binary",
+        "kids"
       ]
     },
     "public.model_image_type": {
@@ -1849,6 +2225,20 @@
         "composite",
         "application",
         "other"
+      ]
+    },
+    "public.web_asset_tags": {
+      "name": "web_asset_tags",
+      "schema": "public",
+      "values": [
+        "hero"
+      ]
+    },
+    "public.web_asset_types": {
+      "name": "web_asset_types",
+      "schema": "public",
+      "values": [
+        "image"
       ]
     }
   },

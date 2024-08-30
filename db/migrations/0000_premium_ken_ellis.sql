@@ -53,13 +53,31 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "public"."job_status" AS ENUM('pending', 'confirmed', 'cancelled', 'completed', 'archived');
+ CREATE TYPE "public"."job_status" AS ENUM('pending', 'confirmed', 'cancelled', 'archived');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "public"."model_category" AS ENUM('male', 'female', 'non-binary', 'kids');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  CREATE TYPE "public"."model_image_type" AS ENUM('book', 'polaroid', 'composite', 'application', 'other');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "public"."web_asset_tags" AS ENUM('hero');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "public"."web_asset_types" AS ENUM('image');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -115,6 +133,17 @@ CREATE TABLE IF NOT EXISTS "applications" (
 	"status" "application_status" DEFAULT 'pending' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "contact_messages" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"first_name" text NOT NULL,
+	"email" text NOT NULL,
+	"phone" text,
+	"message" text NOT NULL,
+	"read" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "files" (
@@ -277,6 +306,7 @@ CREATE TABLE IF NOT EXISTS "models" (
 	"direct_booking" boolean DEFAULT false,
 	"public" boolean DEFAULT false,
 	"inactive" boolean DEFAULT true,
+	"category" "model_category" NOT NULL,
 	"tags" varchar[],
 	"profile_image_id" uuid
 );
@@ -288,6 +318,45 @@ CREATE TABLE IF NOT EXISTS "model_images" (
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now(),
 	CONSTRAINT "model_images_original_file_id_model_id_pk" PRIMARY KEY("original_file_id","model_id")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "showcase_images" (
+	"file_id" uuid NOT NULL,
+	"showcase_id" uuid NOT NULL,
+	"width" integer NOT NULL,
+	"height" integer NOT NULL,
+	CONSTRAINT "showcase_images_file_id_showcase_id_pk" PRIMARY KEY("file_id","showcase_id")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "showcases" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"title" text NOT NULL,
+	"cover_image" uuid,
+	"description" text,
+	"published" boolean DEFAULT false NOT NULL,
+	"video_links" text[],
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "showcase_to_model" (
+	"showcase_id" uuid NOT NULL,
+	"model_id" uuid NOT NULL,
+	CONSTRAINT "showcase_to_model_showcase_id_model_id_pk" PRIMARY KEY("showcase_id","model_id")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "web_assets" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"file_id" uuid NOT NULL,
+	"content_type" text NOT NULL,
+	"width" integer,
+	"height" integer,
+	"type" "web_asset_types" NOT NULL,
+	"alt" text,
+	"tag" "web_asset_tags" NOT NULL,
+	"published" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 DO $$ BEGIN
@@ -352,6 +421,42 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "model_images" ADD CONSTRAINT "model_images_model_id_models_id_fk" FOREIGN KEY ("model_id") REFERENCES "public"."models"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "showcase_images" ADD CONSTRAINT "showcase_images_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "showcase_images" ADD CONSTRAINT "showcase_images_showcase_id_showcases_id_fk" FOREIGN KEY ("showcase_id") REFERENCES "public"."showcases"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "showcases" ADD CONSTRAINT "showcases_cover_image_files_id_fk" FOREIGN KEY ("cover_image") REFERENCES "public"."files"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "showcase_to_model" ADD CONSTRAINT "showcase_to_model_showcase_id_showcases_id_fk" FOREIGN KEY ("showcase_id") REFERENCES "public"."showcases"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "showcase_to_model" ADD CONSTRAINT "showcase_to_model_model_id_models_id_fk" FOREIGN KEY ("model_id") REFERENCES "public"."models"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "web_assets" ADD CONSTRAINT "web_assets_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
