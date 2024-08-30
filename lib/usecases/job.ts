@@ -351,7 +351,9 @@ export class JobUsecase {
             ),
           )
         : undefined,
-      inArray(bookingTable.jobId, overlappingJobIds),
+      overlappingJobIds.length > 0
+        ? inArray(bookingTable.jobId, overlappingJobIds)
+        : undefined,
     );
     const bookings = await this.db.query.bookingTable.findMany({
       where,

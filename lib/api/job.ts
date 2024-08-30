@@ -9,10 +9,8 @@ import {
   JobUpdateInputSchema,
 } from "../validators/job";
 import { authMiddleware } from "./middlewares/auth";
-import { HTTPException } from "hono/http-exception";
 import { jobStatuses } from "@/db/schemas";
 import {
-  stringArray,
   stringToBoolean,
   stringToDate,
   stringToNumberOrError,
