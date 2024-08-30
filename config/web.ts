@@ -5,7 +5,7 @@ const webConfig = {
   instagram: "https://www.instagram.com/jimmodel",
   address:
     "201/5 Town in town soi 2, Phlabphla, Wang Thonglang, Bangkok Thailand, 10310",
-  companyName: "J.I.M",
+  companyName: "J.I.M.",
   fullCompanyName: "J.I.M Modeling Agency",
   heroTitle: "Unleash Your Full Potential With Us",
   heroSubTitle:
