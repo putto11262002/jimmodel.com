@@ -6,6 +6,7 @@ import { FileInfo } from "../types/file";
 export class ImageUseCase {
   private fileUseCase: FileUseCase;
   private editableImageFactory: EditableImageFactory;
+  public static supportedImageFormats = ["jpeg", "png", "webp", "jpg", "gif"];
   constructor({
     fileUseCase,
     editableImageFactory,
@@ -17,7 +18,16 @@ export class ImageUseCase {
     this.editableImageFactory = editableImageFactory;
   }
 
+  public isSupportedImage(file: Blob): boolean {
+    return ImageUseCase.supportedImageFormats.includes(
+      file.type.split("/")?.[1],
+    );
+  }
+
   public async getEditableImage(file: Blob): Promise<EditableImage> {
+    if (!this.isSupportedImage(file)) {
+      throw new Error("Unsupported image format");
+    }
     return this.editableImageFactory.getEditableImage(file);
   }
 
@@ -43,6 +53,7 @@ export interface EditableImage {
   resize(resizeOpts: ResizeOpts): EditableImage;
   format(format: ImageFormat): EditableImage;
   getMetadata(): Promise<sharp.Metadata>;
+  getDimensions(): Promise<{ width: number; height: number }>;
   toBuffer(): Promise<Buffer>;
   toBlob(): Promise<Blob>;
 }
@@ -62,6 +73,16 @@ export class SharpEditableImage implements EditableImage {
     this.sharp.resize(resizeOpts);
     this.metadataModifed = true;
     return this;
+  }
+
+  public async getDimensions(): Promise<{ width: number; height: number }> {
+    const metadata = await this.getMetadata();
+    const height = metadata.height;
+    const width = metadata.width;
+    if (height === undefined || width === undefined) {
+      throw new Error("Image dimensions are not available");
+    }
+    return { width, height };
   }
 
   public format(format: ImageFormat) {

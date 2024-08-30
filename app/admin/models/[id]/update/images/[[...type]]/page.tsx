@@ -10,7 +10,12 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import ImageSkeleton from "./_components/image-skeleton";
-import { useGetModelImages, useRemoveModelImage } from "@/hooks/queries/model";
+import {
+  useGetModelImages,
+  useRemoveModelImage,
+  useUpdateImageType,
+  useUpdateProfileImage,
+} from "@/hooks/queries/model";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
 import ImageGridGallery from "@/components/image-grid-gallery";
@@ -20,9 +25,16 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Loader from "@/components/loader";
+import { useMutation } from "@tanstack/react-query";
+import { ModelImageType } from "@/lib/types/model";
+import client from "@/lib/api/client";
 
 export default function Page({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams();
@@ -36,6 +48,8 @@ export default function Page({ params }: { params: { id: string } }) {
   const { setIndex } = useGridImageGalleryContext();
 
   const { mutate: deleteImage } = useRemoveModelImage();
+  const { mutate: updateImageType } = useUpdateImageType();
+  const { mutate: updateProfileImage } = useUpdateProfileImage();
 
   const displayImages = useMemo(
     () =>
@@ -89,9 +103,63 @@ export default function Page({ params }: { params: { id: string } }) {
                     <DropdownMenuItem onClick={() => setIndex(index)}>
                       View
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        updateProfileImage({
+                          modelId: params.id,
+                          fileId: displayImages[index].fileId,
+                        })
+                      }
+                    >
+                      Set as profile
+                    </DropdownMenuItem>
+
                     <a href={displayImages[index].src} download>
                       <DropdownMenuItem>Download</DropdownMenuItem>
                     </a>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        Change type to
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              updateImageType({
+                                modelId: params.id,
+                                fileId: displayImages[index].fileId,
+                                type: "book",
+                              })
+                            }
+                          >
+                            Book
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              updateImageType({
+                                modelId: params.id,
+                                fileId: displayImages[index].fileId,
+                                type: "polaroid",
+                              })
+                            }
+                          >
+                            Polaroid
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() =>
+                              updateImageType({
+                                modelId: params.id,
+                                fileId: displayImages[index].fileId,
+                                type: "composite",
+                              })
+                            }
+                          >
+                            Composite
+                          </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

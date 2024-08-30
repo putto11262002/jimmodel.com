@@ -5,12 +5,21 @@ import { Switch } from "@/components/ui/switch";
 import { useUpdateModel, useGetModel } from "@/hooks/queries/model";
 import { useParams } from "next/navigation";
 import FormSkeleton from "../form-skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { modelCategories } from "@/lib/constants/model";
+import { ModelCategory } from "@/lib/types/model";
+import { upperFirst } from "lodash";
 
 export default function _Page() {
   const { id } = useParams<{ id: string }>();
   const { data, isSuccess } = useGetModel({ modelId: id });
   const { mutate } = useUpdateModel();
-
   if (!isSuccess) {
     return <FormSkeleton />;
   }
@@ -30,7 +39,7 @@ export default function _Page() {
                   className="block"
                   checked={Boolean(data.local)}
                   onCheckedChange={(local) =>
-                    mutate({ modelId: id, input: { ...data, local } })
+                    mutate({ modelId: id, input: { local } })
                   }
                 />
               </div>
@@ -42,7 +51,7 @@ export default function _Page() {
                     className="block"
                     checked={data!.inTown}
                     onCheckedChange={(inTown) =>
-                      mutate({ modelId: id, input: { ...data, inTown } })
+                      mutate({ modelId: id, input: { inTown } })
                     }
                   />
                 </div>
@@ -55,7 +64,7 @@ export default function _Page() {
                     className="block"
                     checked={data!.directBooking}
                     onCheckedChange={(directBooking) =>
-                      mutate({ modelId: id, input: { ...data, directBooking } })
+                      mutate({ modelId: id, input: { directBooking } })
                     }
                   />
                 </div>
@@ -70,6 +79,30 @@ export default function _Page() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            <div className="space-y-4">
+              <Label>Display Category</Label>
+              <Select
+                defaultValue={data.category}
+                onValueChange={(category) =>
+                  mutate({
+                    modelId: id,
+                    input: { category: category as ModelCategory },
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {modelCategories.map((category, index) => (
+                    <SelectItem key={index} value={category}>
+                      {upperFirst(category)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {data.active && (
               <div className="space-y-4">
                 <Label>Published</Label>
@@ -77,7 +110,7 @@ export default function _Page() {
                   className="block"
                   checked={data!.published}
                   onCheckedChange={(published) =>
-                    mutate({ modelId: id, input: { ...data, published } })
+                    mutate({ modelId: id, input: { published } })
                   }
                 />
               </div>
@@ -89,7 +122,7 @@ export default function _Page() {
                 className="block"
                 checked={data!.active}
                 onCheckedChange={(active) =>
-                  mutate({ modelId: id, input: { ...data, active } })
+                  mutate({ modelId: id, input: { active } })
                 }
               />
             </div>

@@ -10,9 +10,12 @@ export interface Event {
   getExternalPriority: () => number;
   getInteralPriority: () => number;
 }
+type DateKey = string;
+
+export type GroupedEvents = Record<DateKey, Event[]>;
 
 export interface EventStragety {
-  get: (start: Date, end: Date) => Promise<Event[]>;
+  get: (start: Date, end: Date) => Promise<GroupedEvents>;
 }
 
 export class Calendar {
@@ -23,22 +26,35 @@ export class Calendar {
 
   public async getCalendar(date: string, mode: "week" | "month") {
     const [start, end] = this.getSartEnd(date, mode);
-    const events = await this.getEvents(start, end);
-    const groupedEvents = this.groupEvenyByDate(events);
+    const groupedEvents = await this.getEvents(start, end);
+    // const groupedEvents = this.groupEvenyByDate();
 
     const calendar = [];
     let current = start;
     while (current.isBefore(end)) {
+      const events = groupedEvents
+        .map((group) => group[Calendar.getDateKey(current)] || [])
+        .flat();
+      const sortedEvents = events.flat().sort((a, b) => {
+        const aExternal = a.getExternalPriority();
+        const bExternal = b.getExternalPriority();
+        if (aExternal !== bExternal) {
+          return aExternal - bExternal;
+        }
+        const aInternal = a.getInteralPriority();
+        const bInternal = b.getInteralPriority();
+        return aInternal - bInternal;
+      });
+
       calendar.push({
         date: current.toDate(),
-        events: groupedEvents[Calendar.getDateKey(current)]?.events ?? [],
+        events: sortedEvents,
       });
       current = current.add(1, "day");
     }
 
     return calendar;
   }
-
   public placeholder(date: string, mode: "week" | "month") {
     const [start, end] = this.getSartEnd(date, mode);
     const calendar = [];
@@ -74,40 +90,7 @@ export class Calendar {
         resolver.get(start.toDate(), end.toDate()),
       ),
     );
-    return events.flat();
-  }
-
-  private groupEvenyByDate(events: Event[]) {
-    const groupedEvents: Record<string, { date: Dayjs; events: Event[] }> = {};
-    events.reduce((acc, event) => {
-      const start = dayjs(event.getStart());
-      const end = dayjs(event.getEnd());
-      let current = start.clone();
-      while (current.isBefore(end)) {
-        const key = Calendar.getDateKey(current);
-        if (!acc[key]) {
-          acc[key] = { date: current, events: [] };
-        }
-        acc[key].events.push(event);
-        current = current.add(1, "day");
-      }
-      return acc;
-    }, groupedEvents);
-
-    Object.values(groupedEvents).forEach((group) => {
-      group.events.sort((a, b) => {
-        const aExternal = a.getExternalPriority();
-        const bExternal = b.getExternalPriority();
-        if (aExternal !== bExternal) {
-          return aExternal - bExternal;
-        }
-        const aInternal = a.getInteralPriority();
-        const bInternal = b.getInteralPriority();
-        return aInternal - bInternal;
-      });
-    });
-
-    return groupedEvents;
+    return events;
   }
 
   static getDateKey(day: Date | Dayjs) {

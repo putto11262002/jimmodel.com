@@ -36,6 +36,11 @@ export default function ActionCard({
       </CardHeader>
       <CardContent>
         <div className="grid gap-6">
+          {job.status === "archived" && (
+            <p className="text-center text-muted-foreground text-sm py-6">
+              Job has been archived
+            </p>
+          )}
           {job.status === "cancelled" && (
             <p className="text-center text-muted-foreground text-sm py-4">
               No Actions Avaialble

@@ -5,7 +5,13 @@ import {
   modelExperienceTable,
   modelTable,
 } from "@/db/schemas/models";
-import { ModelCreateInput, ModelUpdateInput } from "../types/model";
+import {
+  ModelCategory,
+  ModelCreateInput,
+  ModelGender,
+  ModelImageType,
+  ModelUpdateInput,
+} from "../types/model";
 import {
   ModelBlockWithModelProfile,
   ModelImage,
@@ -31,6 +37,7 @@ import { Gender } from "../types/common";
 import { ImageUseCase } from "./image";
 import { imageDim } from "@/config/image";
 import { FileInfo } from "../types/file";
+import dayjs from "dayjs";
 
 export const modelProfileColumns = {
   id: true,
@@ -79,6 +86,7 @@ export class ModelUseCase {
     local,
     directBooking,
     inTown,
+    category,
   }: {
     page?: number;
     pageSize?: number;
@@ -90,6 +98,7 @@ export class ModelUseCase {
     local?: boolean;
     directBooking?: boolean;
     inTown?: boolean;
+    category?: ModelCategory;
   }): Promise<PaginatedData<ModelProfile>> {
     const whereClause = and(
       q ? ilike(modelTable.name, `%${q}%`) : undefined,
@@ -106,6 +115,7 @@ export class ModelUseCase {
       genders && genders.length > 0
         ? inArray(modelTable.gender, genders)
         : undefined,
+      category ? eq(modelTable.category, category) : undefined,
     );
 
     const [modelProfiles, counts] = await Promise.all([
@@ -149,6 +159,22 @@ export class ModelUseCase {
     return model;
   }
 
+  private inferModelCategory({
+    dateOfBirth,
+    gender,
+  }: {
+    dateOfBirth?: string | null;
+    gender: ModelGender;
+  }): ModelCategory {
+    if (
+      dateOfBirth &&
+      dayjs(dateOfBirth).isAfter(dayjs().subtract(18, "year"), "day")
+    ) {
+      return "kids";
+    }
+    return gender;
+  }
+
   /**
    * Add new model record. If the operation is successful a model id is returned. Otherwise, return null.
    **/
@@ -158,7 +184,13 @@ export class ModelUseCase {
   ): Promise<{ id: string }> {
     const createdModel = await (tx ? tx : this.db)
       .insert(modelTable)
-      .values(input)
+      .values({
+        ...input,
+        category: this.inferModelCategory({
+          gender: input.gender,
+          dateOfBirth: input.dateOfBirth,
+        }),
+      })
       .returning({ id: modelTable.id });
 
     return createdModel?.[0];
@@ -168,9 +200,29 @@ export class ModelUseCase {
    * Update a model by id. If the operation is successful a model id is returned. Otherwise, return null.
    * */
   async updateModel(modelId: string, input: ModelUpdateInput) {
+    const model = await this.db.query.modelTable.findFirst({
+      where: eq(modelTable.id, modelId),
+    });
+
+    if (!model) {
+      throw new NotFoundError("Model not found");
+    }
+
     const updatedRows = await this.db
       .update(modelTable)
-      .set(input)
+      .set({
+        ...input,
+        // If dateOfBirth or gender changes, update the category as well
+        ...((input.dateOfBirth && model.dateOfBirth !== input.dateOfBirth) ||
+        (input.gender && model.gender !== input.gender)
+          ? {
+              category: this.inferModelCategory({
+                gender: input.gender || model.gender,
+                dateOfBirth: input.dateOfBirth || model.dateOfBirth,
+              }),
+            }
+          : {}),
+      })
       .where(eq(modelTable.id, modelId))
       .returning({ id: modelTable.id });
     if (updatedRows.length < 1) {
@@ -465,6 +517,22 @@ export class ModelUseCase {
     return experiences;
   }
 
+  async updateModelImageType(
+    modelId: string,
+    fileId: string,
+    type: ModelImageType,
+  ) {
+    await this.db
+      .update(modelImageTable)
+      .set({ type })
+      .where(
+        and(
+          eq(modelImageTable.modelId, modelId),
+          eq(modelImageTable.fileId, fileId),
+        ),
+      );
+  }
+
   async addModelImage(modelId: string, input: ModelImageCreateInput, tx?: TX) {
     const model = await (tx ? tx : this.db).query.modelTable.findFirst({
       where: eq(modelTable.id, modelId),
@@ -569,9 +637,15 @@ export class ModelUseCase {
     }
   }
 
-  async getModelImages(modelId: string): Promise<ModelImage[]> {
+  async getModelImages(
+    modelId: string,
+    opts?: { type?: ModelImageType },
+  ): Promise<ModelImage[]> {
     const images = await this.db.query.modelImageTable.findMany({
-      where: eq(modelImageTable.modelId, modelId),
+      where: and(
+        eq(modelImageTable.modelId, modelId),
+        opts?.type ? eq(modelImageTable.type, opts.type) : undefined,
+      ),
       with: { file: true },
     });
     return images as ModelImage[];

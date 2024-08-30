@@ -1,5 +1,11 @@
-import { bookingTypes } from "@/db/schemas/jobs";
+import { bookingTypes, jobStatuses } from "@/db/schemas/jobs";
 import { z } from "zod";
+import {
+  stringArray,
+  stringToBoolean,
+  stringToEnumArrayOrUndefined,
+  stringToNumberOrUndefined,
+} from "./req-query";
 
 export const JobCreateInputSchema = z.object({
   name: z
@@ -50,12 +56,10 @@ export const BookingCreateInputSchema = z
       .string()
       .datetime()
       .or(z.date().transform((d) => new Date(d).toISOString())),
-
     end: z
       .string()
       .datetime()
       .or(z.date().transform((d) => new Date(d).toISOString())),
-
     type: z.enum(bookingTypes),
     notes: z.string().nullable().optional(),
   })
@@ -70,3 +74,11 @@ export const BookingCreateInputSchema = z
     }
     return data;
   });
+
+export const JobFilterQuerySchema = z.object({
+  page: stringToNumberOrUndefined.optional(),
+  pageSize: stringToNumberOrUndefined.optional(),
+  statuses: stringToEnumArrayOrUndefined(jobStatuses).optional(),
+  jobIds: stringArray.optional(),
+  pagination: stringToBoolean.optional(),
+});

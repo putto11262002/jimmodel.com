@@ -46,7 +46,7 @@ import { Model } from "@/lib/types/model";
 
 const FormDataSchema = UpdateModelSchema.omit({
   dateOfBirth: true,
-}).and(z.object({ dateOfBirth: z.date() }));
+}).and(z.object({ dateOfBirth: z.date().optional() }));
 
 export default function Page({ params: { id } }: { params: { id: string } }) {
   const session = useSession(permissions.models.getModelById);

@@ -29,11 +29,46 @@ export const appendParam = (
 
 export const setParam = (
   name: string,
-  values: string[],
+  values: string[] | string,
   params: URLSearchParams,
 ) => {
   params.delete(name);
-  values.forEach((value) => params.append(name, value));
+  if (Array.isArray(values)) {
+    values.forEach((value) => params.append(name, value));
+  } else {
+    params.set(name, values);
+  }
+};
+export const URLSearchParamsFromObj = (
+  obj: Record<string, string | string[]>,
+) => {
+  const params = new URLSearchParams();
+  Object.entries(obj).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((v) => params.append(key, v));
+    } else {
+      params.set(key, value);
+    }
+  });
+  return params;
+};
+
+export const setParamSSR = (
+  name: string,
+  values: string | string[],
+  params: Record<string, string | string[]>,
+) => {
+  const mutatbleSearchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (!value || value === "") return;
+    if (Array.isArray(value)) {
+      value.forEach((v) => mutatbleSearchParams.append(key, v));
+    } else {
+      mutatbleSearchParams.set(key, value);
+    }
+  });
+  setParam(name, values, mutatbleSearchParams);
+  return mutatbleSearchParams.toString();
 };
 
 export const searchParamsToString = (searchParams: {

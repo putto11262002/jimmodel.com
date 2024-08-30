@@ -16,8 +16,9 @@ import {
   stringArray,
   stringToBoolean,
   stringToDate,
-  stringToNumber,
+  stringToNumberOrError,
 } from "../validators/req-query";
+import { NotFoundError } from "../errors/not-found-error";
 
 const modelRouter = new Hono()
   .post(
@@ -36,8 +37,8 @@ const modelRouter = new Hono()
     zValidator(
       "query",
       z.object({
-        page: stringToNumber.optional(),
-        pageSize: stringToNumber.optional(),
+        page: stringToNumberOrError.optional(),
+        pageSize: stringToNumberOrError.optional(),
         q: z.string().optional(),
       }),
     ),
@@ -54,7 +55,7 @@ const modelRouter = new Hono()
       const id = c.req.param("modelId");
       const model = await modelUseCase.getById(id);
       if (!model) {
-        throw new Error("Model not found");
+        throw new NotFoundError("Model not found");
       }
       return c.json(model);
     },
@@ -87,11 +88,27 @@ const modelRouter = new Hono()
   .put(
     "/models/:modelId/images/profile",
     authMiddleware(permissions.models.setProfileImageById),
-    zValidator("form", z.object({ file: imageValidator() })),
+    zValidator(
+      "form",
+      z.object({
+        file: imageValidator().optional(),
+        fileId: z.string().optional(),
+      }),
+    ),
     async (c) => {
-      const { file } = c.req.valid("form");
+      const { file, fileId } = c.req.valid("form");
       const modelId = c.req.param("modelId");
-      await modelUseCase.updateProfileImage(modelId, { file });
+      if (!file && !fileId) {
+        throw new Error("file or fileId is required");
+      }
+
+      if (fileId) {
+        await modelUseCase.updateProfileImage(modelId, { fileId });
+        c.status(204);
+        return c.body(null);
+      } else if (file) {
+        await modelUseCase.updateProfileImage(modelId, { file });
+      }
       c.status(204);
       return c.body(null);
     },
@@ -123,6 +140,19 @@ const modelRouter = new Hono()
       return c.body(null);
     },
   )
+
+  .put(
+    "/models/:modelId/images/:fileId/type",
+    zValidator("json", z.object({ type: z.enum(modelImageTypes) })),
+    async (c) => {
+      const { type } = c.req.valid("json");
+      const modelId = c.req.param("modelId");
+      const fileId = c.req.param("fileId");
+      await modelUseCase.updateModelImageType(modelId, fileId, type);
+      c.status(204);
+      return c.body(null);
+    },
+  )
   .post(
     "/models/:id/blocks",
     authMiddleware(permissions.models.addModelBlock),
@@ -143,8 +173,8 @@ const modelRouter = new Hono()
     zValidator(
       "query",
       z.object({
-        page: stringToNumber.optional(),
-        pageSize: stringToNumber.optional(),
+        page: stringToNumberOrError.optional(),
+        pageSize: stringToNumberOrError.optional(),
       }),
     ),
     authMiddleware(permissions.models.getModelBlocks),
@@ -170,8 +200,8 @@ const modelRouter = new Hono()
         end: stringToDate.optional(),
         modelIds: stringArray.optional(),
         pagination: stringToBoolean.optional(),
-        page: stringToNumber.optional(),
-        pageSize: stringToNumber.optional(),
+        page: stringToNumberOrError.optional(),
+        pageSize: stringToNumberOrError.optional(),
       }),
     ),
     async (c) => {
@@ -198,8 +228,8 @@ const modelRouter = new Hono()
         end: stringToDate.optional(),
         modelIds: stringArray.optional(),
         pagination: stringToBoolean.optional(),
-        page: stringToNumber.optional(),
-        pageSize: stringToNumber.optional(),
+        page: stringToNumberOrError.optional(),
+        pageSize: stringToNumberOrError.optional(),
       }),
     ),
     async (c) => {

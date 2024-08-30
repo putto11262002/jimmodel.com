@@ -1,11 +1,18 @@
-import { Calendar, CircleX, Clock, SquareX } from "lucide-react";
-import { Event, EventStragety } from "../calendar";
+import {
+  Calendar as CalendarIcon,
+  CircleX,
+  Clock,
+  ExternalLink,
+  SquareX,
+} from "lucide-react";
+import { Calendar, Event, EventStragety, GroupedEvents } from "../calendar";
 import client from "@/lib/api/client";
 import { ModelBlockWithModelProfile } from "@/lib/types/model";
 import dayjs from "dayjs";
 import { formatISODateString } from "@/lib/utils/date";
 import { ModelProfileListItem } from "@/components/model/model-list";
 import KeyValueItem from "@/components/key-value/key-value-item";
+import Link from "next/link";
 
 class BlockEvent implements Event {
   private block: Omit<ModelBlockWithModelProfile, "start" | "end"> & {
@@ -38,7 +45,7 @@ class BlockEvent implements Event {
         <div className="grid gap-1 text-muted-foreground">
           <KeyValueItem
             size={"xs"}
-            _key={<Calendar className="w-3.5 h-3.5 text-foreground" />}
+            _key={<CalendarIcon className="w-3.5 h-3.5 text-foreground" />}
             value={`${formatISODateString(this.block.start.toISOString())} - ${formatISODateString(this.block.end.toISOString())}`}
           />
           <KeyValueItem
@@ -48,7 +55,17 @@ class BlockEvent implements Event {
           />
         </div>
 
-        <ModelProfileListItem model={this.block.model} />
+        <ModelProfileListItem
+          actionComp={
+            <Link
+              href={`/admin/models/${this.block.model.id}/update`}
+              className="ml-auto"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Link>
+          }
+          model={this.block.model}
+        />
       </div>
     );
   }
@@ -75,6 +92,10 @@ class BlockEvent implements Event {
 }
 
 export class BlockAdapter implements EventStragety {
+  private blocksByDate: Record<
+    string,
+    { date: dayjs.Dayjs; blocks: ModelBlockWithModelProfile[] }
+  > = {};
   constructor() {}
 
   async get(start: Date, end: Date) {
@@ -85,7 +106,21 @@ export class BlockAdapter implements EventStragety {
         pagination: "false",
       },
     });
+    const blocksByDate: GroupedEvents = {};
     const { data } = await res.json();
-    return data.map((block) => new BlockEvent(block));
+    data.reduce((acc, block) => {
+      const end = dayjs(block.end).add(1, "day");
+      let current = dayjs(block.start);
+      while (current.isBefore(end)) {
+        const key = Calendar.getDateKey(current);
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(new BlockEvent(block));
+        current = current.add(1, "day");
+      }
+      return acc;
+    }, blocksByDate);
+    return blocksByDate;
   }
 }

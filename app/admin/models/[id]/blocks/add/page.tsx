@@ -21,8 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateModelBlock } from "@/hooks/queries/model";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -48,16 +47,11 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
   const { mutate: block } = useCreateModelBlock();
   const form = useForm<z.infer<typeof AddModelBlockFormSchema>>({
     resolver: zodResolver(AddModelBlockFormSchema),
-    defaultValues: { start: new Date(), end: new Date() },
+    defaultValues: {},
   });
 
   return (
     <Container max="md" className="grid gap-4">
-      {/* <div className="flex gap-4 items-center"> */}
-      {/*   <Button onClick={() => router.back()} variant={"outline"} size={"icon"}> */}
-      {/*     <ChevronLeft className="w-4 h-4" /> */}
-      {/*   </Button> */}
-      {/* </div> */}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((formData) =>

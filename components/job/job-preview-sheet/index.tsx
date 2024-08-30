@@ -18,6 +18,7 @@ import JobOwnerBadge from "../job-owner-badge";
 import BookingsList from "../booking/bookings-list";
 import KeyValueItem from "@/components/key-value/key-value-item";
 import ModelProfileList from "@/components/model/model-list";
+import Link from "next/link";
 
 type JobPreviewSheetState = {
   jobId: string | null;
@@ -112,7 +113,17 @@ function JobPreviewSheet() {
             </div>
             <div className="grid gap-2">
               <h3 className="font-medium ">Models</h3>
-              <ModelProfileList models={data.models} />
+              <ModelProfileList
+                actionComp={({ profile }) => (
+                  <Link
+                    href={`/models/${profile.id}/update`}
+                    className="ml-auto"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+                )}
+                models={data.models}
+              />
             </div>
             <div className="grid gap-2">
               <h3 className="font-medium">Bookings</h3>

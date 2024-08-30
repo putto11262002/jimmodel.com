@@ -14,7 +14,7 @@ export default function ({ bookings }: { bookings: Booking[] }) {
           </div>
           <div className="text-sm grid gap-1">
             <KeyValueItem
-              sameLine={false}
+              lineBreak
               _key={"Start - End"}
               value={`${formatISODateString(booking.start)} - ${formatISODateString(booking.end)}`}
             />

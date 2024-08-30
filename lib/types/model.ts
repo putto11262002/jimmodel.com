@@ -2,15 +2,23 @@ import {
   modelBlockTable,
   modelExperienceTable,
   modelImageTable,
-  modelImageTypes,
   modelTable,
 } from "@/db/schemas";
 import { FileInfo } from "./file";
 import { Gender } from "./common";
+import {
+  modelCategories,
+  modelGenders,
+  modelImageTypes,
+} from "../constants/model";
 
 export type Model = typeof modelTable.$inferSelect & {
   profileImage: FileInfo | null;
 };
+
+export type ModelGender = (typeof modelGenders)[number];
+
+export type ModelCategory = (typeof modelCategories)[number];
 
 export type ModelImage = typeof modelImageTable.$inferSelect & {
   file: Omit<FileInfo, "height" | "width"> & { height: number; width: number };
@@ -18,8 +26,8 @@ export type ModelImage = typeof modelImageTable.$inferSelect & {
 
 export type ModelCreateInput = Omit<
   typeof modelTable.$inferInsert,
-  "createdAt" | "updatedAt"
->;
+  "createdAt" | "updatedAt" | "category"
+> & { category?: ModelCategory };
 
 export type ModelUpdateInput = Omit<ModelCreateInput, "name" | "gender"> & {
   name?: string;

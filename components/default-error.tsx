@@ -11,6 +11,7 @@ export default function Error({
   reset: () => void;
 }) {
   let message = "Something went wrong!";
+
   if (error instanceof HttpError) {
     message = error.message;
   }

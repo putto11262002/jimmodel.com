@@ -1,12 +1,19 @@
-import { Briefcase, Calendar, CircleCheck, Clock, User } from "lucide-react";
+import {
+  Briefcase,
+  Calendar as CalendarIcon,
+  CircleCheck,
+  Clock,
+  ExternalLink,
+  User,
+} from "lucide-react";
 import UserAvatar from "@/components/user/user-avatar";
-import { Event, EventStragety } from "../calendar";
+import { Calendar, Event, EventStragety, GroupedEvents } from "../calendar";
 import { BookingWithJob } from "@/lib/types/job";
 import client from "@/lib/api/client";
 import dayjs from "dayjs";
 import JobStatusBadge from "@/components/job/job-status-badge";
 import { Badge } from "@/components/ui/badge";
-import { upperFirst } from "lodash";
+import { cloneDeep, upperFirst } from "lodash";
 import Link from "next/link";
 import { formatISODateString } from "@/lib/utils/date";
 import JobOwnerBadge from "@/components/job/job-owner-badge";
@@ -60,7 +67,7 @@ class BookingEvent implements Event {
         <div className="grid gap-2 text-muted-foreground">
           <KeyValueItem
             size={"xs"}
-            _key={<Calendar className="h-4 w-4 text-foreground" />}
+            _key={<CalendarIcon className="h-4 w-4 text-foreground" />}
             value={`${formatISODateString(this.booking.start.toISOString())} - ${formatISODateString(this.booking.end.toISOString())}`}
           />
           <KeyValueItem
@@ -74,7 +81,17 @@ class BookingEvent implements Event {
             value={dayjs(this.booking.createdAt).format("DD MMM YY HH:mm a")}
           />
         </div>
-        <ModelProfileList models={this.booking.job.models} />
+        <ModelProfileList
+          actionComp={({ profile }) => (
+            <Link
+              href={`/admin/models/${profile.id}/update`}
+              className="ml-auto"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Link>
+          )}
+          models={this.booking.job.models}
+        />
       </div>
     );
   }
@@ -122,14 +139,54 @@ export class BookingAdapter implements EventStragety {
         start: start.toISOString(),
         end: end.toISOString(),
         pagination: "false",
+        statuses: ["pending", "confirmed"],
       },
     });
+
     const { data } = await res.json();
-    return data
-      .filter(
-        (booking) =>
-          booking.status === "pending" || booking.status === "confirmed",
-      )
-      .map((booking) => new BookingEvent(booking));
+
+    const groupedBookings = data.reduce<Record<string, BookingWithJob[]>>(
+      (acc, booking) => {
+        const start = dayjs(booking.start);
+        const end = dayjs(booking.end).add(1, "day");
+        let current = start.clone();
+        while (current.isBefore(end)) {
+          const key = Calendar.getDateKey(current);
+          if (!acc[key]) {
+            acc[key] = [];
+          }
+          acc[key].push(cloneDeep(booking));
+          current = current.add(1, "day");
+        }
+        return acc;
+      },
+      {},
+    );
+
+    // Sort models by occurance
+    Object.entries(groupedBookings).forEach(([key, value]) => {
+      const modelOccurance = new Map<string, number>();
+      value.forEach((booking) => {
+        booking.job.models.forEach((model) =>
+          modelOccurance.set(model.id, (modelOccurance.get(model.id) ?? 0) + 1),
+        );
+      });
+
+      value.forEach((booking) => {
+        booking.job.models.sort(
+          (a, b) =>
+            (modelOccurance.get(b.id) ?? 0) - (modelOccurance.get(a.id) ?? 0),
+        );
+      });
+    });
+
+    const groupedEvents = Object.entries(groupedBookings).reduce<GroupedEvents>(
+      (acc, [key, value]) => {
+        acc[key] = value.map((booking) => new BookingEvent(booking));
+        return acc;
+      },
+      {},
+    );
+    return groupedEvents;
   }
 }

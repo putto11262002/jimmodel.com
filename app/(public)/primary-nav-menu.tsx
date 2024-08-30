@@ -3,6 +3,7 @@ import {
   faMars,
   faVenus,
   faTransgender,
+  faBaby,
 } from "@fortawesome/free-solid-svg-icons";
 
 export type NavItem = {
@@ -38,9 +39,16 @@ export const navItems: NavItem[] = [
           <FontAwesomeIcon className={className} icon={faTransgender} />
         ),
       },
+      {
+        href: "/models/kids",
+        title: "Kids",
+        icon: (className: string) => (
+          <FontAwesomeIcon className={className} icon={faBaby} />
+        ),
+      },
     ],
   },
-  { href: "/portfolio", title: "Portfolio" },
+  { href: "/showcases", title: "Showcases" },
   { href: "/about-us", title: "About Us" },
   { href: "/contact", title: "Contact Us" },
 ];

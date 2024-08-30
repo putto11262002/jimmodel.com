@@ -4,14 +4,14 @@ import { ReactNode } from "react";
 type Props = {
   value: string | ReactNode;
   _key: string | number | ReactNode;
-  sameLine?: boolean;
+  lineBreak?: boolean;
   size?: "xs" | "sm" | "md" | "lg";
   gap?: "sm" | "md" | "lg";
   hideWhenEmpty?: boolean;
 };
 
 export default function KeyValueItem({
-  sameLine = true,
+  lineBreak = false,
   size = "sm",
   gap = "md",
   hideWhenEmpty = false,
@@ -43,7 +43,7 @@ export default function KeyValueItem({
     <div
       className={cn(
         "flex items-center ",
-        !sameLine && "grid ",
+        lineBreak && "grid ",
         size === "sm" && "text-sm",
         size === "md" && "text-base",
         size === "xs" && "text-xs",

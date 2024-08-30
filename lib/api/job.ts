@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   BookingCreateInputSchema,
   JobCreateInputSchema,
+  JobFilterQuerySchema,
   JobUpdateInputSchema,
 } from "../validators/job";
 import { authMiddleware } from "./middlewares/auth";
@@ -14,9 +15,10 @@ import {
   stringArray,
   stringToBoolean,
   stringToDate,
-  stringToNumber,
+  stringToNumberOrError,
 } from "../validators/req-query";
 import permissions from "@/config/permission";
+import { NotFoundError } from "../errors/not-found-error";
 
 const jobRouter = new Hono()
   .post(
@@ -39,20 +41,7 @@ const jobRouter = new Hono()
   .get(
     "/jobs",
     authMiddleware(permissions.jobs.getJobs),
-    zValidator(
-      "query",
-      z.object({
-        page: stringToNumber.optional(),
-        pageSize: stringToNumber.optional(),
-        statuses: z
-          .enum(jobStatuses)
-          .transform((v) => [v])
-          .or(z.array(z.enum(jobStatuses)))
-          .optional(),
-        jobIds: stringArray.optional(),
-        pagination: stringToBoolean.optional(),
-      }),
-    ),
+    zValidator("query", JobFilterQuerySchema),
     async (c) => {
       const { page, pageSize, statuses, jobIds, pagination } =
         c.req.valid("query");
@@ -83,7 +72,7 @@ const jobRouter = new Hono()
       const job = c.req.valid("json");
       const updateJobId = await jobUsecase.update(id, job);
       if (!updateJobId) {
-        throw new HTTPException(404, { message: "Job not found" });
+        throw new NotFoundError("Job not found");
       }
       return c.json({ id: updateJobId });
     },
@@ -141,8 +130,8 @@ const jobRouter = new Hono()
     zValidator(
       "query",
       z.object({
-        page: stringToNumber.optional(),
-        pageSize: stringToNumber.optional(),
+        page: stringToNumberOrError.optional(),
+        pageSize: stringToNumberOrError.optional(),
         start: stringToDate.optional(),
         end: stringToDate.optional(),
         pagination: stringToBoolean.optional(),
@@ -173,8 +162,8 @@ const jobRouter = new Hono()
     zValidator(
       "query",
       z.object({
-        page: stringToNumber.optional(),
-        pageSize: stringToNumber.optional(),
+        page: stringToNumberOrError.optional(),
+        pageSize: stringToNumberOrError.optional(),
         start: stringToDate.optional(),
         end: stringToDate.optional(),
         pagination: stringToBoolean.optional(),

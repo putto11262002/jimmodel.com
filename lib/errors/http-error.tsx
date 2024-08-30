@@ -1,4 +1,6 @@
-export default class HttpError extends Error {
+import { AppError } from "./app-error";
+
+export default class HttpError extends AppError {
   code: number;
   constructor(message: string, code: number) {
     super(message);

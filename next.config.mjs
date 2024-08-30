@@ -16,6 +16,11 @@ const nextConfig = {
         destination: "/admin/models/:id/update/general",
         permanent: false,
       },
+      {
+        source: "/models/profile/:id",
+        destination: "/models/profile/:id/book",
+        permanent: false,
+      },
     ];
   },
   experimental: {

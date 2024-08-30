@@ -10,35 +10,43 @@ import { Suspense } from "react";
 import { useGetJobs } from "@/hooks/queries/job";
 import Loader from "@/components/loader";
 import JobTable from "./_components/table";
-import PaginationControl from "@/components/pagination-control";
 import { useSearchParams } from "next/navigation";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
 import Container from "@/components/container";
-import SearchBar from "./_components/search-bar";
+import FilterSection from "./_components/filter-section";
 import { useBreadcrumbSetter } from "@/components/breadcrumb";
+import { JobFilterQuerySchema } from "@/lib/validators/job";
+import Pagination from "@/components/public/pagination";
 
 export default function Page() {
   const session = useSession(permissions.jobs.getJobs);
   const searchParams = useSearchParams();
-  const pageParam = searchParams.get("page");
 
-  const page = pageParam ? parseInt(pageParam) || 1 : 1;
+  const { page, statuses } = JobFilterQuerySchema.parse({
+    page: searchParams.get("page"),
+    statuses: searchParams.getAll("statuses"),
+  });
 
-  const { data, isLoading, isSuccess } = useGetJobs({
+  const { data, isSuccess } = useGetJobs({
     page,
+    statuses,
     enabled: session.status === "authenticated",
   });
 
   useBreadcrumbSetter([{ label: "Jobs" }]);
 
-  if (isLoading || !isSuccess) {
-    return <Loader />;
+  if (!isSuccess) {
+    return (
+      <Container>
+        <Loader />
+      </Container>
+    );
   }
 
   return (
     <Container className="grid gap-4 w-screen">
-      <SearchBar />
+      <FilterSection />
       <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Jobs</CardTitle>
@@ -47,10 +55,10 @@ export default function Page() {
           <CardContent>
             <JobTable jobs={data.data} />
           </CardContent>
-          <CardFooter>
-            {data.totalPages > 1 && (
-              <PaginationControl page={page} totalPages={data.totalPages} />
-            )}
+          <CardFooter className="">
+            <div className="ml-auto">
+              <Pagination size="sm" {...data} path={`/admin/jobs`} />
+            </div>
           </CardFooter>
         </Suspense>
       </Card>

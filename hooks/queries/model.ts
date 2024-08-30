@@ -1,5 +1,9 @@
 import useToast from "@/components/toast";
-import { ModelCreateInput, ModelUpdateInput } from "@/lib/types/model";
+import {
+  ModelCreateInput,
+  ModelImageType,
+  ModelUpdateInput,
+} from "@/lib/types/model";
 import client from "@/lib/api/client";
 import {
   Model,
@@ -139,6 +143,55 @@ export function useCreateModelBlock({
     },
     onError: (...args) => {
       error(args[0].message);
+    },
+  });
+}
+
+export function useUpdateProfileImage() {
+  const queryClient = useQueryClient();
+  const { ok } = useToast();
+  return useMutation({
+    mutationFn: async (
+      args:
+        | { modelId: string; file: File }
+        | { fileId: string; modelId: string },
+    ) => {
+      await client.api.models[":modelId"].images.profile.$put({
+        form: "file" in args ? { file: args.file } : { fileId: args.fileId },
+        param: { modelId: args.modelId },
+      });
+    },
+    onSuccess: (_, { modelId }) => {
+      queryClient.invalidateQueries({ queryKey: ["models", modelId] });
+      ok("Profile successfully updated");
+    },
+  });
+}
+
+export function useUpdateImageType() {
+  const { ok } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      modelId,
+      fileId,
+      type,
+    }: {
+      modelId: string;
+      fileId: string;
+      type: ModelImageType;
+    }) => {
+      await client.api.models[":modelId"].images[":fileId"].type.$put({
+        param: { modelId, fileId },
+        json: { type },
+      });
+    },
+    onSuccess: (_, { modelId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["models", modelId, "images"],
+      });
+      ok("Image type successfully updated");
     },
   });
 }

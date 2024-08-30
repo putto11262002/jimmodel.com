@@ -30,13 +30,7 @@ const CustomKeyValueItem = ({
   value: string | undefined | null | number;
 }) => {
   return (
-    <KeyValueItem
-      hideWhenEmpty
-      _key={_key}
-      value={value}
-      size="md"
-      sameLine={false}
-    />
+    <KeyValueItem hideWhenEmpty _key={_key} value={value} size="md" lineBreak />
   );
 };
 

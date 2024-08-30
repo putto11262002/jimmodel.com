@@ -1,11 +1,6 @@
 "use client";
 import Image from "next/image";
 import { createContext, useContext, useState } from "react";
-import {
-  Gallery,
-  Image as ImageType,
-  ThumbnailImageProps,
-} from "react-grid-gallery";
 import Lightbox from "yet-another-react-lightbox";
 import NextJsImage from "./lightbox-helper";
 import "yet-another-react-lightbox/styles.css";
@@ -14,11 +9,11 @@ import {
   Photo,
   RenderImageContext,
   RenderImageProps,
-  RowsPhotoAlbum,
   ColumnsPhotoAlbum,
 } from "react-photo-album";
 import "react-photo-album/columns.css";
 import { cn } from "@/lib/utils";
+import ImageComp from "./image-comp";
 
 type GridImageGalleryContext = {
   index: number;
@@ -87,30 +82,5 @@ export default function GridImageGallery({
         }}
       />
     </>
-  );
-}
-function ImageComp(
-  { alt = "", title, sizes }: RenderImageProps,
-  { photo, width, height }: RenderImageContext,
-  { rounded }: { rounded?: "rounded" | "rounded-md" | "rounded-lg" },
-) {
-  return (
-    <div
-      style={{
-        width: `${width}px`,
-        position: "relative",
-        aspectRatio: `${width} / ${height}`,
-      }}
-      className={cn(rounded && rounded, rounded && "overflow-hidden")}
-    >
-      <Image
-        fill
-        src={photo}
-        alt={alt}
-        title={title}
-        sizes={sizes}
-        placeholder={"blurDataURL" in photo ? "blur" : undefined}
-      />
-    </div>
   );
 }

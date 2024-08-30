@@ -70,6 +70,15 @@ export default function SideNavMenu({ items }: { items: NavItem[] }) {
                     </li>
                   );
                 })}
+
+                <li>
+                  <Link
+                    href={"/application"}
+                    className="font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    Apply Now
+                  </Link>
+                </li>
               </ul>
             </nav>
           </Accordion>

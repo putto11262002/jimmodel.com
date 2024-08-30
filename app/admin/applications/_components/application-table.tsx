@@ -83,7 +83,7 @@ export default function ApplicationTable({
 
                     {application.status === "approved" && (
                       <Link
-                        href={`/admin/models/update/${application.id}/general`}
+                        href={`/admin/models/${application.id}/update/general`}
                       >
                         <DropdownMenuItem>Model Profile</DropdownMenuItem>
                       </Link>

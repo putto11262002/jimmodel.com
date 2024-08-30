@@ -7,6 +7,9 @@ import { JobUsecase } from "./job";
 import { ModelUseCase } from "./model";
 import { UserUsecase } from "./user";
 import { EditableImageFactory, ImageUseCase } from "./image";
+import { ShowcaseUseCase } from "./showcase";
+import { WebAssetUseCase } from "./web-asset";
+import { ContactMesageUseCase } from "./contact-message";
 
 const minioClient = new Minio.Client({
   accessKey: config.s3.accessKey,
@@ -36,3 +39,17 @@ export const applicationUseCase = new ApplictionUseCase({
   modelUseCase,
   fileUseCase,
 });
+
+export const showcaseUseCase = new ShowcaseUseCase({
+  db,
+  fileUseCase,
+  imageUseCase,
+});
+
+export const webAssetUseCase = new WebAssetUseCase({
+  db,
+  fileUseCase,
+  imageUseCase,
+});
+
+export const contactMessageUseCase = new ContactMesageUseCase({ db });

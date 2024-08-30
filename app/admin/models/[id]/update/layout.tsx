@@ -11,21 +11,27 @@ import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
 import Loader from "@/components/loader";
 import { useRouter } from "next/navigation";
+import SidebarLayout, { NavItem } from "@/components/layouts/sidebar-layout";
+import { useMemo } from "react";
 
-const items: { label?: string; id: string }[] = [
-  { id: "general" },
-  { id: "contact" },
-  { id: "background" },
-  { id: "identification" },
-  { id: "address" },
-  { id: "talents" },
-  { id: "measurement" },
-  { id: "experiences" },
-  { id: "profile-image", label: "profile image" },
-  { id: "images" },
-  { id: "tags" },
-  { id: "settings" },
-];
+const navItemsLoader = ({ id }: { id: string }) =>
+  [
+    { label: "general", form: "general" },
+    { label: "contact", form: "contact" },
+    { label: "background", form: "background" },
+    { label: "identification", form: "identification" },
+    { label: "address", form: "address" },
+    { label: "talents", form: "talents" },
+    { label: "measurement", form: "measurement" },
+    { label: "experiences", form: "experiences" },
+    { label: "profile image", form: "profile-image" },
+    { label: "images", form: "images" },
+    { label: "tags", form: "tags" },
+    { label: "settings", form: "settings" },
+  ].map((item) => ({
+    label: item.label,
+    href: `/admin/models/${id}/update/${item.form}`,
+  }));
 
 export default function Layout({
   children,
@@ -42,11 +48,17 @@ export default function Layout({
     enabled: session.status === "authenticated",
   });
 
+  const navItems = useMemo(() => navItemsLoader({ id }), [id]);
+
   if (isPending || !isSuccess) {
-    return <Loader />;
+    return (
+      <Container>
+        <Loader />
+      </Container>
+    );
   }
   return (
-    <Container max="md">
+    <Container max="lg">
       <BreakcrumbSetter
         breadcrumbs={[
           { label: "Models", href: "/admin/models" },
@@ -58,12 +70,7 @@ export default function Layout({
         <div className="flex items-center gap-6">
           <h1 className="text-2xl font-semibold">{data.name}&apos;s Profile</h1>
         </div>
-        <div className="flex gap-4">
-          <div className="min-w-40">
-            <FormMenu items={items} />
-          </div>
-          <div className="grow min-w-0">{children}</div>
-        </div>
+        <SidebarLayout items={navItems}>{children}</SidebarLayout>
       </div>
     </Container>
   );

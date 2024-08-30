@@ -1,20 +1,23 @@
 "use client";
 import Container from "@/components/container";
+import SidebarLayout from "@/components/layouts/sidebar-layout";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import permissions from "@/config/permission";
 import useSession from "@/hooks/use-session";
-import { cn } from "@/lib/utils";
-import { combine, hasPermission } from "@/lib/utils/auth";
-import { upperFirst } from "lodash";
+
 import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-const forms = [
-  { form: "password", permissions: permissions.users.updateSelfPassword },
-  { form: "roles", permissions: permissions.users.updateSelfRole },
-  { form: "image", permissions: permissions.users.addSelfImage },
-];
+const navItemsLoader = () =>
+  [
+    { form: "password", permissions: permissions.users.updateSelfPassword },
+    { form: "roles", permissions: permissions.users.updateSelfRole },
+    { form: "image", permissions: permissions.users.addSelfImage },
+  ].map((item) => ({
+    label: item.form,
+    href: `/admin/users/self/update/${item.form}`,
+    permissions: item.permissions,
+  }));
 export default function Layout({
   children,
   params: { id },
@@ -46,31 +49,7 @@ export default function Layout({
         </Button>
         <h2 className="text-2xl font-semibold">My Profile</h2>
       </div>
-      <div className="flex items-start gap-6">
-        <div className="grid min-w-44">
-          <ul className="grid gap-3">
-            {forms
-              .filter(({ permissions }) =>
-                hasPermission(permissions, session.data.user.roles),
-              )
-              .map(({ form }, index) => (
-                <li key={index}>
-                  <Link
-                    className={cn(
-                      "text-sm text-muted-foreground",
-                      path.split("/").pop() === form && "text-foreground",
-                    )}
-                    href={`/admin/users/self/update/${form}`}
-                    replace
-                  >
-                    {upperFirst(form)}
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </div>
-        <div className="grow">{children}</div>
-      </div>
+      <SidebarLayout items={navItemsLoader()}>{children}</SidebarLayout>
     </Container>
   );
 }

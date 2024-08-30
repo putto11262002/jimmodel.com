@@ -7,7 +7,6 @@ export const jobStatuses = [
   "pending",
   "confirmed",
   "cancelled",
-  "completed",
   "archived",
 ] as const;
 

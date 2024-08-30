@@ -1,29 +1,29 @@
 import Container from "@/components/container";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import webConfig from "@/config/web";
 import { Facebook, Instagram, LucideIcon, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 const socialMedia: { href: string; icon: LucideIcon }[] = [
   {
-    href: "#",
+    href: `mailto:${webConfig.email}`,
     icon: Mail,
   },
   {
-    href: "#",
+    href: `tel:${webConfig.phone}`,
     icon: Phone,
   },
   {
-    href: "#",
+    href: webConfig.facebook,
     icon: Facebook,
   },
   {
-    href: "#",
+    href: webConfig.instagram,
     icon: Instagram,
   },
 ];
 export default function Footer() {
   return (
-    <Container className="max-w-screen-lg w-full mx-auto px-4 pt-12 pb-12">
+    <Container className="max-w-screen-lg w-full mx-auto px-4 pt-12 pb-16">
       <footer className="">
         <div className="flex justify-center gap-8">
           {socialMedia.map((social, index) => (
@@ -40,8 +40,7 @@ export default function Footer() {
           J.I.M. Modeling Agency
         </h2>
         <h3 className="text-sm text-muted-foreground text-center">
-          201/5 Town in town soi 2 , Phlabphla, Wang Thonglang, Bangkok
-          Thailand, 10310
+          {webConfig.address}
         </h3>
         <p className="text-xs text-center text-muted-foreground mt-12">
           Copyright © 2024 J.I.M. Modeling Agency.

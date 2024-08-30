@@ -1,33 +1,44 @@
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Container from "@/components/container";
 import Link from "next/link";
+import { showcaseUseCase } from "@/lib/usecases";
+import ShowcaseCard from "./_components/showcase-card";
+import HeroSection from "./_components/hero-section";
 
-export default function Page() {
+export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export default async function Page() {
+  const showcases = await showcaseUseCase.getShowcases({
+    published: true,
+    pageSize: 6,
+    page: 1,
+  });
   return (
-    <Container className="mx-auto h-[calc(100vh-theme(spacing.16))] box-border">
-      <h1 className="pt-20 text-4xl font-bold text-center">
-        Unleash Your Full Potential With Us
-      </h1>
-      <h2 className="pt-2 text-sm max-w-lg w-full mx-auto text-center text-muted-foreground">
-        Connecting You to Opportunities and Elevating Your Talent to New Heights
-        with Thailand’s Leading Agency, Backed by Over 40 Years of Experience
-      </h2>
-      <div className="w-full flex pt-6 justify-center">
-        <Link href={"/application"}>
-          <Button className="" size={"sm"}>
-            Apply Now
-          </Button>
-        </Link>
-      </div>
-      <div className="w-full min-h-[200px] relative mt-12 md:mt-20 opacity-70">
-        <Image
-          src={"/colored-hero-image.jpeg"}
-          alt={"Hero"}
-          fill
-          className="object-contain"
-        />
-      </div>
-    </Container>
+    <>
+      <HeroSection />
+      <section className="">
+        <Container max="xl" className="py-28">
+          <h2 className="text-3xl font-bold text-center">
+            Portfolio Highlights
+          </h2>
+          <h3 className="text-muted-foreground text-center">
+            Explore the stunning work that defines our legacy.
+          </h3>
+          <div className="grid md:grid-cols-3 gap-6 mt-16">
+            {showcases.data.map((showcase, index) => (
+              <ShowcaseCard showcase={showcase} key={index} />
+            ))}
+          </div>
+          <div className="mt-8 flex">
+            <Link className="mx-auto" href={"/showcases"}>
+              <Button className="" variant={"outline"}>
+                Explore More
+              </Button>
+            </Link>
+          </div>
+        </Container>
+      </section>
+    </>
   );
 }

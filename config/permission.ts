@@ -80,6 +80,34 @@ const applicationPermissions: {
   addApplicationImageById: [],
 };
 
+const ShowcaseActions = {
+  createShowcase: "create-showcase",
+  getShowcaseById: "get-showcase-by-id",
+  updateShowcase: "update-showcase",
+  updateCoverImage: "update-cover-image",
+  addImage: "add-image",
+  getShowcases: "get-showcases",
+  getPublishedShowcases: "get-published-showcases",
+  publishShowcase: "publish-showcase",
+  unpublishShowcase: "unpublish-showcas",
+  addModel: "add-model",
+};
+
+const showcasePermissions: {
+  [key in keyof typeof ShowcaseActions]: UserRole[];
+} = {
+  createShowcase: ["admin", "staff"],
+  updateShowcase: ["admin", "staff"],
+  getShowcaseById: ["admin", "staff"],
+  updateCoverImage: ["admin", "staff"],
+  addImage: ["admin", "staff"],
+  getShowcases: ["admin", "staff"],
+  getPublishedShowcases: [],
+  publishShowcase: ["admin", "staff"],
+  unpublishShowcase: ["admin", "staff"],
+  addModel: ["admin", "staff"],
+};
+
 const ModelActions = {
   createModel: "create-model",
   getModels: "get-models",
@@ -122,6 +150,44 @@ const modelPermissions: {
   removeModelExperience: ["admin", "staff"],
 };
 
+const WebAssetActions = {
+  createWebAsset: "create-web-asset",
+  getWebAsset: "get-web-asset",
+  getWebAssets: "get-web-assets",
+  updateWebAssetMetadata: "update-web-asset-metadata",
+  removeWebAsset: "remove-web-asset",
+  publish: "publish",
+  unpublish: "unpublish",
+  getPublishedWebAssets: "get-public-web-assets",
+} as const;
+
+const webAssetPermissions: {
+  [key in keyof typeof WebAssetActions]: UserRole[];
+} = {
+  createWebAsset: ["IT", "admin"],
+  getWebAsset: ["IT", "staff", "admin"],
+  getWebAssets: ["IT", "staff", "admin"],
+  updateWebAssetMetadata: ["IT", "admin"],
+  removeWebAsset: ["IT", "admin"],
+  getPublishedWebAssets: [],
+  publish: ["IT", "admin"],
+  unpublish: ["IT", "admin"],
+};
+
+const ContactMessageActions = {
+  getContactMessages: "get-contact-messages",
+  getContactMessage: "get-contact-message",
+  markAsRead: "mark-as-read",
+};
+
+const contactMessagePermissions: {
+  [key in keyof typeof ContactMessageActions]: UserRole[];
+} = {
+  getContactMessages: ["admin", "staff", "IT"],
+  markAsRead: ["admin", "staff", "IT"],
+  getContactMessage: ["admin", "staff", "IT"],
+};
+
 // Emptry array = only authentication is required
 // Null = no authentication required
 const permissions = {
@@ -129,6 +195,9 @@ const permissions = {
   jobs: jobPermissions,
   applications: applicationPermissions,
   models: modelPermissions,
+  showcases: showcasePermissions,
+  weebAssets: webAssetPermissions,
+  contactMessages: contactMessagePermissions,
 } as const;
 
 export default permissions;

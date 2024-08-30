@@ -1,6 +1,16 @@
 import permissions from "@/config/permission";
 import { combine } from "@/lib/utils/auth";
-import { Briefcase, Dock, Lock, User, LayoutDashboard } from "lucide-react";
+import {
+  Briefcase,
+  Dock,
+  Lock,
+  User,
+  LayoutDashboard,
+  StickyNote,
+  File,
+  Image,
+  Send,
+} from "lucide-react";
 
 const iconClasses = "h-5 w-5";
 
@@ -37,5 +47,23 @@ export const navMenuItems = [
     href: "/admin/applications",
     icon: <Dock className={iconClasses} />,
     permissions: permissions.applications.getApplications,
+  },
+  {
+    label: "Show Cases",
+    href: "/admin/showcases",
+    icon: <StickyNote className={iconClasses} />,
+    permissions: permissions.showcases.getShowcases,
+  },
+  {
+    label: "Web Assets",
+    href: "/admin/web-assets",
+    icon: <Image className={iconClasses} />,
+    permissions: permissions.weebAssets.getWebAssets,
+  },
+  {
+    label: "Contacts",
+    href: "/admin/contacts",
+    icon: <Send className={iconClasses} />,
+    permissions: permissions.contactMessages.getContactMessages,
   },
 ];

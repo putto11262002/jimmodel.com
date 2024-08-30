@@ -5,6 +5,7 @@ import { genders } from "@/db/data/genders";
 import { hairColors } from "@/db/data/hair-colors";
 import dayjs from "dayjs";
 import { z } from "zod";
+import { modelCategories } from "../constants/model";
 
 export const ModelCreateInputSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -112,6 +113,7 @@ export const ModelCreateInputSchema = z.object({
   local: z.boolean().nullable().optional(),
   inTown: z.boolean().nullable().optional(),
   directBooking: z.boolean().nullable().optional(),
+  category: z.enum(modelCategories).optional(),
 
   published: z.boolean().nullable().optional(),
   active: z.boolean().nullable().optional(),

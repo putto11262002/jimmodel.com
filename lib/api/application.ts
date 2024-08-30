@@ -10,7 +10,7 @@ import { HTTPException } from "hono/http-exception";
 import { applicationStatuses } from "@/db/schemas";
 import { authMiddleware } from "./middlewares/auth";
 import permissions from "@/config/permission";
-import { stringToNumber } from "../validators/req-query";
+import { stringToNumberOrError } from "../validators/req-query";
 
 const applicationRouter = new Hono()
   .basePath("applications")
@@ -20,8 +20,8 @@ const applicationRouter = new Hono()
     zValidator(
       "query",
       z.object({
-        page: stringToNumber.optional(),
-        pageSize: stringToNumber.optional(),
+        page: stringToNumberOrError.optional(),
+        pageSize: stringToNumberOrError.optional(),
         status: z.enum(applicationStatuses).optional(),
       }),
     ),

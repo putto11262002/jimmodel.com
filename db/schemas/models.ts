@@ -7,6 +7,7 @@ import {
   real,
   uuid,
   integer,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 
 import { modelImageTable } from "./model-images";
@@ -14,11 +15,15 @@ import {
   countryEnum,
   ethnicityEnum,
   eyeColorEnum,
-  genderEnum,
   hairColorEnum,
 } from "./enums";
 
 import { fileInfoTable } from "./file-metadata";
+import { modelCategories, modelGenders } from "@/lib/constants/model";
+
+export const modelGenderEnum = pgEnum("gender", modelGenders);
+
+export const modelCategoryEnum = pgEnum("model_category", modelCategories);
 
 export const modelTable = pgTable("models", {
   id: uuid("id")
@@ -32,7 +37,7 @@ export const modelTable = pgTable("models", {
     withTimezone: true,
   }),
 
-  gender: genderEnum("gender").notNull(),
+  gender: modelGenderEnum("gender").notNull(),
 
   phoneNumber: varchar("phone_number"),
   email: varchar("email"),
@@ -138,6 +143,7 @@ export const modelTable = pgTable("models", {
   published: boolean("public").default(false),
   active: boolean("inactive").default(true),
 
+  category: modelCategoryEnum("category").notNull(),
   tags: varchar("tags").array(),
 
   profileImageId: uuid("profile_image_id").references(() => fileInfoTable.id),

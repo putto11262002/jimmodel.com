@@ -15,3 +15,5 @@ export const imageDim = {
     lg: { width: 1200, height: 800 },
   },
 } as const;
+
+export const placeholderImage = "/placeholder.svg";

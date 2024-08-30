@@ -5,7 +5,7 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const format = "DD MMM YY HH:mm a";
+const format = "MMM DD YY HH:mm a";
 export function formatUTCDateStringWithoutTZ(date: string): string {
   return dayjs.utc(date).local().format(format);
 }

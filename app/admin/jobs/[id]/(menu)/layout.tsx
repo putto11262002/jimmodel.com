@@ -8,12 +8,19 @@ import { combine } from "@/lib/utils/auth";
 import { useGetJob } from "@/hooks/queries/job";
 import Loader from "@/components/loader";
 import JobStatusBadge from "@/components/job/job-status-badge";
-const items: { label: string; href: string | ((id: string) => string) }[] = [
-  { label: "General", href: (id: string) => `/admin/jobs/${id}/update` },
-  { label: "Models", href: (id: string) => `/admin/jobs/${id}/models` },
-  { label: "Bookings", href: (id: string) => `/admin/jobs/${id}/bookings` },
-  { label: "Actions", href: (id: string) => `/admin/jobs/${id}/actions` },
-];
+import { useMemo } from "react";
+import SidebarLayout from "@/components/layouts/sidebar-layout";
+const navItemsLoader = ({ id }: { id: string }) =>
+  [
+    { form: "update", label: "General" },
+    { form: "models" },
+    { form: "bookings" },
+    { form: "actions" },
+  ].map((item) => ({
+    label: item.label || item.form,
+    href: `/admin/jobs/${id}/${item.form}`,
+  }));
+
 export default function Layout({
   children,
   params: { id },
@@ -29,6 +36,7 @@ export default function Layout({
     jobId: id,
     enabled: session.status === "authenticated",
   });
+  const navItems = useMemo(() => navItemsLoader({ id }), [id]);
 
   if (!isSuccess) {
     return (
@@ -39,7 +47,7 @@ export default function Layout({
   }
 
   return (
-    <Container max="md">
+    <Container max="md" className="grid gap-6">
       <BreakcrumbSetter
         breadcrumbs={[
           { label: "Jobs", href: "/admin/jobs" },
@@ -47,18 +55,11 @@ export default function Layout({
           { label: "Edit" },
         ]}
       />
-      <div className="w-full max-w-6xl flex flex-col gap-6">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-semibold">{data.name}</h1>
-          <JobStatusBadge status={data.status} />
-        </div>
-        <div className="flex gap-4">
-          <div className="min-w-40">
-            <Menu items={items} />
-          </div>
-          <div className="grow min-w-0">{children}</div>
-        </div>
+      <div className="flex items-center gap-4">
+        <h1 className="text-2xl font-semibold">{data.name}</h1>
+        <JobStatusBadge status={data.status} />
       </div>
+      <SidebarLayout items={navItems}>{children}</SidebarLayout>
     </Container>
   );
 }

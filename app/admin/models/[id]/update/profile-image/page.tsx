@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { imageDim } from "@/config/image";
 import permissions from "@/config/permission";
-import { useGetModel } from "@/hooks/queries/model";
+import { useGetModel, useUpdateProfileImage } from "@/hooks/queries/model";
 import useSession from "@/hooks/use-session";
 import client from "@/lib/api/client";
 import { blobToFile } from "@/lib/utils/file";
@@ -43,14 +43,7 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
     modelId: id,
     enabled: session.status === "authenticated",
   });
-  const { mutate } = useMutation({
-    mutationFn: async ({ modelId, file }: { modelId: string; file: File }) => {
-      await client.api.models[":modelId"].images.profile.$put({
-        form: { file: file },
-        param: { modelId },
-      });
-    },
-  });
+  const { mutate } = useUpdateProfileImage();
   if (!isSuccess) {
     return <Loader />;
   }

@@ -23,7 +23,6 @@ export const useDeleteBooking = (
     mutationFn: async ({ id, jobId }: { id: string; jobId: string }) => {
       await client.api.bookings[":id"].$delete({ param: { id } });
     },
-
     onSuccess: (_, { jobId }) => {
       ok("Booking deleted successfully");
 
@@ -273,7 +272,7 @@ export function useGetJobs({
 > = {}) {
   return useQuery({
     ...opts,
-    queryKey: ["jobs", { page }],
+    queryKey: ["jobs", { page, statuses }],
     queryFn: async () => {
       const res = await client.api.jobs.$get({
         query: {
