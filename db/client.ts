@@ -11,6 +11,7 @@ const connect = () => {
     user: config.db.user,
     password: config.db.password,
     database: config.db.name,
+    ssl:"prefer"
   });
   const db = getDrizzleDB(pgClient);
   return { pgClient, db };

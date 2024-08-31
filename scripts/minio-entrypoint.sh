@@ -1,6 +1,6 @@
 #!/bin/bash
 ALIAS="jimmodelminio"
-MINIO_URL="http://minio:9000"
+
 # server /data --console-address ":9001"  
 
 

@@ -22,6 +22,7 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+COPY .env.production .env
 # This will do the trick, use the corresponding env file for each environment.
 RUN pnpm build
 
@@ -34,12 +35,12 @@ WORKDIR /app
 RUN mkdir file_storage
 
 ENV NODE_ENV=production
-ENV FILE_STORAGE_PATH=/app/file_storage
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
 COPY --from=builder /app/public ./public
+COPY .env.production .env
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing

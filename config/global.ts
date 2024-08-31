@@ -8,6 +8,7 @@ dotenv.config({
       : [".env.development"]),
   ],
 });
+console.log(process.env);
 
 // Placeholder config for build time
 const config = process.env.NEXT_BUILD

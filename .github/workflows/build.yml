@@ -7,33 +7,133 @@ on:
   pull_request:
     branches:
       - master
+
+env:
+  PROJECT_NAME: jimmodel
+  URL: https://${{ secrets.APP_PUBLIC_HOSTNAME }}
+  VPS_HOST: ${{ secrets.VPS_HOST }}
+  VPS_USER: ${{ secrets.VPS_USER }}
+  VPS_SSH_SECRET_KEY: ${{ secrets.VPS_SSH_SECRET_KEY }}
+  VPS_SSH_PASSPHRASE: ${{ secrets.VPS_SSH_PASSPHRASE }}
+  VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
+
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+  APP_IMAGE: ${{ secrets.APP_IMAGE }}
+
+  ROOT_USER: ${{ secrets.ROOT_USER }}
+  ROOT_PASSWORD: ${{ secrets.ROOT_PASSWORD }}
+
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+  AUTH_TRUST_HOST: true
+
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_DATA: ${{ secrets.DB_DATA }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  # DB_HOST: ${{ secrets.DB_HOST }}
+
+  MINIO_ROOT_USER: ${{ secrets.MINIO_ROOT_USER }}
+  MINIO_ROOT_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD }}
+  MINIO_DATA: ${{ secrets.MINIO_DATA }}
+
+  S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+  S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+  # S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+  # S3_PORT: ${{ secrets.S3_PORT }}
+  S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
+  LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
+  LETSENCRYPT_DATA: ${{ secrets.LETSENCRYPT_DATA }}
+
+  APP_PUBLIC_HOSTNAME: ${{ secrets.APP_PUBLIC_HOSTNAME }}
+  POSTGRES_PUBLIC_HOSTNAME: ${{ secrets.POSTGRES_PUBLIC_HOSTNAME }}
+  MINIO_PUBLIC_HOSTNAME: ${{ secrets.MINIO_PUBLIC_HOSTNAME }}
+  MINIO_DASHBOARD_PUBLIC_HOSTNAME: ${{ secrets.MINIO_DASHBOARD_PUBLIC_HOSTNAME }}
+  TRAEFIK_PUBLIC_HOSTNAME: ${{ secrets.TRAEFIK_PUBLIC_HOSTNAME }}
+
+  POSTGRES_INTERNAL_HOSTNAME: ${{ secrets.POSTGRES_INTERNAL_HOSTNAME }}
+  MINIO_INTERNAL_HOSTNAME: ${{ secrets.MINIO_INTERNAL_HOSTNAME }}
+
 jobs:
-  build:
+  provision-infras:
     runs-on: ubuntu-latest
+    env:
+      DB_HOST: ${{secrets.POSTGRES_INTERNAL_HOSTNAME}}
+      S3_ENDPOINT: ${{ secrets.MINIO_INTERNAL_HOSTNAME }}
+      S3_PORT: 9000
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Checkout
+        uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Generating .env file
+        shell: bash
+        run: |
+          echo PROJECT_NAME=$PROJECT_NAME > .env
+          echo "APP_IMAGE=$APP_IMAGE" >> .env
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          echo "URL=$URL" >> .env
 
-      - name: Build and push app
-        uses: docker/build-push-action@v6
+          echo "ROOT_USER=$ROOT_USER" >> .env
+          echo "ROOT_PASSWORD=$ROOT_PASSWORD" >> .env
+
+          echo "AUTH_SECRET=$AUTH_SECRET" >> .env
+          echo "AUTH_TRUST_HOST=true" >> .env
+
+          echo "DB_USER=$DB_USER" >> .env
+          echo "DB_PASSWORD=$DB_PASSWORD" >> .env
+          echo "DB_NAME=$DB_NAME" >> .env
+          echo "DB_HOST=$POSTGRES_INTERNAL_HOSTNAME" >> .env
+          echo "DB_DATA=$DB_DATA" >> .env
+
+          echo "MINIO_ROOT_USER=$MINIO_ROOT_USER" >> .env
+          echo "MINIO_ROOT_PASSWORD=$MINIO_ROOT_PASSWORD" >> .env
+          echo "MINIO_DATA=$MINIO_DATA" >> .env
+
+          echo "S3_ACCESS_KEY=$S3_ACCESS_KEY" >> .env
+          echo "S3_SECRET_KEY=$S3_SECRET_KEY" >> .env
+          echo "S3_ENDPOINT=$S3_ENDPOINT" >> .env
+          echo "S3_PORT=$S3_PORT" >> .env
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
+
+          echo "LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL" >> .env
+          echo "LETSENCRYPT_DATA=$LETSENCRYPT_DATA" >> .env
+
+          echo "APP_PUBLIC_HOSTNAME=$APP_PUBLIC_HOSTNAME" >> .env
+          echo "POSTGRES_PUBLIC_HOSTNAME=$POSTGRES_PUBLIC_HOSTNAME" >> .env
+          echo "MINIO_PUBLIC_HOSTNAME=$MINIO_PUBLIC_HOSTNAME" >> .env
+          echo "MINIO_DASHBOARD_PUBLIC_HOSTNAME=$MINIO_DASHBOARD_PUBLIC_HOSTNAME" >> .env
+          echo "TRAEFIK_PUBLIC_HOSTNAME=$TRAEFIK_PUBLIC_HOSTNAME" >> .env
+
+          echo "POSTGRES_INTERNAL_HOSTNAME=$POSTGRES_INTERNAL_HOSTNAME" >> .env
+          echo "MINIO_INTERNAL_HOSTNAME=$MINIO_INTERNAL_HOSTNAME" >> .env
+
+          cp .env .env.production
+
+      - name: Copy files to target server
+        uses: appleboy/scp-action@master
         with:
-          target: runner
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ vars.APP_IMAGE }}:latest
-      - name: Build and push initializer
-        uses: docker/build-push-action@v6
+          host: ${{env.VPS_HOST}}
+          username: ${{env.VPS_USER}}
+          key: ${{env.VPS_SSH_SECRET_KEY}}
+          passphrase: ${{env.VPS_SSH_PASSPHRASE}}
+          port: 22
+          rm: true
+          source: "./*"
+          target: ${{env.VPS_DEPLOY_PATH}}
+
+      - name: Provision Infras
+        uses: appleboy/ssh-action@v0.1.5
         with:
-          target: initializer-runner
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ vars.INITIALIZER_IMAGE }}:latest
+          host: ${{ env.VPS_HOST}}
+          username: ${{env.VPS_USER}}
+          key: ${{ env.VPS_SSH_SECRET_KEY}}
+          passphrase: ${{env.VPS_SSH_PASSPHRASE}}
+          port: 22
+          script: |
+            cd ${{env.VPS_DEPLOY_PATH}}
+            docker compose -p jimmodel up -d --build --pull always --wait postgres minio reverse-proxy
+            docker compose -p jimmodel up --build -d --wait app-initializer
+            docker compose -p jimmodel up --pull always -d --wait minio-mc
+            docker compose -p jimmodel up --build -d --wait app
