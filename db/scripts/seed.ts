@@ -14,7 +14,7 @@ async function init() {
     console.log(opts.error.flatten().fieldErrors);
     process.exit(1);
   }
-  const pgClient = getPgClient(opts.data);
+  const pgClient = getPgClient({...opts.data, ssl: "prefer"});
   const db = getDrizzleDB(pgClient);
   await seed(db);
   await pgClient.end();
