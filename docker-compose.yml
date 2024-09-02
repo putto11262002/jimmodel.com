@@ -126,7 +126,7 @@ services:
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jimmodel-app.rule=Host(`${APP_PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.jimmodel-app.rule=Host(`${APP_PUBLIC_HOSTNAME}`) || Host(`www.${APP_PUBLIC_HOSTNAME})"
       - "traefik.http.routers.jimmodel-app.entrypoints=websecure"
       - "traefik.http.services.jimmodel-app.loadbalancer.server.port=3000"
       - "traefik.http.routers.jimmodel-app.tls.certresolver=defaultresolver"
