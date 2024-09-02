@@ -3,6 +3,12 @@ import Sidebar from "./_components/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import TopBar from "./_components/topbar";
 import Providers from "../providers";
+import { Metadata } from "next";
+import webConfig from "@/config/web";
+
+export const metadata: Metadata = {
+  title: webConfig.fullCompanyName,
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

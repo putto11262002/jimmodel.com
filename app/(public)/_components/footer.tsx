@@ -29,6 +29,7 @@ export default function Footer() {
           {socialMedia.map((social, index) => (
             <Link key={index} href={social.href}>
               <Button variant={"ghost"} className="rounded-full " size={"icon"}>
+                <span className="sr-only">{social.href}</span>
                 {<social.icon strokeWidth={2.2} className="h-5 w-5" />}
               </Button>
             </Link>

@@ -12,6 +12,7 @@ dotenv.config({
 // Placeholder config for build time
 const config = process.env.NEXT_BUILD
   ? {
+      url: process.env.URL || "",
       root: {
         user: "",
         email: "",
@@ -33,6 +34,7 @@ const config = process.env.NEXT_BUILD
       },
     }
   : ConfigSchema.parse({
+      url: process.env.URL,
       root: {
         user: process.env.ROOT_USER,
         email: process.env.ROOT_EMAIL,

@@ -6,6 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+export const metadata = {
+  title: "Our Work",
+  description: "Explore the stunning work that defines our legacy.",
+};
+
 export default async function Page({ searchParams }: { searchParams: {} }) {
   const { page: _page } = SearchParamsSchema.parse(searchParams);
   const { data, hasPrev, hasNext, totalPages, page } =

@@ -1,4 +1,4 @@
- const routes = {
-	getFiles: (fileId: string) => `/files/${fileId}`
-} as const
-export default routes
+const routes = {
+  getFiles: (fileId: string) => `/files/${fileId}`,
+} as const;
+export default routes;

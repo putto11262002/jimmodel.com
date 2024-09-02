@@ -6,7 +6,17 @@ import { navItems } from "./primary-nav-menu";
 import SideNavMenu from "./_components/side-nav-menu";
 import Container from "@/components/container";
 import webConfig from "@/config/web";
+import { Metadata } from "next";
+import config from "@/config/global";
 
+export const metadata: Metadata = {
+  metadataBase: new URL(config.url),
+  title: webConfig.defaultSEO.title,
+  description: webConfig.defaultSEO.description,
+  applicationName: webConfig.defaultSEO.applicationName,
+  keywords: webConfig.defaultSEO.keywords,
+  openGraph: webConfig.defaultSEO.openGraph,
+};
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>

@@ -1,5 +1,6 @@
 import z from "zod";
 export const ConfigSchema = z.object({
+  url: z.string().optional().default("http://localhost:3000"),
   root: z.object({
     user: z.string().optional().default("root"),
     email: z.string().optional().default("root@jimmodel.com"),
