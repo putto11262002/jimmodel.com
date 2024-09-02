@@ -24,7 +24,7 @@ export default function Page() {
   });
 
   return (
-    <Container max="md">
+    <Container max="sm">
       <h1 className="text-2xl font-semibold text-center">Contact Us</h1>
       <h2 className="text-muted-foreground text-sm text-center">
         Please feel free to contact us for any castings, bookings or any other
