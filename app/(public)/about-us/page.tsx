@@ -1,4 +1,7 @@
 import Container from "@/components/container";
+export const metadata = {
+  title: "About Us",
+};
 
 export default function Page() {
   return (

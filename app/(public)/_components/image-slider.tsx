@@ -48,6 +48,7 @@ export default function ImageSlider({ images }: { images: WebAsset[] }) {
             key={index}
           >
             <Image
+              priority={true}
               src={routes.getFiles(image.fileId)}
               alt={image.alt ?? image.tag}
               fill

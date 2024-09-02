@@ -6,15 +6,13 @@ import ModelFilterDialog from "./_components/model-filter-dialog";
 import { PathParamsSchema, SearchParamsSchema } from "./_lib.ts/schemas";
 import Pagination from "@/components/public/pagination";
 import ModelProfileCard from "@/components/public/model/model-card";
+import { Metadata, ResolvingMetadata } from "next";
 
 // Force full route cache and revalidate every 1 hour
 export const dynamic = "auto";
 export const revalidate = 3600;
 
-export default async function Page({
-  params,
-  searchParams,
-}: {
+type Props = {
   params: {
     category: string;
   };
@@ -25,7 +23,17 @@ export default async function Page({
     directBooking: string;
     inTown: string;
   };
-}) {
+};
+
+export async function generateMetadata(
+  { params, searchParams }: Props,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  return {
+    title: `Models - ${params.category}`,
+  };
+}
+export default async function Page({ params, searchParams }: Props) {
   const { page, local, directBooking, inTown } =
     SearchParamsSchema.parse(searchParams);
   const { category } = PathParamsSchema.parse(params);

@@ -1,7 +1,6 @@
 import Container from "@/components/container";
 import FormContextProvider from "./_components/form-context";
 import { Suspense } from "react";
-
 export default function Template({ children }: { children: React.ReactNode }) {
   return (
     <FormContextProvider>

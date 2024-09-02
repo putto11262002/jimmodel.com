@@ -18,14 +18,14 @@ export default async function Page() {
     <>
       <HeroSection />
       <section className="">
-        <Container max="xl" className="py-28">
-          <h2 className="text-3xl font-bold text-center">
+        <Container max="xl" className="py-16 md:py-28">
+          <h2 className="text-2xl md:text-3xl font-bold text-center">
             Portfolio Highlights
           </h2>
-          <h3 className="text-muted-foreground text-center">
+          <h3 className="text-sm md:text-base text-muted-foreground text-center">
             Explore the stunning work that defines our legacy.
           </h3>
-          <div className="grid md:grid-cols-3 gap-6 mt-16">
+          <div className="grid md:grid-cols-3 gap-6 mt-8 md:mt-16">
             {showcases.data.map((showcase, index) => (
               <ShowcaseCard showcase={showcase} key={index} />
             ))}
