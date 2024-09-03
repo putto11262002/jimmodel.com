@@ -21,11 +21,10 @@ export default function TopNavMenu({ items }: { items: NavItem[] }) {
               return (
                 <NavigationMenuItem className="" key={index}>
                   <NavigationMenuTrigger className="text-muted-foreground font-normal">
-                    Models
+                    {item.title}
                   </NavigationMenuTrigger>
                   <NavigationMenuContent className="border-0 shadow-none">
                     <ul className="grid p-2 min-w-[200px]">
-                      {" "}
                       {item.children.map((child, index) => (
                         <li key={index}>
                           <NavigationMenuLink
@@ -36,7 +35,6 @@ export default function TopNavMenu({ items }: { items: NavItem[] }) {
                               className="text-sm text-muted-foreground flex items-center gap-2 hover:text-foreground"
                               href={child.href}
                             >
-                              {child.icon && child.icon("w-4 h-4")}
                               {child.title}
                             </Link>
                           </NavigationMenuLink>

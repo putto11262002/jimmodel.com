@@ -8,6 +8,13 @@
       "when": 1724995813802,
       "tag": "0000_premium_ken_ellis",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1725383424430,
+      "tag": "0001_opposite_killmonger",
+      "breakpoints": true
     }
   ]
 }

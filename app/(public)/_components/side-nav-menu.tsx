@@ -76,7 +76,7 @@ export default function SideNavMenu({ items }: { items: NavItem[] }) {
                     href={"/application"}
                     className="font-medium text-muted-foreground hover:text-foreground"
                   >
-                    Apply Now
+                    Join Us
                   </Link>
                 </li>
               </ul>

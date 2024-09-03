@@ -4,7 +4,6 @@ import { FileUseCase } from "./file";
 import {
   Showcase,
   ShowcaseCreateInput,
-  ShowcaseImage,
   ShowcaseImageCreateInput,
   ShowcaseUpdateInput,
 } from "../types/showcase";
@@ -13,7 +12,7 @@ import {
   showcasesToModelsTable,
   showcaseTable,
 } from "@/db/schemas/showcase";
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { modelProfileColumns } from "./model";
 import { PaginatedData } from "../types/paginated-data";
 import { getOffset, paginate } from "../utils/pagination";
@@ -21,6 +20,8 @@ import { FileInfo } from "../types/file";
 import { NotFoundError } from "../errors/not-found-error";
 import ConstraintViolationError from "../errors/contrain-violation-error";
 import { VideoLinkProcessor } from "../video-link/video-link-processor";
+
+type OrderByFields = keyof Pick<Showcase, "createdAt" | "title" | "updatedAt">;
 
 export class ShowcaseUseCase {
   private db: DB;
@@ -142,10 +143,12 @@ export class ShowcaseUseCase {
     page,
     pageSize,
     published,
+    orderBy,
   }: {
     published?: boolean;
     page?: number;
     pageSize?: number;
+    orderBy?: { field: OrderByFields; order: "asc" | "desc" };
   }): Promise<PaginatedData<Showcase>> {
     const where = and(
       published ? eq(showcaseTable.published, true) : undefined,
@@ -157,6 +160,11 @@ export class ShowcaseUseCase {
         where,
         limit: pageSize,
         offset: getOffset(page, pageSize),
+        orderBy: orderBy
+          ? orderBy.order === "desc"
+            ? desc(showcaseTable[orderBy.field])
+            : asc(showcaseTable[orderBy.field])
+          : undefined,
         with: {
           coverImage: true,
           images: {

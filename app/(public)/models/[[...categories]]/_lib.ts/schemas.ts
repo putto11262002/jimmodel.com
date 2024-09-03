@@ -28,28 +28,39 @@ export const SearchParamsSchema = z.object({
       }
       return 1;
     }),
-  local: z
-    .enum(localQueries)
-    .or(z.any().transform(() => "all" as LocalQuery))
-    .optional()
-    .default("all"),
-  inTown: z
-    .enum(inTownQueries)
-    .or(z.any().transform(() => "all" as InTownQuery))
-    .optional()
-    .default("all"),
-  directBooking: z
-    .enum(directBookingQueries)
-    .or(z.any().transform((v) => "all" as DirectBookingQuery))
-    .optional()
-    .default("all"),
 });
 
+type PathParams = {
+  category?: ModelCategory;
+  inTown?: boolean;
+  directBooking?: boolean;
+  local?: boolean;
+};
 export const PathParamsSchema = z.object({
-  category: z.string().transform((value) => {
-    if (modelCategories.includes(value as any)) {
-      return value as ModelCategory;
-    }
-    return undefined;
-  }),
+  categories: z
+    .array(z.string())
+    .transform((value) => {
+      let output: PathParams = {};
+      if (
+        value.length >= 1 &&
+        modelCategories.includes(value[0] as ModelCategory)
+      ) {
+        output.category = value[0] as ModelCategory;
+      }
+      if (value.length >= 2) {
+        switch (value[1]) {
+          case "local":
+            output.local = true;
+            break;
+          case "in-town":
+            output.inTown = true;
+            break;
+          case "direct-booking":
+            output.directBooking = true;
+            break;
+        }
+      }
+      return output;
+    })
+    .or(z.any().transform(() => ({}) as PathParams)),
 });

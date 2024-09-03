@@ -31,7 +31,7 @@ export default async function Page({
           className="border p-1 rounded-md"
         >
           {types.map((type, index) => (
-            <Link key={index} href={`/models/profile/${id}/${type}`}>
+            <Link key={index} replace href={`/models/profile/${id}/${type}`}>
               <ToggleGroupItem className="w-24" value={type}>
                 {upperFirst(type)}
               </ToggleGroupItem>

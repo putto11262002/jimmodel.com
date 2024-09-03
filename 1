@@ -20,10 +20,9 @@ export const webAssetTable = pgTable("web_assets", {
     .notNull()
     .references(() => fileInfoTable.id),
   contentType: text("content_type").notNull(),
-  type: webAssetTypesEnum("type").notNull(),
   width: integer("width").notNull(),
   height: integer("height").notNull(),
-  alt: text("alt").notNull(),
+  alt: text("alt"),
   tag: webAssetTagsEnum("tag").notNull(),
   published: boolean("published").notNull().default(false),
   createdAt: timestamp("created_at", {

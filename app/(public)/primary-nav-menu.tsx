@@ -9,46 +9,49 @@ import {
 export type NavItem = {
   href: string;
   title: string;
-  icon?: (className: string) => React.ReactNode;
   children?: Omit<NavItem, "children">[];
 };
 
 export const navItems: NavItem[] = [
   {
-    href: "/models",
-    title: "Models",
+    href: "/models/male",
+    title: "Men",
     children: [
-      {
-        href: "/models/male",
-        title: "Male",
-        icon: (className: string) => (
-          <FontAwesomeIcon className={className} icon={faMars} />
-        ),
-      },
-      {
-        href: "/models/female",
-        title: "Female",
-        icon: (className: string) => (
-          <FontAwesomeIcon className={className} icon={faVenus} />
-        ),
-      },
-      {
-        href: "/models/non-binary",
-        title: "LGBTQ",
-        icon: (className: string) => (
-          <FontAwesomeIcon className={className} icon={faTransgender} />
-        ),
-      },
+      { href: "/models/male", title: "All" },
+      { href: "/models/male/in-town", title: "In Town" },
+      { href: "/models/male/direct-booking", title: "Direct Booking" },
+      { href: "/models/male/local", title: "Local" },
+    ],
+  },
+  {
+    href: "/models/female",
+    title: "Women",
+    children: [
+      { href: "/models/female", title: "All" },
+      { href: "/models/female/in-town", title: "In Town" },
+      { href: "/models/female/direct-booking", title: "Direct Booking" },
+      { href: "/models/female/local", title: "Local" },
+    ],
+  },
+  {
+    title: "Others",
+    href: "#",
+    children: [
       {
         href: "/models/kids",
         title: "Kids",
-        icon: (className: string) => (
-          <FontAwesomeIcon className={className} icon={faBaby} />
-        ),
+      },
+      {
+        href: "/models/seniors",
+        title: "Seniors",
+      },
+      {
+        href: "/models/non-binary",
+        title: "Diversity",
       },
     ],
   },
-  { href: "/showcases", title: "Showcases" },
+  { href: "/showcases", title: "Works" },
   { href: "/about-us", title: "About Us" },
   { href: "/contact", title: "Contact Us" },
 ];

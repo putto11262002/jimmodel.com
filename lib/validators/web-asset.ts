@@ -2,7 +2,6 @@ import { z } from "zod";
 import { fileValidator } from "./file";
 import { webAssetTags } from "../constants/web-asset";
 import {
-  stringToEnumArrayOrUndefined,
   stringToEnumOrUndefined,
   stringToNumberOrUndefined,
 } from "./req-query";
@@ -14,7 +13,7 @@ export const WebAssetCreateInputSchema = z.object({
 });
 
 export const WebAssetUpdateInputSchema = z.object({
-  alt: z.string().optional().nullable(),
+  alt: z.string().optional(),
   tag: z.enum(webAssetTags),
 });
 

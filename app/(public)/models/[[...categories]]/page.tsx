@@ -1,8 +1,5 @@
 import Container from "@/components/container";
-import { Button } from "@/components/ui/button";
 import { modelUseCase } from "@/lib/usecases";
-import { Filter } from "lucide-react";
-import ModelFilterDialog from "./_components/model-filter-dialog";
 import { PathParamsSchema, SearchParamsSchema } from "./_lib.ts/schemas";
 import Pagination from "@/components/public/pagination";
 import ModelProfileCard from "@/components/public/model/model-card";
@@ -14,14 +11,10 @@ export const revalidate = 3600;
 
 type Props = {
   params: {
-    category: string;
+    categories?: string[];
   };
   searchParams: {
     page: number;
-
-    local: string;
-    directBooking: string;
-    inTown: string;
   };
 };
 
@@ -30,41 +23,27 @@ export async function generateMetadata(
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
   return {
-    title: `Models - ${params.category}`,
+    title: `Models${(params.categories || []).length > 0 ? ` | ${params.categories?.[0]}` : ""}${(params.categories || []).length > 1 ? ` | ${params.categories?.[1]}` : ""}`,
   };
 }
 export default async function Page({ params, searchParams }: Props) {
-  const { page, local, directBooking, inTown } =
-    SearchParamsSchema.parse(searchParams);
-  const { category } = PathParamsSchema.parse(params);
+  const { page } = SearchParamsSchema.parse(searchParams);
+  const {
+    categories: { category, inTown, directBooking, local },
+  } = PathParamsSchema.parse(params);
   const { data, totalPages, hasNext, hasPrev } =
     await modelUseCase.getModelProfiles({
       published: true,
       page,
       pageSize: 24,
-      local:
-        local === "local" ? true : local === "non-local" ? false : undefined,
-      directBooking:
-        directBooking === "direct booking"
-          ? true
-          : directBooking === "non-direct booking"
-            ? false
-            : undefined,
+      local,
+      directBooking,
       ...(category ? { category: category } : {}),
-      inTown:
-        inTown === "in town" ? true : inTown === "out town" ? false : undefined,
+      inTown,
     });
 
   return (
     <Container>
-      <div className="flex">
-        <ModelFilterDialog>
-          <Button className="ml-auto h-7" variant={"outline"} size={"sm"}>
-            <Filter className="w-3.5 h-3.5 mr-2" />
-            Filters
-          </Button>
-        </ModelFilterDialog>
-      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
         {data.length > 0 ? (
           data.map((profile, index) => (

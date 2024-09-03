@@ -5,9 +5,9 @@ export type WebAsset = {
   fileId: string;
   type: WebAssetType; // broad category of asset (e.g. image, video, audio, etc.). It is the type of the mine type
   contentType: string; // mime type
-  width?: number | null; // applicable for images
-  height?: number | null; // applicable for images
-  alt?: string | null; // applicable for images
+  width: number;
+  height: number;
+  alt: string;
   published: boolean;
   tag: WebAsseTag;
   createdAt: string;
@@ -25,6 +25,6 @@ export type WebAssetCreateInput = {
 };
 
 export type WebAssetUpdateInput = {
-  alt?: string | null; 
+  alt?: string;
   tag: WebAsseTag;
 };

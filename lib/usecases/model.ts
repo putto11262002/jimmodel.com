@@ -160,17 +160,24 @@ export class ModelUseCase {
   }
 
   private inferModelCategory({
-    dateOfBirth,
+    dateOfBirth: _dateOfBirth,
     gender,
   }: {
     dateOfBirth?: string | null;
     gender: ModelGender;
   }): ModelCategory {
+    const dateOfBirth = _dateOfBirth ? dayjs(_dateOfBirth) : null;
     if (
       dateOfBirth &&
-      dayjs(dateOfBirth).isAfter(dayjs().subtract(18, "year"), "day")
+      dateOfBirth.isAfter(dayjs().subtract(12, "year"), "day")
     ) {
       return "kids";
+    }
+    if (
+      dateOfBirth &&
+      dayjs(dateOfBirth).isBefore(dayjs().subtract(40, "year"), "day")
+    ) {
+      return "seniors";
     }
     return gender;
   }

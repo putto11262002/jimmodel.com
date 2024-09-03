@@ -32,32 +32,22 @@ export class WebAssetUseCase {
   }
 
   public async createWebAsset(input: WebAssetCreateInput) {
-    const type = input.file.type.split("/")[0];
-    let webAsset: Omit<WebAsset, "createdAt" | "updatedAt" | "id">;
-    switch (type) {
-      case "image": {
-        const image = await this.imageUseCase.getEditableImage(input.file);
-        const { height, width } = await image.getDimensions();
-        const fileInfo = await this.imageUseCase.write(image);
-        webAsset = {
-          fileId: fileInfo.id,
-          type,
-          contentType: input.file.type,
-          width,
-          height,
-          alt: input.alt || input.tag,
-          tag: input.tag,
-          published: false,
-        };
-        break;
-      }
-      default: {
-        throw new Error(`Unsupported file type: ${type}`);
-      }
-    }
+    const image = await this.imageUseCase.getEditableImage(input.file);
+    const { height, width } = await image.getDimensions();
+    const fileInfo = await this.imageUseCase.write(image);
+
     const createdWebAsset = await this.db
       .insert(webAssetTable)
-      .values(webAsset)
+      .values({
+        fileId: fileInfo.id,
+        type: "image",
+        contentType: input.file.type,
+        width,
+        height,
+        alt: input.alt || input.tag,
+        tag: input.tag,
+        published: false,
+      })
       .returning();
     return createdWebAsset?.[0];
   }

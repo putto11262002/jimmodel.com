@@ -34,7 +34,7 @@ export default async function Page({ searchParams }: { searchParams: {} }) {
   }
 
   return (
-    <Container>
+    <Container className="">
       <div className="grid md:grid-cols-3 gap-4">
         {data.map((showcase, index) => (
           <ShowcaseCard showcase={showcase} key={index} />

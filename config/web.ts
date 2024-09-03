@@ -8,8 +8,7 @@ const webConfig = {
   companyName: "J.I.M.",
   fullCompanyName: "J.I.M Modeling Agency",
   heroTitle: "Unleash Your Full Potential With Us",
-  heroSubTitle:
-    "Connecting You to Opportunities and Elevating Your Talent to New Heights with Thailand’s Leading Agency, Backed by Over 40 Years of Experience",
+  heroSubTitle: "Where Talents Meets Opportunities",
   defaultSEO: {
     title: "J.I.M. Modeling Agency | Thailand's Premier Modeling Agency",
     description: `Discover where your talents meet top opportunities at J.I.M. Modeling Agency, \ 

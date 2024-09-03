@@ -4,7 +4,6 @@ import "./globals.css";
 import config from "@/config/global";
 
 const inter = Inter({ subsets: ["latin"] });
-console.log("debug config", config);
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.url),
