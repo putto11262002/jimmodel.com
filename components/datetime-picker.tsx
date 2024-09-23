@@ -82,8 +82,8 @@ export default function DatetimePicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-full pl-3 text-left font-normal",
-            !value && "text-muted-foreground",
+            "w-full pl-3 text-left font-normal bg-transparent",
+            !value && "text-muted-foreground"
           )}
         >
           {value ? (

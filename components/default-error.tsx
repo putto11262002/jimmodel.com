@@ -1,30 +1,24 @@
-import { Button } from "@/components/ui/button";
-import AuthorisationError from "@/lib/errors/authorisation-error";
-import HttpError from "@/lib/errors/http-error";
 import { CircleX } from "lucide-react";
 
-export default function Error({
+export default function DefaultError({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  reset?: () => void;
 }) {
   let message = "Something went wrong!";
 
-  if (error instanceof HttpError) {
-    message = error.message;
-  }
-
-  if (error instanceof AuthorisationError) {
-    message = error.message;
-  }
-
   return (
-    <div className="flex flex-col gap-4 py-4 justify-center items-center h-auto">
-      <div className="flex flex-col gap-2 justify-center items-center">
-        <CircleX className="w-6 h-6 text-red-500" />
-        <h2>{message}</h2>
+    <div className="flex flex-col gap-6 py-6 justify-center items-center h-auto">
+      <div className="flex flex-col justify-center items-center">
+        <CircleX className="w-8 h-8 text-red-500" />
+        <h2 className="font-medium mt-1">{message}</h2>
+        {error.digest && (
+          <p className="text-muted-foreground text-sm mt-4">
+            Error ID: {error.digest}
+          </p>
+        )}
       </div>
     </div>
   );

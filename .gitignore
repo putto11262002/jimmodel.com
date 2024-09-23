@@ -39,3 +39,8 @@ next-env.d.ts
 
 temp
 .env
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+.rollup.cache

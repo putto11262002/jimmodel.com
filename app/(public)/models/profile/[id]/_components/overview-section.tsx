@@ -2,11 +2,16 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import routes from "@/config/routes";
-import { Model } from "@/lib/types/model";
+import { BOOKING_STATUS_LABELS } from "@/db/constants";
+import { CompactModel } from "@/lib/domains";
 import { upperFirst } from "lodash";
 import Image from "next/image";
 
-export default async function OverviewSection({ model }: { model: Model }) {
+export default async function OverviewSection({
+  model,
+}: {
+  model: CompactModel;
+}) {
   return (
     <>
       <div className="flex items-center flex-col justify-center gap-2">
@@ -15,13 +20,7 @@ export default async function OverviewSection({ model }: { model: Model }) {
         </h1>
 
         <Badge variant={"outline"}>
-          {model.local
-            ? "Local"
-            : model.inTown
-              ? "In Town"
-              : model.directBooking
-                ? "Direct Booking"
-                : ""}
+          {BOOKING_STATUS_LABELS[model.bookingStatus]}
         </Badge>
       </div>
       <div className="grid grid-cols-2 gap-4 md:gap-8 mt-4 md:mt-8">
@@ -87,9 +86,9 @@ export default async function OverviewSection({ model }: { model: Model }) {
           <Card className="h-full">
             <CardContent className="p-4 md:p-6 h-full">
               <div className="relative h-full w-full rounded-md overflow-hidden">
-                {model.profileImage ? (
+                {model.profileImageId ? (
                   <Image
-                    src={routes.getFiles(model.profileImage.id)}
+                    src={routes.getFiles(model.profileImageId)}
                     alt={model.name}
                     fill
                     className="object-cover pointer-events-none"

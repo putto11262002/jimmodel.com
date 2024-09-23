@@ -1,4 +1,4 @@
-import { UserRole, userRoles } from "@/db/schemas";
+import { Permission } from "@/lib/auth";
 
 export const UserActions = {
   updatePasswordById: "update-password-by-id",
@@ -8,18 +8,22 @@ export const UserActions = {
   addImageById: "add-image-by-id",
   addSelfImage: "add-self-image",
   getUsers: "get-users",
+  getUser: "get-user",
   createUser: "create-user",
+  updateImage: "update-image",
 } as const;
 
-const userPermissions: { [key in keyof typeof UserActions]: UserRole[] } = {
-  updatePasswordById: ["admin"],
+const userPermissions: { [key in keyof typeof UserActions]: Permission } = {
+  updatePasswordById: ["root", "admin"],
   updateSelfPassword: [],
-  updateRoleById: ["admin"],
-  updateSelfRole: ["admin"],
-  addImageById: ["admin"],
+  updateRoleById: ["root", "admin"],
+  updateSelfRole: ["root", "admin"],
+  addImageById: ["root", "admin"],
   addSelfImage: [],
-  getUsers: ["admin"],
-  createUser: ["admin"],
+  getUsers: ["root", "admin"],
+  getUser: ["root", "admin", "staff"],
+  createUser: ["root", "admin"],
+  updateImage: ["root", "admin"],
 } as const;
 
 export const JobActions = {
@@ -39,25 +43,29 @@ export const JobActions = {
   addModels: "add-model",
   removeModel: "remove-model",
   getConflictingBookings: "get-client-jobs",
+  generateJobConfirmationSheet: "generate-job-confirmation-sheet",
+  updateJobPermissions: "update-job-permissions",
 } as const;
 
-const jobPermissions: { [key in keyof typeof JobActions]: UserRole[] } = {
-  getJobs: ["admin", "staff"],
-  getJobById: ["admin", "staff"],
-  createJob: ["admin", "staff"],
-  updateJobById: ["admin", "staff"],
-  confirmJob: ["admin", "staff"],
-  cancelJob: ["admin", "staff"],
-  archiveJob: ["admin", "staff"],
-  getBookings: ["admin", "staff"],
-  getBookingsWithJob: ["admin", "staff"],
-  getJobBookings: ["admin", "staff"],
-  removeBooking: ["admin", "staff"],
-  addBooking: ["admin", "staff"],
-  getJobModels: ["admin", "staff"],
-  addModels: ["admin", "staff"],
-  removeModel: ["admin", "staff"],
-  getConflictingBookings: ["admin", "staff"],
+const jobPermissions: { [key in keyof typeof JobActions]: Permission } = {
+  getJobs: ["root", "admin", "staff"],
+  getJobById: ["root", "admin", "staff"],
+  createJob: ["root", "admin", "staff"],
+  updateJobById: ["root", "admin", "staff"],
+  confirmJob: ["root", "admin", "staff"],
+  cancelJob: ["root", "admin", "staff"],
+  archiveJob: ["root", "admin", "staff"],
+  getBookings: ["root", "admin", "staff"],
+  getBookingsWithJob: ["root", "admin", "staff"],
+  getJobBookings: ["root", "admin", "staff"],
+  removeBooking: ["root", "admin", "staff"],
+  addBooking: ["root", "admin", "staff"],
+  getJobModels: ["root", "admin", "staff"],
+  addModels: ["root", "admin", "staff"],
+  removeModel: ["root", "admin", "staff"],
+  getConflictingBookings: ["root", "admin", "staff"],
+  generateJobConfirmationSheet: ["root", "admin", "staff"],
+  updateJobPermissions: ["root", "admin", "staff"],
 } as const;
 
 const ApplicationActions = {
@@ -70,13 +78,13 @@ const ApplicationActions = {
 };
 
 const applicationPermissions: {
-  [key in keyof typeof ApplicationActions]: UserRole[];
+  [key in keyof typeof ApplicationActions]: Permission;
 } = {
-  getApplications: ["admin", "staff"],
-  getApplicationById: ["admin", "staff"],
-  approveApplication: ["admin", "staff"],
-  rejectApplication: ["admin", "staff"],
-  getApplicationImageById: ["admin", "staff"],
+  getApplications: ["root", "admin", "staff"],
+  getApplicationById: ["root", "admin", "staff"],
+  approveApplication: ["root", "admin", "staff"],
+  rejectApplication: ["root", "admin", "staff"],
+  getApplicationImageById: ["root", "admin", "staff"],
   addApplicationImageById: [],
 };
 
@@ -94,18 +102,18 @@ const ShowcaseActions = {
 };
 
 const showcasePermissions: {
-  [key in keyof typeof ShowcaseActions]: UserRole[];
+  [key in keyof typeof ShowcaseActions]: Permission;
 } = {
-  createShowcase: ["admin", "staff"],
-  updateShowcase: ["admin", "staff"],
-  getShowcaseById: ["admin", "staff"],
-  updateCoverImage: ["admin", "staff"],
-  addImage: ["admin", "staff"],
-  getShowcases: ["admin", "staff"],
+  createShowcase: ["root", "admin", "staff"],
+  updateShowcase: ["root", "admin", "staff"],
+  getShowcaseById: ["root", "admin", "staff"],
+  updateCoverImage: ["root", "admin", "staff"],
+  addImage: ["root", "admin", "staff"],
+  getShowcases: ["root", "admin", "staff"],
   getPublishedShowcases: [],
-  publishShowcase: ["admin", "staff"],
-  unpublishShowcase: ["admin", "staff"],
-  addModel: ["admin", "staff"],
+  publishShowcase: ["root", "admin", "staff"],
+  unpublishShowcase: ["root", "admin", "staff"],
+  addModel: ["root", "admin", "staff"],
 };
 
 const ModelActions = {
@@ -126,28 +134,34 @@ const ModelActions = {
   getModelExperiences: "get-model-experiences",
   addModelExperience: "add-model-experience",
   removeModelExperience: "remove-model-experience",
+  generateModelProfileSheet: "generate-model-profile-sheet",
+  updateModelSettings: "update-model-settings",
+  getJobs: "get-jobs",
 };
 
 const modelPermissions: {
-  [key in keyof typeof ModelActions]: UserRole[];
+  [key in keyof typeof ModelActions]: Permission;
 } = {
-  createModel: ["admin", "staff"],
-  getModels: ["admin", "staff"],
-  updateModelById: ["admin", "staff"],
-  getModelById: ["admin", "staff"],
-  getModelExperiencesById: ["admin", "staff"],
-  getModelImagesById: ["admin", "staff"],
-  removeModelImageById: ["admin", "staff"],
-  addModelImage: ["admin", "staff"],
-  setProfileImageById: ["admin", "staff"],
-  getModelBlocks: ["admin", "staff"],
-  addModelBlock: ["admin", "staff"],
-  removeModelBlockById: ["admin", "staff"],
-  getBlocks: ["admin", "staff"],
-  getBlocksWithModel: ["admin", "staff"],
-  getModelExperiences: ["admin", "staff"],
-  addModelExperience: ["admin", "staff"],
-  removeModelExperience: ["admin", "staff"],
+  createModel: ["root", "admin", "staff"],
+  getModels: ["root", "admin", "staff"],
+  updateModelById: ["root", "admin", "staff"],
+  getModelById: ["root", "admin", "staff"],
+  getModelExperiencesById: ["root", "admin", "staff"],
+  getModelImagesById: ["root", "admin", "staff"],
+  removeModelImageById: ["root", "admin", "staff"],
+  addModelImage: ["root", "admin", "staff"],
+  setProfileImageById: ["root", "admin", "staff"],
+  getModelBlocks: ["root", "admin", "staff"],
+  addModelBlock: ["root", "admin", "staff"],
+  removeModelBlockById: ["root", "admin", "staff"],
+  getBlocks: ["root", "admin", "staff"],
+  getBlocksWithModel: ["root", "admin", "staff"],
+  getModelExperiences: ["root", "admin", "staff"],
+  addModelExperience: ["root", "admin", "staff"],
+  removeModelExperience: ["root", "admin", "staff"],
+  generateModelProfileSheet: ["root", "admin", "staff"],
+  updateModelSettings: ["root", "admin", "staff"],
+  getJobs: ["root", "admin", "staff"],
 };
 
 const WebAssetActions = {
@@ -162,16 +176,16 @@ const WebAssetActions = {
 } as const;
 
 const webAssetPermissions: {
-  [key in keyof typeof WebAssetActions]: UserRole[];
+  [key in keyof typeof WebAssetActions]: Permission;
 } = {
-  createWebAsset: ["IT", "admin"],
-  getWebAsset: ["IT", "staff", "admin"],
-  getWebAssets: ["IT", "staff", "admin"],
-  updateWebAssetMetadata: ["IT", "admin"],
-  removeWebAsset: ["IT", "admin"],
+  createWebAsset: ["IT", "root", "admin"],
+  getWebAsset: ["IT", "staff", "root", "admin"],
+  getWebAssets: ["IT", "staff", "root", "admin"],
+  updateWebAssetMetadata: ["IT", "root", "admin"],
+  removeWebAsset: ["IT", "root", "admin"],
   getPublishedWebAssets: [],
-  publish: ["IT", "admin"],
-  unpublish: ["IT", "admin"],
+  publish: ["IT", "root", "admin"],
+  unpublish: ["IT", "root", "admin"],
 };
 
 const ContactMessageActions = {
@@ -181,12 +195,23 @@ const ContactMessageActions = {
 };
 
 const contactMessagePermissions: {
-  [key in keyof typeof ContactMessageActions]: UserRole[];
+  [key in keyof typeof ContactMessageActions]: Permission;
 } = {
-  getContactMessages: ["admin", "staff", "IT"],
-  markAsRead: ["admin", "staff", "IT"],
-  getContactMessage: ["admin", "staff", "IT"],
+  getContactMessages: ["root", "admin", "staff", "IT"],
+  markAsRead: ["root", "admin", "staff", "IT"],
+  getContactMessage: ["root", "admin", "staff", "IT"],
 };
+
+
+const websiteActions = {
+    revalidateCache: "revalidate-cache",
+}
+
+const websitePermissions: {
+	[key in keyof typeof websiteActions]: Permission;
+} = {
+	revalidateCache: ["root", "admin", "IT"],
+}
 
 // Emptry array = only authentication is required
 // Null = no authentication required
@@ -198,6 +223,7 @@ const permissions = {
   showcases: showcasePermissions,
   weebAssets: webAssetPermissions,
   contactMessages: contactMessagePermissions,
+  website: websitePermissions,
 } as const;
 
 export default permissions;

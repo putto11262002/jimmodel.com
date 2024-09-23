@@ -1,10 +1,5 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faMars,
-  faVenus,
-  faTransgender,
-  faBaby,
-} from "@fortawesome/free-solid-svg-icons";
+import routes from "@/config/routes";
+import { BOOKING_STATUS, MODEL_CATEGORY } from "@/db/constants";
 
 export type NavItem = {
   href: string;
@@ -17,20 +12,47 @@ export const navItems: NavItem[] = [
     href: "/models/male",
     title: "Men",
     children: [
-      { href: "/models/male", title: "All" },
-      { href: "/models/male/in-town", title: "In Town" },
-      { href: "/models/male/direct-booking", title: "Direct Booking" },
-      { href: "/models/male/local", title: "Local" },
+      { href: routes.models.main(MODEL_CATEGORY.MALE), title: "All" },
+      {
+        href: routes.models.main(MODEL_CATEGORY.MALE, BOOKING_STATUS.IN_TOWN),
+        title: "In Town",
+      },
+      {
+        href: routes.models.main(
+          MODEL_CATEGORY.MALE,
+          BOOKING_STATUS.DIRECT_BOOKING
+        ),
+        title: "Direct Booking",
+      },
+      {
+        href: routes.models.main(MODEL_CATEGORY.MALE, BOOKING_STATUS.LOCAL),
+        title: "Local",
+      },
     ],
   },
   {
     href: "/models/female",
     title: "Women",
     children: [
-      { href: "/models/female", title: "All" },
-      { href: "/models/female/in-town", title: "In Town" },
-      { href: "/models/female/direct-booking", title: "Direct Booking" },
-      { href: "/models/female/local", title: "Local" },
+      {
+        href: routes.models.main(MODEL_CATEGORY.FEMALE),
+        title: "All",
+      },
+      {
+        href: routes.models.main(MODEL_CATEGORY.FEMALE, BOOKING_STATUS.IN_TOWN),
+        title: "In Town",
+      },
+      {
+        href: routes.models.main(
+          MODEL_CATEGORY.FEMALE,
+          BOOKING_STATUS.DIRECT_BOOKING
+        ),
+        title: "Direct Booking",
+      },
+      {
+        href: routes.models.main(MODEL_CATEGORY.FEMALE, BOOKING_STATUS.LOCAL),
+        title: "Local",
+      },
     ],
   },
   {
@@ -38,15 +60,15 @@ export const navItems: NavItem[] = [
     href: "#",
     children: [
       {
-        href: "/models/kids",
+        href: routes.models.main(MODEL_CATEGORY.KIDS),
         title: "Kids",
       },
       {
-        href: "/models/seniors",
+        href: routes.models.main(MODEL_CATEGORY.SENIORS),
         title: "Seniors",
       },
       {
-        href: "/models/non-binary",
+        href: routes.models.main(MODEL_CATEGORY.NON_BINARY),
         title: "Diversity",
       },
     ],

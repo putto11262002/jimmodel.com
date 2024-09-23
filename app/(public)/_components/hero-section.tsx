@@ -1,25 +1,25 @@
-import { webAssetUseCase } from "@/lib/usecases";
 import ImageSlider from "./image-slider";
 import webConfig from "@/config/web";
 import routes from "@/config/routes";
+import { getWebAssets } from "@/loaders/web-asset";
 
 export default async function HeroSection() {
-  const { data } = await webAssetUseCase.getWebAssets({
+  const { data } = await getWebAssets({
     published: true,
     page: 1,
     pageSize: 20,
-    types: ["image"],
+    tag: "hero",
   });
   const images = data.map((image) => ({
     ...image,
-    src: routes.getFiles(image.fileId),
+    src: routes.getFiles(image.id),
   }));
 
   const portriats = images.filter(
-    (image) => (image.width ?? 0) < (image.height ?? 0),
+    (image) => (image.width ?? 0) < (image.height ?? 0)
   );
   const landscapes = images.filter(
-    (image) => (image.width ?? 0) > (image.height ?? 0),
+    (image) => (image.width ?? 0) > (image.height ?? 0)
   );
   return (
     <section className="relative h-[calc(100vh-theme(spacing.16))]">

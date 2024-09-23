@@ -1,5 +1,7 @@
+import { LinkMenuItem } from "@/components/shared/types/menu";
 import permissions from "@/config/permission";
-import { combine } from "@/lib/utils/auth";
+import routes from "@/config/routes";
+import { union } from "lodash";
 import {
   Briefcase,
   Dock,
@@ -7,21 +9,21 @@ import {
   User,
   LayoutDashboard,
   StickyNote,
-  File,
   Image,
   Send,
+  HardDrive,
 } from "lucide-react";
 
 const iconClasses = "h-5 w-5";
 
-export const navMenuItems = [
+export const navMenuItems: LinkMenuItem[] = [
   {
     label: "Dashbaord",
     href: "/admin",
     icon: <LayoutDashboard className={iconClasses} />,
-    permissions: combine(
+    permissions: union(
       permissions.models.getBlocksWithModel,
-      permissions.jobs.getBookingsWithJob,
+      permissions.jobs.getBookingsWithJob
     ),
   },
   {
@@ -49,16 +51,10 @@ export const navMenuItems = [
     permissions: permissions.applications.getApplications,
   },
   {
-    label: "Show Cases",
-    href: "/admin/showcases",
-    icon: <StickyNote className={iconClasses} />,
+    label: "Website",
+    href: routes.admin.website.main,
+    icon: <HardDrive className={iconClasses} />,
     permissions: permissions.showcases.getShowcases,
-  },
-  {
-    label: "Web Assets",
-    href: "/admin/web-assets",
-    icon: <Image className={iconClasses} />,
-    permissions: permissions.weebAssets.getWebAssets,
   },
   {
     label: "Contacts",

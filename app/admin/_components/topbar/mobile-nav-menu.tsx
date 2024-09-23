@@ -1,9 +1,14 @@
+"use client";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { PanelLeft, Home } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import Link from "next/link";
-import { navMenuItems } from "../../nav-menu";
-export default function MobileNavMenu() {
+import { LinkMenuItem } from "@/components/shared/types/menu";
+export default function MobileNavMenu({
+  navItems,
+}: {
+  navItems: LinkMenuItem[];
+}) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -14,13 +19,13 @@ export default function MobileNavMenu() {
       </SheetTrigger>
       <SheetContent side="left" className="sm:max-w-xs">
         <nav className="grid gap-6 text-lg font-medium">
-          {navMenuItems.map((item, index) => (
+          {navItems.map((item, index) => (
             <Link
               key={index}
               href={item.href}
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              {item.icon}
+              {item.icon && item.icon}
               {item.label}
             </Link>
           ))}

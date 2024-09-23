@@ -1,18 +1,16 @@
-import { JobStatus } from "@/db/schemas";
+import { Job } from "@/lib/domains";
 import { Badge } from "../ui/badge";
-import { cn } from "@/lib/utils";
 import { upperFirst } from "lodash";
-export default function JobStatusBadge({ status }: { status: JobStatus }) {
+import { JOB_STATUS, JOB_STATUS_LABELS } from "@/db/constants";
+const jobStatusVariantMap = {
+  [JOB_STATUS.PENDING]: "warning",
+  [JOB_STATUS.CONFIRMED]: "success",
+  [JOB_STATUS.CANCELLED]: "destructive",
+} as const;
+export default function JobStatusBadge({ status }: { status: Job["status"] }) {
   return (
-    <Badge
-      className={cn(
-        status === "pending" && "bg-yellow-100 text-yellow-800",
-        status === "confirmed" && "bg-green-100 text-green-800",
-        status === "cancelled" && "bg-red-100 text-red-800",
-      )}
-      variant={"outline"}
-    >
-      {upperFirst(status)}
+    <Badge variant={jobStatusVariantMap[status]}>
+      {JOB_STATUS_LABELS[status]}
     </Badge>
   );
 }

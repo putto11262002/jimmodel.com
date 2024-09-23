@@ -1,23 +1,23 @@
-import { ApplicationStatus } from "@/lib/types/application";
 import { Badge } from "../ui/badge";
-import { cn } from "@/lib/utils";
-import { upperFirst } from "lodash";
-
+import { Application } from "@/lib/domains";
+import {
+  APPLICATION_STATUS,
+  APPLICATION_STATUS_LABELS,
+} from "@/db/constants";
+const statusMap = {
+  [APPLICATION_STATUS.SUBMITTED]: "warning",
+  [APPLICATION_STATUS.APPROVED]: "success",
+  [APPLICATION_STATUS.REJECTED]: "destructive",
+  [APPLICATION_STATUS.IN_PROGRESS]: "default",
+} as const;
 export default function ApplicationStatusBadge({
   status,
 }: {
-  status: ApplicationStatus;
+  status: Application["status"];
 }) {
   return (
-    <Badge
-      className={cn(
-        status === "pending" && "bg-yellow-100 text-yellow-800",
-        status === "approved" && "bg-green-100 text-green-800",
-        status === "rejected" && "bg-red-100 text-red-800",
-      )}
-      variant={"outline"}
-    >
-      {upperFirst(status)}
+    <Badge variant={statusMap[status]}>
+      {APPLICATION_STATUS_LABELS[status]}
     </Badge>
   );
 }

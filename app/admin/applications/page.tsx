@@ -1,65 +1,91 @@
-"use client";
-import ViewControl from "./_components/view-control";
-import { Suspense } from "react";
-import ApplicationTable from "./_components/application-table";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useSearchParams } from "next/navigation";
-import { applicationStatuses } from "@/db/schemas/application";
-import { useGetApplications } from "@/hooks/queries/application";
-import Loader from "@/components/loader";
-import PaginationControl from "@/components/pagination-control";
-import { BreakcrumbSetter } from "@/components/breadcrumb";
+import GetApplicationsFilterForm from "@/components/application/forms/get-applications-filter-form";
+import EditableApplicationTable from "@/components/application/tables/editable-application-table";
 import Container from "@/components/container";
-import useSession from "@/hooks/use-session";
+import MainDataViewLayout from "@/components/layouts/main-data-view-layout";
+import Pagination from "@/components/pagination";
+import Header, { HeaderBreadcrumb } from "@/components/shared/header";
+import { auth } from "@/config";
+import permissions from "@/config/permission";
+import routes from "@/config/routes";
+import { Application } from "@/lib/domains";
+import { SearchParamsObj } from "@/lib/types/search-param";
+import { GetApplicationsFilterSchema } from "@/lib/usecases";
+import { validateSearchParamObj } from "@/lib/utils/search-param";
+import { getApplications } from "@/loaders/application";
 
-export default function Page() {
-  const session = useSession();
+const breadcrumb: HeaderBreadcrumb[] = [
+  {
+    label: "Admin",
+    href: routes.admin.main,
+  },
+  {
+    label: "Applications",
+    href: routes.admin.applications.main,
+  },
+];
 
-  const searchParams = useSearchParams();
-  const pageParam = searchParams.get("page");
-  const page = pageParam ? parseInt(pageParam, 10) : 1;
-  const statusParam = searchParams.get("status") as any;
-  const status = statusParam
-    ? applicationStatuses.includes(statusParam)
-      ? statusParam
-      : "pending"
-    : "pending";
+const getMenuItems = ({ type }: { type: Application["status"] }) => [
+  {
+    label: "Submitted",
+    href: `${routes.admin.applications.main}?status=submitted`,
+    isActive: type === "submitted",
+  },
+  {
+    label: "Approved",
+    href: `${routes.admin.applications.main}?status=approved`,
+    isActive: type === "approved",
+  },
+  {
+    label: "Rejected",
+    href: `${routes.admin.applications.main}?status=rejected`,
+    isActive: type === "rejected",
+  },
+];
 
-  const { data, isLoading } = useGetApplications({
-    page,
-    status,
-    enabled: session.status === "authenticated",
-  });
-
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParamsObj>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  await auth({ permission: permissions.applications.getApplications });
+  const searchParamsValidation = validateSearchParamObj(
+    resolvedSearchParams,
+    GetApplicationsFilterSchema
+  );
+  const getApplicationsFilter = searchParamsValidation.ok
+    ? searchParamsValidation.data
+    : {};
+  const { data, page, pageSize, totalPages, hasPrev, hasNext } =
+    await getApplications({
+      ...getApplicationsFilter,
+      status: getApplicationsFilter.status ?? "submitted",
+    });
   return (
-    <Container className="grid gap-4">
-      <BreakcrumbSetter breadcrumbs={[{ label: "Applications" }]} />
-      <Suspense>
-        <ViewControl />
-      </Suspense>
-      {isLoading || !data ? (
-        <Loader />
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Applications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ApplicationTable applications={data.data} />
-          </CardContent>
-          {data.totalPages > 1 && (
-            <CardFooter>
-              <PaginationControl page={page} totalPages={data.totalPages} />
-            </CardFooter>
-          )}
-        </Card>
-      )}
-    </Container>
+    <>
+      <Header
+        items={getMenuItems({
+          type: getApplicationsFilter.status ?? "submitted",
+        })}
+        breadcrumb={breadcrumb}
+      />
+      <Container max="liquid" className="grid gap-4">
+        <MainDataViewLayout
+          action={<></>}
+          filter={
+            <GetApplicationsFilterForm initialFilter={getApplicationsFilter} />
+          }
+          dataView={
+            <>
+              <EditableApplicationTable applications={data} />
+              <Pagination
+                currentFilter={getApplicationsFilter}
+                pagination={{ page, pageSize, totalPages, hasPrev, hasNext }}
+              />
+            </>
+          }
+        />
+      </Container>
+    </>
   );
 }

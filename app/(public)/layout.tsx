@@ -7,7 +7,7 @@ import SideNavMenu from "./_components/side-nav-menu";
 import Container from "@/components/container";
 import webConfig from "@/config/web";
 import { Metadata } from "next";
-import config from "@/config/global";
+import { config } from "@/config";
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.url),
@@ -41,7 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </Container>
         </header>
-        <main className="min-h-[calc(100vh-theme(spacing.16))]">
+        <main className="min-h-[calc(100vh-theme(spacing.16))] h-full">
           {children}
         </main>
         <Footer />
