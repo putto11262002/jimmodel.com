@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+import CopyPlugin from "copy-webpack-plugin";
+import path from "path";
+
 const nextConfig = {
   output: "standalone",
   async rewrites() {
@@ -30,6 +33,17 @@ const nextConfig = {
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /^pg-native$|^cloudflare:sockets$/,
+      }),
+    );
+
+    config.plugins.push(
+      new CopyPlugin({
+        patterns: [
+          {
+            from: path.resolve("node_modules/pdfkit/js/data/Helvetica.afm"),
+            to: path.resolve(".next/server/vendor-chunks/data"),
+          },
+        ],
       }),
     );
     return config;

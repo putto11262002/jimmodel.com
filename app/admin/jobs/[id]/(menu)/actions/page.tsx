@@ -11,6 +11,10 @@ import { Job } from "@/lib/types/job";
 import useSession from "@/hooks/use-session";
 import permissions from "@/config/permission";
 import Loader from "@/components/loader";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import client from "@/lib/api/client";
+import IconButton from "@/components/icon-button";
+import { Download } from "lucide-react";
 
 export default function ActionCard({
   params: { id },
@@ -26,6 +30,7 @@ export default function ActionCard({
   const { mutate: confirm } = useConfirmJob();
   const { mutate: archive } = useArchiveJob();
   const { mutate: cancel } = useCancelJob();
+
   if (!isSuccess) {
     return <Loader />;
   }
@@ -52,6 +57,7 @@ export default function ActionCard({
                 Mark job as being confirmed
               </p>
               <Button
+                size="sm"
                 onClick={() => confirm({ jobId: job.id })}
                 variant={"outline"}
                 className="bg-green-200 text-green-800 hover:text-green-800 hover:bg-green-200"
@@ -66,6 +72,7 @@ export default function ActionCard({
                 Mark the job as archived
               </p>
               <Button
+                size="sm"
                 onClick={() => archive({ jobId: job.id })}
                 variant={"outline"}
                 className="bg-gray-200 text-gray-800 hover:text-gray-800 hover:bg-gray-200"
@@ -80,6 +87,7 @@ export default function ActionCard({
                 Cancel a confirmed job
               </p>
               <Button
+                size="sm"
                 variant={"outline"}
                 onClick={() => cancel({ jobId: job.id })}
                 className="bg-red-200 text-red-800 hover:text-red-800 hover:bg-red-200"
@@ -88,6 +96,18 @@ export default function ActionCard({
               </Button>
             </div>
           )}
+
+          <a
+            href={`/api/jobs/${job.id}/confirm-pdf`}
+            download={`job-confirmation-${job.id}.pdf`}
+          >
+            <IconButton
+              icon={<Download className="w-3.5 h-3.5" />}
+              text={"Job Confirmation"}
+              variant={"secondary"}
+              size={"sm"}
+            />
+          </a>
         </div>
       </CardContent>
     </Card>

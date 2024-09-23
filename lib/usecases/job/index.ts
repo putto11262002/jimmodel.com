@@ -5,16 +5,17 @@ import {
   bookingTable,
   jobTable,
   jobToModelTable,
-} from "../../db/schemas/jobs";
+} from "@/db/schemas/jobs";
 import { and, count, eq, gte, inArray, lt, lte, ne, or } from "drizzle-orm";
-import { getOffset, getPagination, paginate } from "../utils/pagination";
+import { getOffset, getPagination, paginate } from "@/lib/utils/pagination";
 import { DB } from "@/db";
-import { modelProfileColumns } from "./model";
-import { PaginatedData } from "../types/paginated-data";
-import { Booking, BookingWithJob, Job, JobUpdateInput } from "../types/job";
-import { NotFoundError } from "../errors/not-found-error";
-import { Model } from "../types/model";
-import ConstraintViolationError from "../errors/contrain-violation-error";
+import { modelProfileColumns } from "@/lib/usecases/model";
+import { PaginatedData } from "@/lib/types/paginated-data";
+import { Booking, BookingWithJob, Job, JobUpdateInput } from "@/lib/types/job";
+import { NotFoundError } from "@/lib/errors/not-found-error";
+import { Model } from "@/lib/types/model";
+import ConstraintViolationError from "@/lib/errors/contrain-violation-error";
+import { renderJobConfirmation } from "./job-confirmation-pdf";
 
 export class JobUsecase {
   private readonly db: DB;
@@ -627,5 +628,17 @@ export class JobUsecase {
       where: eq(bookingTable.jobId, jobId),
     });
     return bookings;
+  }
+
+  public async generateJobConfirmationSheet(
+    jobId: string,
+    output: WritableStream<any>,
+  ) {
+    const job = await this.getById(jobId);
+    if (!job) {
+      throw new NotFoundError("Job not found");
+    }
+    const bookings = await this.getJobBookings(job.id);
+    renderJobConfirmation({ ...job, bookings }, output);
   }
 }

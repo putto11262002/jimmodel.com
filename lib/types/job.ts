@@ -7,6 +7,10 @@ export type Job = typeof jobTable.$inferSelect & {
   models: ModelProfile[];
 };
 
+export type JobWithBookings = Job & {
+  bookings: Booking[];
+};
+
 export type JobStatus = (typeof jobStatuses)[number];
 
 export type JobCreateInput = Omit<typeof jobTable.$inferInsert, "status"> & {

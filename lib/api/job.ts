@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { stream } from "hono/streaming";
 import { jobUsecase } from "../usecases";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
@@ -17,6 +18,7 @@ import {
 } from "../validators/req-query";
 import permissions from "@/config/permission";
 import { NotFoundError } from "../errors/not-found-error";
+import { StreamingApi } from "hono/utils/stream";
 
 const jobRouter = new Hono()
   .post(
@@ -248,5 +250,26 @@ const jobRouter = new Hono()
       await jobUsecase.cancelJob(c.req.param("id"));
       return c.newResponse(null, 204);
     },
-  );
+  )
+  .get("/jobs/:id/confirm-pdf", async (c) => {
+    return stream(c, async (stream) => {
+      const writableStream = toWritableStream(stream);
+      c.header("Content-Type", "application/pdf");
+      await jobUsecase.generateJobConfirmationSheet(
+        c.req.param("id"),
+        writableStream,
+      );
+    });
+  });
 export default jobRouter;
+
+function toWritableStream(stream: StreamingApi): WritableStream {
+  return new WritableStream({
+    async write(chunk) {
+      await stream.write(chunk); // Use the provided write method
+    },
+    async close() {
+      await stream.close(); // Use the provided close method
+    },
+  });
+}
