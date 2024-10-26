@@ -10,8 +10,8 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.websecure.http.tls.certificates.certFile=${CERT_FILE_PATH}"
-      - "--entrypoints.websecure.http.tls.certificates.keyFile=${KEY_FILE_PATH}"
+      - "--tls.certificates.certFile=${CERT_FILE_PATH}"
+      - "--tls.certificates.keyFile=${KEY_FILE_PATH}"
     ports:
       - "80:80"
       - "443:443"
