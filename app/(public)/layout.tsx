@@ -8,6 +8,7 @@ import Container from "@/components/container";
 import webConfig from "@/config/web";
 import { Metadata } from "next";
 import { config } from "@/config";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.url),
@@ -20,6 +21,9 @@ export const metadata: Metadata = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      {process.env.NEXT_PUBLIC_GTM_ID && (
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+      )}
       <div className="flex min-h-screen w-full flex-col">
         <header className="sticky top-0 h-16 gap-8 z-50 bg-background">
           <Container className="flex items-center justify-between py-0 h-full">

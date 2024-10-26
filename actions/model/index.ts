@@ -46,11 +46,16 @@ export const createModelAction = async (
     await auth({ permission: permissions.models.createModel });
     const data = validateOrThrowValidationError(
       formData,
-      ModelCreateInputSchema
+      ModelCreateInputSchema,
+      { emptyString: "undefined" }
     );
     var createdModelId = await modelUseCase.createModel(data);
     revalidatePath(routes.admin.models.main);
-    redirect(routes.admin.models.edit.main(createdModelId));
+    return {
+      status: "success",
+      data: createdModelId,
+      message: "Model created",
+    };
   } catch (e) {
     return handleActionError(e);
   }

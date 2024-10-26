@@ -1,24 +1,12 @@
-version: "3.5"
-
 services:
-  reverse-proxy:
-    image: traefik:v3.0
-    container_name: traefik
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.websecure.address=:443"
-      - "--tls.certificates.certFile=${CERT_FILE_PATH}"
-      - "--tls.certificates.keyFile=${KEY_FILE_PATH}"
+  nginx:
+    image: nginx:1.21-alpine
+    container_name: jimmodel_nginx
+    restart: always
     ports:
       - "80:80"
-      - "443:443"
-      - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${LETSENCRYPT_DATA}:/letsencrypt
+      - ./docker/stage/nginx.conf:/etc/nginx/nginx.conf
   postgres:
     image: postgres:16-alpine
     container_name: jimmodel_postgres
@@ -26,7 +14,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ${POSTGRES_DATA}:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -37,15 +25,12 @@ services:
       timeout: 5s
       retries: 5
 
-    labels:
-      - "traefik.enable=false"
-
   minio:
     image: quay.io/minio/minio
     container_name: jimmodel_minio
     restart: always
     volumes:
-      - ${MINIO_DATA}:/data
+      - minio_data:/data
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
@@ -60,9 +45,6 @@ services:
       start_period: 5s
       timeout: 5s
 
-    labels:
-      - "traefik.enable=false"
-
   redis:
     image: "redis:7-alpine"
     container_name: jimmodel_redis
@@ -73,14 +55,12 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
-      - ${REDIS_DATA}:/data
-
-    labels:
-      - "traefik.enable=false"
+      - redis_data:/data
 
   app:
     build:
-      context: .
+      context: ./
+      dockerfile: ./docker/stage/Dockerfile
       args:
         - NODE_ENV=production
       target: runner
@@ -115,13 +95,6 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
 
-    labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.app.rule=Host(`${DOMAIN}`)
-      - "traefik.http.routers.app.entrypoints=websecure"
-      - "traefik.http.services.app.loadbalancer.server.port=3000"
-      - "traefik.http.routers.app.tls=true"
-
   minio-mc:
     image: minio/mc
     container_name: minio_bootstrap_runner
@@ -129,7 +102,7 @@ services:
       minio:
         condition: service_healthy
     volumes:
-      - ./scripts/minio-entrypoint.sh:/scripts/entrypoint.sh
+      - ./docker/minio-entrypoint.sh:/scripts/entrypoint.sh
     entrypoint: /scripts/entrypoint.sh
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -138,15 +111,14 @@ services:
       SECRET_KEY: ${S3_SECRET_KEY}
       BUCKET_NAME: ${S3_BUCKET_NAME}
       MINIO_URL: http://minio:9000
-    labels:
-      - "traefik.enable=false"
 
   bootstrap_runner:
     build:
-      context: .
+      context: ./
       args:
         - NODE_ENV=production
       target: bootstrap_runner
+      dockerfile: ./docker/stage/Dockerfile
     container_name: jimmodel_bootstrap_runner
     depends_on:
       postgres:
@@ -166,5 +138,8 @@ services:
       S3_ENDPOINT: minio
       S3_PORT: 9000
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
-    labels:
-      - "traefik.enable=false"
+
+volumes:
+  postgres_data:
+  minio_data:
+  redis_data:

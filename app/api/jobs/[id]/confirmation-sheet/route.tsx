@@ -1,6 +1,6 @@
 import { auth, jobUseCase } from "@/config";
 import permissions from "@/config/permission";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,

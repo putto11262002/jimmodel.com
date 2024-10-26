@@ -5,22 +5,27 @@ import {
   ETHNICITY_LABEL_VALUE_PAIRS,
   GENER_LABEL_VALUE_PAIRS,
 } from "@/db/constants";
-import { useFormState } from "react-dom";
 import { createModelAction } from "@/actions/model";
 import InputFormItem from "@/components/form/server-action/input-form-item";
 import SelectFormItem from "@/components/form/server-action/select-form-intput";
 import DatetimePickerFormItem from "@/components/form/server-action/datetime-picker-form-item";
-import useActionToast from "@/hooks/use-action-toast";
+import useActionState from "@/hooks/use-action-state";
 
-export default function ModelCreateForm() {
-  const [state, action, pending] = useFormState(createModelAction, {
-    status: "idle",
-  });
-
-  useActionToast({ state });
+export default function ModelCreateForm({
+  done,
+}: {
+  done?: (args: { modelId: string }) => void;
+}) {
+  const { state, dispatch, pending } = useActionState(
+    createModelAction,
+    {
+      status: "idle",
+    },
+    { onSuccess: (state) => done && done({ modelId: state.data }) }
+  );
 
   return (
-    <form className="grid gap-4" action={action}>
+    <form className="grid gap-4" action={dispatch}>
       <InputFormItem name="name" label="Name" state={state} />
       <SelectFormItem
         name="gender"
