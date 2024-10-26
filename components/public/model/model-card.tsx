@@ -1,13 +1,15 @@
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
-import { ModelProfile } from "@/lib/types/model";
+import routes from "@/config/routes";
+import { BOOKING_STATUS_LABELS, MODEL_CATEGORY } from "@/db/constants";
+import { CompactModel } from "@/lib/domains";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function ModelProfileCard({
   profile,
 }: {
-  profile: ModelProfile;
+  profile: CompactModel;
 }) {
   return (
     <Link scroll={true} href={`/models/profile/${profile.id}/book`}>
@@ -30,14 +32,14 @@ export default function ModelProfileCard({
                 </div>
               )}
 
-              {profile.gender !== "male" && profile.bust && (
+              {profile.gender !== MODEL_CATEGORY.MALE && profile.bust && (
                 <div>
                   <p className="text-xs">Bust</p>
                   <p>{profile.bust}</p>
                 </div>
               )}
 
-              {profile.gender !== "female" && profile.chest && (
+              {profile.gender !== MODEL_CATEGORY.FEMALE && profile.chest && (
                 <div>
                   <p className="text-xs">Chest</p>
                   <p>{profile.chest}</p>
@@ -52,25 +54,13 @@ export default function ModelProfileCard({
             </div>
           </div>
           <div className="absolute bottom-0 w-full p-2 z-10 space-x-2 flex group-hover:hidden">
-            {profile.local && (
-              <Badge className="shadow-md bg-background text-foreground">
-                Local
-              </Badge>
-            )}
-            {!profile.local && profile.inTown && (
-              <Badge className="shadow-md bg-background text-foreground">
-                In Town
-              </Badge>
-            )}
-            {!profile.local && !profile.inTown && profile.directBooking && (
-              <Badge className="shadow-md bg-background text-foreground">
-                Direct Booking
-              </Badge>
-            )}
+            <Badge className="shadow-md bg-background text-foreground">
+              {BOOKING_STATUS_LABELS[profile.bookingStatus]}
+            </Badge>
           </div>
-          {profile.profileImage ? (
+          {profile.profileImageId ? (
             <Image
-              src={`/files/${profile.profileImage.id}`}
+              src={routes.files.get(profile.profileImageId)}
               alt={profile.name}
               fill
               className="object-cover pointer-events-none"

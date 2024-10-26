@@ -1,10 +1,11 @@
-import { fileUseCase } from "@/lib/usecases";
+import { fileUseCase } from "@/config";
 
 export const GET = async (
   request: Request,
-  { params: { id } }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }
 ) => {
-  const file = await fileUseCase.readFile(id);
+  const { id } = await params;
+  const file = await fileUseCase.download(id);
   const response = new Response(await file.arrayBuffer(), {
     status: 200,
     headers: { "Content-Type": file.type },

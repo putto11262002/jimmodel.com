@@ -1,33 +1,22 @@
-import { InvalidLinkError, VideoInput } from "../video-link-processor";
+import { VideoIframe, VideoIframeStrategy } from "../video-iframe-procressor";
 
-export class YoutubeAdapter implements VideoInput {
-  private readonly linkPattern =
+export class YoutubeAdapter implements VideoIframeStrategy {
+  private readonly regex =
     /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(\?\S*)?$/;
-  getRegexMatcher(): RegExp {
-    return this.linkPattern;
-  }
 
-  matchUrl(url: string): boolean {
-    return this.linkPattern.test(url);
-  }
-
-  getVideoId(url: string): string {
-    const regexArr = url.match(this.linkPattern);
-    if (!regexArr) {
-      throw new InvalidLinkError();
+  process(url: string): VideoIframe | null {
+    const matchArr = url.match(this.regex);
+    if (!matchArr) {
+      return null;
     }
-    if (regexArr.length < 2) {
-      throw new InvalidLinkError("Cannot extract video id from the link");
+    if (matchArr.length < 2) {
+      return null;
     }
-    return regexArr[1];
-  }
-
-  getVideoSourceName(): string {
-    return "youtube";
-  }
-
-  generateIframeSrc(url: string): string {
-    const videoId = this.getVideoId(url);
-    return `https://www.youtube.com/embed/${videoId}`;
+    const videoId = matchArr[1];
+    return {
+      iframeSrc: `https://www.youtube.com/embed/${videoId}`,
+      videoSource: "youtube",
+      videoId: videoId,
+    };
   }
 }

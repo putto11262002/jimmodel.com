@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 import { Button } from "./ui/button";
-import { Command, CommandItem, CommandList } from "./ui/command";
 import {
   Select,
   SelectContent,

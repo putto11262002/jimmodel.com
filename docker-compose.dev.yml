@@ -13,7 +13,7 @@ services:
       POSTGRES_DB: ${DB_NAME}
   minio:
     image: quay.io/minio/minio
-    container_name: jimmodel_minio
+    container_name: dev_jimmodel_minio
     restart: always
     # volumes:
     #   - ${MINIO_DATA:-minio_data}:/data
@@ -30,6 +30,11 @@ services:
       retries: 1
       start_period: 5s
       timeout: 5s
+  redis:
+    image: redis:7-alpine
+    container_name: dev_jimmodel_redis
+    ports:
+      - "6379:6379"
   minio-mc:
     image: minio/mc
     depends_on:
@@ -41,7 +46,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_URL: "http://${S3_ENDPOINT}"
+      MINIO_URL: "http://minio:9000"
       ACCESS_KEY: ${S3_ACCESS_KEY}
       SECRET_KEY: ${S3_SECRET_KEY}
       BUCKET_NAME: ${S3_BUCKET_NAME}

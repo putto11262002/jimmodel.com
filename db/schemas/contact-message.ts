@@ -1,20 +1,14 @@
-import { pgTable, text, uuid, boolean, timestamp } from "drizzle-orm/pg-core";
+import idTimestamp from "@/db/schemas/base";
+import { pgTable, text, boolean } from "drizzle-orm/pg-core";
 
 export const contactMessageTable = pgTable("contact_messages", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("first_name").notNull(),
+  ...idTimestamp,
+  name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
   message: text("message").notNull(),
   read: boolean("read").notNull().default(false),
-  createdAt: timestamp("created_at", {
-    mode: "string",
-    withTimezone: true,
-  })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdateFn(() => new Date().toISOString()),
 });
+
+export type ContactMessage = typeof contactMessageTable.$inferSelect;
+export type NewContactMessage = typeof contactMessageTable.$inferInsert;

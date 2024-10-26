@@ -6,19 +6,18 @@ import NextJsImage from "./lightbox-helper";
 import "yet-another-react-lightbox/styles.css";
 import {
   JSXElement,
-  Photo,
-  RenderImageContext,
-  RenderImageProps,
+  Photo as _Photo,
   ColumnsPhotoAlbum,
 } from "react-photo-album";
 import "react-photo-album/columns.css";
-import { cn } from "@/lib/utils";
 import ImageComp from "./image-comp";
 
 type GridImageGalleryContext = {
   index: number;
   setIndex: (index: number) => void;
 };
+
+export type Photo = _Photo;
 
 const gridImageGalleryContext = createContext<GridImageGalleryContext>({
   index: -1,
@@ -43,7 +42,7 @@ export const GridImageGalleryProvider = ({
 
 export default function GridImageGallery({
   images,
-  Overlay,
+  overlay: Overlay,
   rounded,
   columns,
   showLightBoxOnClick = false,
@@ -51,7 +50,7 @@ export default function GridImageGallery({
   rounded?: "rounded" | "rounded-md" | "rounded-lg";
   columns?: number;
   images: Photo[];
-  Overlay?: ({ index }: { index: number }) => JSXElement;
+  overlay?: ({ index }: { index: number }) => JSXElement;
   showLightBoxOnClick?: boolean;
 }) {
   const { index, setIndex } = useGridImageGalleryContext();
@@ -74,7 +73,7 @@ export default function GridImageGallery({
               renderImageProps,
 
               renderImageCtx,
-              { rounded: rounded },
+              { rounded: rounded }
             ),
           ...(Overlay
             ? { extras: (_, context) => <Overlay index={context.index} /> }

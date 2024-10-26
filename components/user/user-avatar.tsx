@@ -1,4 +1,3 @@
-import { UserWithoutSecrets } from "@/lib/types/user";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -26,7 +25,7 @@ export default function UserAvatar({
       <div
         className={cn(
           "w-[32px] h-[32px] flex items-center justify-center bg-gray-200 rounded text-foreground",
-          rounded && "rounded-full",
+          rounded && "rounded-full"
         )}
         style={{
           width: width || sizes[size] || sizes.medium,

@@ -1,70 +1,66 @@
-"use client";
-
-import Container from "@/components/container";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import ContactMessageTable from "./_components/contact-message-table";
-import {
-  useGetContactMessages,
-  useMarkContactMessagesARead,
-} from "@/hooks/queries/contact-message";
-import Loader from "@/components/loader";
-import { useViewContactMessage } from "./_components/view-contact-message";
-import Pagination from "@/components/public/pagination";
-import { ContactMessageFilterQuerySchema } from "@/lib/validators/contact-message";
-import FilterSection from "./_components/filter-section";
-import { useBreadcrumbSetter } from "@/components/breadcrumb";
-import useSession from "@/hooks/use-session";
+import Header, { HeaderBreadcrumb } from "@/components/shared/header";
+import { auth } from "@/config";
 import permissions from "@/config/permission";
+import routes from "@/config/routes";
+import { SearchParamsObj } from "@/lib/types/search-param";
+import { ContactMessagesGetFilterSchema } from "@/lib/usecases/contact-message/inputs/get-contact-messages-filter";
+import { validateSearchParamObj } from "@/lib/utils/search-param";
+import { getContactMessages } from "@/loaders/contact-message";
+import ContactMessagePageContent from "./_components/content";
 
-export default function Page({
+const breadcrumb: HeaderBreadcrumb[] = [
+  {
+    label: "Admin",
+    href: routes.admin.main,
+  },
+  {
+    label: "Contact Messages",
+    href: routes.admin.contactMessages.main,
+  },
+];
+
+const getMenuItems = ({ read }: { read: boolean }) => [
+  {
+    label: "Unread",
+    href: `${routes.admin.contactMessages.main}?read=false`,
+    isActive: !read,
+  },
+  {
+    label: "Read",
+    href: `${routes.admin.contactMessages.main}?read=true`,
+    isActive: read,
+  },
+];
+
+export default async function Page({
   searchParams,
 }: {
-  searchParams: { page: string; read: string };
+  searchParams: Promise<SearchParamsObj>;
 }) {
-  const session = useSession(permissions.contactMessages.getContactMessages);
-  useBreadcrumbSetter([{ label: "Contact Messages" }]);
-  const { page, read } = ContactMessageFilterQuerySchema.parse(searchParams);
-  const { data, isSuccess } = useGetContactMessages({
-    page,
+  await auth({ permission: permissions.contactMessages.getContactMessages });
+  const resovledSearchParams = await searchParams;
+  const result = validateSearchParamObj(
+    resovledSearchParams,
+    ContactMessagesGetFilterSchema
+  );
+  const contactMessagesGetFilter = result.ok ? result.data : {};
+  const read =
+    typeof contactMessagesGetFilter.read === "boolean"
+      ? contactMessagesGetFilter.read
+      : false;
+  const { data, ...pagination } = await getContactMessages({
+    ...contactMessagesGetFilter,
     read,
-    enabled: session.status === "authenticated",
+    pageSize: 10,
   });
-  const { view } = useViewContactMessage();
-  const { mutate: markAsRead } = useMarkContactMessagesARead();
-
-  if (!isSuccess) {
-    return (
-      <Container>
-        <Loader />
-      </Container>
-    );
-  }
   return (
-    <Container className="grid gap-4">
-      <FilterSection searchParams={searchParams} />
-      <Card className="min-w-0">
-        <CardHeader>
-          <CardTitle>Contact Messages</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ContactMessageTable
-            onView={(contactMessage) => view(contactMessage)}
-            onMarkAsRead={({ id }) => markAsRead({ id })}
-            contactMessages={data.data}
-          />
-        </CardContent>
-        <CardFooter>
-          <div className="ml-auto">
-            <Pagination size={"sm"} {...data} path="/admin/contacts" />
-          </div>
-        </CardFooter>
-      </Card>
-    </Container>
+    <div className="h-[calc(100vh-theme(spacing.14))] md:h-screen overflow-x-hidden grid grid-rows-[auto_1fr]">
+      <Header breadcrumb={breadcrumb} items={getMenuItems({ read })} />
+      <ContactMessagePageContent
+        messages={data}
+        pagination={pagination}
+        currentFilter={{ read }}
+      />
+    </div>
   );
 }

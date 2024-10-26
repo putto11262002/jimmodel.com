@@ -1,39 +1,19 @@
-import {
-  boolean,
-  integer,
-  pgEnum,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { fileInfoTable } from "./file-metadata";
-import { webAssetTags, webAssetTypes } from "@/lib/constants/web-asset";
-
-export const webAssetTagsEnum = pgEnum("web_asset_tags", webAssetTags);
-
-export const webAssetTypesEnum = pgEnum("web_asset_types", webAssetTypes);
+import { boolean, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { fileMetadataTable } from "./file-metadata";
+import { WEB_ASSET_TAGS } from "../constants/web_asset-tags";
+import { timestamps } from "./base";
 
 export const webAssetTable = pgTable("web_assets", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  fileId: uuid("file_id")
-    .notNull()
-    .references(() => fileInfoTable.id),
-  contentType: text("content_type").notNull(),
-  type: webAssetTypesEnum("type").notNull(),
+  id: uuid("id")
+    .references(() => fileMetadataTable.id)
+    .primaryKey(),
   width: integer("width").notNull(),
   height: integer("height").notNull(),
   alt: text("alt").notNull(),
-  tag: webAssetTagsEnum("tag").notNull(),
+  tag: text("tag", { enum: WEB_ASSET_TAGS }).array().notNull(),
   published: boolean("published").notNull().default(false),
-  createdAt: timestamp("created_at", {
-    mode: "string",
-    withTimezone: true,
-  })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdateFn(() => new Date().toISOString()),
+  ...timestamps,
 });
+
+export type WebAsset = typeof webAssetTable.$inferSelect;
+export type NewWebAsset = typeof webAssetTable.$inferInsert;

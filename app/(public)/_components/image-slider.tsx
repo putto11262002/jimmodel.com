@@ -1,6 +1,6 @@
 "use client";
 import routes from "@/config/routes";
-import { WebAsset } from "@/lib/types/web-asset";
+import { WebAsset } from "@/lib/domains";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -43,13 +43,13 @@ export default function ImageSlider({ images }: { images: WebAsset[] }) {
         {images.map((image, index) => (
           <div
             className={cn(
-              "grow shrink-0 basis-full relative h-full overflow-hidden",
+              "grow shrink-0 basis-full relative h-full overflow-hidden"
             )}
             key={index}
           >
             <Image
               priority={true}
-              src={routes.getFiles(image.fileId)}
+              src={routes.getFiles(image.id)}
               alt={image.alt ?? image.tag}
               fill
               className="object-cover"

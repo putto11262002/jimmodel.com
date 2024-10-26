@@ -1,49 +1,45 @@
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
-# 1. Install dependencies only when needed
 FROM base AS deps
 
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install sharp@0.32.6
 
+# --------------- APP ---------------
 
-# 2. Rebuild the source code only when needed
+
 FROM base AS builder
 
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
+
 COPY . .
-COPY .env.production .env
-# This will do the trick, use the corresponding env file for each environment.
+
+RUN ls node_modules/.pnpm
+
 RUN pnpm build
 
+# ----------------------------------
 
-
-# 3. Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
-
-RUN mkdir file_storage
 
 ENV NODE_ENV=production
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
-COPY --from=builder /app/public ./public
-COPY .env.production .env
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder /app/public ./public
+
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
@@ -57,22 +53,33 @@ ENV PORT 3000
 CMD node server.js
 
 
-FROM base As initializer-builder
+# --------------- BOOTSTRAP ---------------
 
+
+FROM base As bootstrap_builder	
 
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN pnpm build:migrate-seed
+RUN pnpm rollup -c rollup.config.bootstrap.js
 
+# ----------------------------------
 
-FROM base as initializer-runner
+FROM base AS bootstrap_runner
 
 WORKDIR /app
 
-COPY --from=initializer-builder /app/dist/migrate-seed/ ./
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
-CMD node ./bundle.cjs
+COPY --from=bootstrap_builder /app/dist ./dist
+
+COPY ./db/migrations ./db/migrations
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install sharp@0.32.6
+
+CMD node ./dist/bootstrap.js
+
+
 

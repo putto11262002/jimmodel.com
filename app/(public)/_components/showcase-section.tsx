@@ -1,15 +1,17 @@
 import { Button } from "@/components/ui/button";
 import Container from "@/components/container";
 import Link from "next/link";
-import { showcaseUseCase } from "@/lib/usecases";
 import ShowcaseCard from "./showcase-card";
+import { getShowcases } from "@/loaders/showcase";
+import routes from "@/config/routes";
 
 export default async function ShowcaseSection() {
-  const showcases = await showcaseUseCase.getShowcases({
+  const showcases = await getShowcases({
     published: true,
     pageSize: 6,
     page: 1,
-    orderBy: { field: "createdAt", order: "desc" },
+    orderBy: "createdAt",
+    orderDir: "asc",
   });
   return (
     <section className="">
@@ -26,7 +28,7 @@ export default async function ShowcaseSection() {
           ))}
         </div>
         <div className="mt-8 flex">
-          <Link className="mx-auto" href={"/showcases"}>
+          <Link className="mx-auto" href={routes.showcases.main(1)}>
             <Button className="" variant={"outline"}>
               Explore More
             </Button>

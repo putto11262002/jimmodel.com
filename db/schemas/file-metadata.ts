@@ -1,28 +1,29 @@
-import { AnyColumn } from "drizzle-orm";
+import idTimestamp from "@/db/schemas/base";
 import {
-  AnyPgColumn,
+  boolean,
+  index,
   integer,
+  json,
   pgTable,
-  timestamp,
-  uuid,
-  varchar,
+  text,
 } from "drizzle-orm/pg-core";
 
-export const fileInfoTable = pgTable("files", {
-  id: uuid("id").primaryKey(),
-  path: varchar("path").notNull(),
-  mimeType: varchar("mime_type").notNull(),
-  size: integer("size"),
-  orginal: uuid("orginal").references((): AnyPgColumn => fileInfoTable.id),
-  width: integer("height"),
-  height: integer("width"),
-  createdAt: timestamp("created_at", {
-    mode: "string",
-    withTimezone: true,
-  }).defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "string", withTimezone: true })
-    .defaultNow()
-    .$onUpdate(() => new Date().toISOString()),
-});
+export const fileMetadataTable = pgTable(
+  "file_metadatas",
+  {
+    ...idTimestamp,
+    key: text("key").notNull(),
+    mimeType: text("mime_type").notNull(),
+    size: integer("size").notNull(),
+    metadata: json("metadata"),
+    storageId: text("storage_id").notNull(),
+    checksum: text("checksum"),
+    deleted: boolean("deleted").notNull().default(false),
+  },
+  (table) => ({
+    deletedIndex: index("deleted_index").on(table.deleted),
+  })
+);
 
-export type FileMetadata = typeof fileInfoTable.$inferSelect;
+export type FileMetadata = typeof fileMetadataTable.$inferSelect;
+export type NewFileMetadata = typeof fileMetadataTable.$inferInsert;
