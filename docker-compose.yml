@@ -10,9 +10,8 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.defaultresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.defaultresolver.acme.email=${LETSENCRYPT_EMAIL}"
-      - "--certificatesresolvers.defaultresolver.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.websecure.http.tls.certificates.certFile=${CERT_FILE_PATH}"
+      - "--entrypoints.websecure.http.tls.certificates.keyFile=${KEY_FILE_PATH}"
     ports:
       - "80:80"
       - "443:443"
@@ -121,7 +120,7 @@ services:
       - traefik.http.routers.app.rule=Host(`${DOMAIN}`)
       - "traefik.http.routers.app.entrypoints=websecure"
       - "traefik.http.services.app.loadbalancer.server.port=3000"
-      - "traefik.http.routers.app.tls.certresolver=defaultresolver"
+      - "traefik.http.routers.app.tls=true"
 
   minio-mc:
     image: minio/mc
