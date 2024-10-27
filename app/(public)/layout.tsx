@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   openGraph: webConfig.defaultSEO.openGraph,
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
+  console.log(process.env.NEXT_PUBLIC_GTM_ID);
   return (
     <>
       {process.env.NEXT_PUBLIC_GTM_ID && (
