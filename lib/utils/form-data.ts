@@ -36,13 +36,20 @@ export const objToFormData = (obj: SafeFormDataObject) => {
   return formData;
 };
 
+export type ValidationOptions = {
+  emptyString?: "null" | "undefined" | "passthrough";
+};
+
 export const validateFormData = <TIn, TOut>(
   formData: FormData,
-  schema: z.ZodSchema<TOut, z.ZodTypeDef, TIn>
+  schema: z.ZodSchema<TOut, z.ZodTypeDef, TIn>,
+  options: ValidationOptions = {
+    emptyString: "passthrough",
+  }
 ):
   | { ok: true; data: TOut }
   | { ok: false; fieldErorrs: FieldsValidationError<TIn> } => {
-  const input = getValidationSchemaInputFromFormData(formData, schema);
+  const input = getValidationSchemaInputFromFormData(formData, schema, options);
   const validation = schema.safeParse(input);
   if (validation.success) {
     return { ok: true, data: validation.data };
@@ -52,7 +59,8 @@ export const validateFormData = <TIn, TOut>(
 
 export const getValidationSchemaInputFromFormData = <T extends z.ZodTypeAny>(
   formData: FormData,
-  _schema: T
+  _schema: T,
+  options: ValidationOptions
 ) => {
   const schema = isZodPrimitive(_schema, z.object({}));
 
@@ -77,7 +85,9 @@ export const getValidationSchemaInputFromFormData = <T extends z.ZodTypeAny>(
       return (input[key] = null);
     }
 
-    result = zodStringInput(singleValueString, value);
+    result = zodStringInput(singleValueString, value, {
+      emptyString: options.emptyString,
+    });
     if (result.ok) {
       return (input[key] = result.value);
     }
@@ -96,7 +106,7 @@ export const getValidationSchemaInputFromFormData = <T extends z.ZodTypeAny>(
       return (input[key] = result.value);
     }
 
-    result = zodArrayInput(arrayValue, value);
+    result = zodArrayInput(arrayValue, value, options);
     if (result.ok) {
       return (input[key] = result.value);
     }
@@ -112,7 +122,8 @@ export const getValidationSchemaInputFromFormData = <T extends z.ZodTypeAny>(
 
 const zodArrayInput = (
   value: (string | File)[],
-  zodValidationField: unknown
+  zodValidationField: unknown,
+  options: ValidationOptions
 ): { ok: true; value: SafeFormDataValue[] | undefined } | { ok: false } => {
   const result = isZodPrimitive(zodValidationField, z.array(z.any()));
   if (result) {
@@ -123,7 +134,9 @@ const zodArrayInput = (
 
       const singleValueString = typeof v === "string" ? v : undefined;
 
-      result = zodStringInput(singleValueString, innerZodType);
+      result = zodStringInput(singleValueString, innerZodType, {
+        emptyString: options.emptyString,
+      });
       if (result.ok) {
         return result.value;
       }
@@ -174,9 +187,17 @@ const zodEnumInput = (
 
 const zodStringInput = (
   value: string | undefined,
-  zodValidationField: unknown
-): { ok: true; value: string | undefined } | { ok: false } => {
+  zodValidationField: unknown,
+  { emptyString }: Pick<ValidationOptions, "emptyString">
+): { ok: true; value: string | undefined | null } | { ok: false } => {
   if (isZodPrimitive(zodValidationField, z.string())) {
+    if (emptyString === "null" && value === "") {
+      return { ok: true, value: null };
+    }
+    if (emptyString === "undefined" && value === "") {
+      return { ok: true, value: undefined };
+    }
+
     return { ok: true, value: value };
   }
   return { ok: false };

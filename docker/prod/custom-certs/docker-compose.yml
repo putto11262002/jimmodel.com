@@ -1,6 +1,3 @@
-
-version: "3.5"
-
 services:
   reverse-proxy:
     image: traefik:v3.0
@@ -8,18 +5,19 @@ services:
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
+      - "--providers.file.directory=/etc/traefik"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.websecure.address=:443"
-      - "--tls.certificates.certFile=${CERT_FILE_PATH}"
-      - "--tls.certificates.keyFile=${KEY_FILE_PATH}"
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${LETSENCRYPT_DATA}:/letsencrypt
+      - ${CERT_FILE_PATH}:/etc/ssl/certs/cert.pem
+      - ${KEY_FILE_PATH}:/etc/ssl/certs/key.pem
+      - docker/prod/custom-certs/traefik/dynamic:/etc/traefik
   postgres:
     image: postgres:16-alpine
     container_name: jimmodel_postgres

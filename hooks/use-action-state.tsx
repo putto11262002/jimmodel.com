@@ -7,7 +7,10 @@ import {
 import useToast from "@/components/toast";
 import { useActionState as _useActionState, useEffect } from "react";
 
-export default function useActionState<State extends BaseActionResult, Payload>(
+export default function useActionState<
+  State extends { status: string; message?: string; data?: any },
+  Payload
+>(
   action: (state: Awaited<State>, payload: Payload) => State | Promise<State>,
   initialState: Awaited<State> = { status: "idle" } as Awaited<State>,
   {

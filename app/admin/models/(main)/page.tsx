@@ -2,6 +2,7 @@ import Avatar from "@/components/avatar";
 import Container from "@/components/container";
 import DataTable from "@/components/data-table";
 import MainDataViewLayout from "@/components/layouts/main-data-view-layout";
+import ModelCreateDialog from "@/components/model/dialogs/model-create-dialog";
 import GetModelsFilterForm from "@/components/model/forms/get-models-filter-form";
 import ModelDropdownMenu from "@/components/model/model-dropdown-menu";
 import Pagination from "@/components/pagination";
@@ -66,12 +67,14 @@ export default async function Page({
         <MainDataViewLayout
           filter={<GetModelsFilterForm initialFilter={getModelsFilter} />}
           action={
-            <Link className="grid" href={routes.admin.models.create}>
-              <Button size={"sm"}>
-                <PlusCircle className="w-3.5 h-3.5 mr-2" />
-                <span>Model</span>
-              </Button>
-            </Link>
+            <ModelCreateDialog
+              trigger={
+                <Button size={"sm"}>
+                  <PlusCircle className="w-3.5 h-3.5 mr-2" />
+                  <span>Model</span>
+                </Button>
+              }
+            />
           }
           dataView={
             <DataTable

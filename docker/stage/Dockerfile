@@ -17,6 +17,8 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install sharp@0.32.6
 
 FROM base AS builder
 
+
+ENV NODE_ENV=production
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -25,7 +27,7 @@ COPY . .
 
 RUN ls node_modules/.pnpm
 
-RUN pnpm build
+RUN pnpm build:standalone
 
 # ----------------------------------
 
@@ -36,9 +38,6 @@ ENV NODE_ENV=production
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
-
-
-COPY --from=builder /app/public ./public
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 

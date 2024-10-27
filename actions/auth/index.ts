@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { BaseActionResult } from "../common/action-result";
 import { signIn, signOut } from "@/config";
 import { validateOrThrowValidationError } from "../common";
+import { AuthenticationError } from "@/lib/errors";
 
 export const signInAction = async (
   _: any,
@@ -21,7 +22,7 @@ export const signInAction = async (
 
     revalidatePath("/admin", "layout");
   } catch (e) {
-    if (e instanceof Error && e.name === "CallbackRouteError") {
+    if (e instanceof Error && e.name === AuthenticationError.name) {
       return {
         status: "error",
         message: "Invalid credentials",
