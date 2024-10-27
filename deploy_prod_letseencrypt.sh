@@ -10,7 +10,7 @@ fi
 
 # Set project name
 PROJECT="jimmodel_prod"
-DOCKER_COMPOSE_FILE="./docker/prod/letsencrypt/docker-compose.yml"
+DOCKER_COMPOSE_FILE="./docker/prod/custom-certs/docker-compose.yml"
 PROJECT_DIRECTORY=$(pwd)
 
 
@@ -51,7 +51,6 @@ main() {
     create_directory "$MINIO_DATA"
     create_directory "$REDIS_DATA"
     create_directory "$POSTGRES_DATA"
-    create_directory "$LETSENCRYPT_DATA"
 
     # Start postgres, minio, and reverse-proxy services in detached mode and wait for them to be ready
     echo "Starting reverse-proxy, postgres, minio, and redis services..."
