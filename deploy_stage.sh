@@ -11,7 +11,9 @@ fi
 # Set project name
 PROJECT="jimmodel_stage"
 DOCKER_COMPOSE_FILE="./docker/stage/docker-compose.yml"
+
 PROJECT_DIRECTORY=$(pwd)
+
 
 # Function to check if services are running
 check_running_services() {
@@ -19,7 +21,9 @@ check_running_services() {
         read -p "There are running containers. Do you want to remove them? (yes/no): " answer
         if [[ "$answer" =~ ^[Yy][Ee][Ss]$ ]]; then
             echo "Stopping and removing all running containers..."
+
             docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" down -v 
+
         else
             echo "Exiting as requested..."
             exit 0
@@ -36,6 +40,7 @@ main() {
 
     # Start postgres, minio, and reverse-proxy services in detached mode and wait for them to be ready
     echo "Starting reverse-proxy, postgres, minio, and redis services..."
+
     docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" up -d --wait postgres minio redis || {
         echo "Error: Failed to start services"
         exit 1
@@ -57,8 +62,8 @@ main() {
         echo "Error: Failed to start nginx"
         exit 1
     }
+
 }
 
 # Execute main function
 main
-

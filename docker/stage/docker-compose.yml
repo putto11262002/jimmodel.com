@@ -1,4 +1,5 @@
 services:
+
   nginx:
     image: nginx:1.21-alpine
     container_name: jimmodel_nginx
@@ -7,6 +8,7 @@ services:
       - "80:80"
     volumes:
       - ./docker/stage/nginx.conf:/etc/nginx/nginx.conf
+
   postgres:
     image: postgres:16-alpine
     container_name: jimmodel_postgres
