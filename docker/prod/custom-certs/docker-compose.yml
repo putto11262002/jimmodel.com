@@ -15,9 +15,9 @@ services:
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/prod/custom-certs/traefik/dynamic:/etc/traefik
       - ${CERT_FILE_PATH}:/etc/ssl/certs/cert.pem
       - ${KEY_FILE_PATH}:/etc/ssl/certs/key.pem
-      - ./docker/prod/custom-certs/traefik/dynamic:/etc/traefik
   postgres:
     image: postgres:16-alpine
     container_name: jimmodel_postgres
