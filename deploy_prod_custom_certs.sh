@@ -54,7 +54,7 @@ main() {
 
     # Start postgres, minio, and reverse-proxy services in detached mode and wait for them to be ready
     echo "Starting reverse-proxy, postgres, minio, and redis services..."
-    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" up -d --wait postgres minio redis || {
+    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" up -d --wait reverse-proxy postgres minio redis || {
         echo "Error: Failed to start services"
         exit 1
     }
@@ -69,12 +69,6 @@ main() {
     echo "Building and running app..."
     docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" up --build -d app
 
-
-    echo "Starting nginx"
-    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" up -d --wait nginx || {
-        echo "Error: Failed to start nginx"
-        exit 1
-    }
 }
 
 # Execute main function
