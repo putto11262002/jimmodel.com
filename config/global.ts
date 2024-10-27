@@ -12,7 +12,20 @@ export type AppConfig = {
   db: DBConfig;
   s3: S3Config;
   redis: RedisConfig;
+  googleAnalytics?: GoogleAnalyticsConfig;
 };
+
+export type GoogleAnalyticsConfig = {
+  gtmId?: string;
+};
+
+export const GoogleAnalyticsConfigSchema: z.ZodSchema<
+  GoogleAnalyticsConfig,
+  z.ZodTypeDef,
+  any
+> = z.object({
+  gtmId: z.string().optional(),
+});
 
 export type RedisConfig = {
   host: string;
