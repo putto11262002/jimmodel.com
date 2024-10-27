@@ -10,7 +10,7 @@ fi
 
 # Set project name
 PROJECT="jimmodel_prod"
-DOCKER_COMPOSE_FILE="./docker/prod/letsencrypt/docker-compose.yml"
+DOCKER_COMPOSE_FILE="./docker/prod/custom-certs/docker-compose.yml"
 PROJECT_DIRECTORY=$(pwd)
 
 
