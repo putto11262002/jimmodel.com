@@ -27,7 +27,14 @@ const flagExist = (name: string): boolean => {
 const main = async () => {
   const config = await loadConfig();
   const minioClient = minioClientFactory(config.s3);
-  const pgClient = getPgClient(config.db);
+  const pgClient = getPgClient({
+    db: config.db.name,
+    host: config.db.host,
+    password: config.db.password,
+    port: config.db.port,
+    user: config.db.user,
+    ssl: config.db.ssl,
+  });
   const drizzleClient = getDrizzleDB(pgClient);
   const usecases = await AppUseCaseFactory({
     db: drizzleClient,
