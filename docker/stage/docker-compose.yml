@@ -1,0 +1,139 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jimmodel_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: jimmodel_minio
+    restart: always
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/9000' || exit 1
+      interval: 5s
+      retries: 1
+      start_period: 5s
+      timeout: 5s
+
+  redis:
+    image: "redis:7-alpine"
+    container_name: jimmodel_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis_data:/data
+
+  app:
+    build:
+      context: ../../
+      dockerfile: ./docker/stage/Dockerfile
+      args:
+        - NODE_ENV=production
+      target: runner
+      network: host
+      extra_hosts:
+        - redis:127.0.0.1
+        - postgres:127.0.0.1
+        - minio:127.0.0.1
+    container_name: jimmodel_app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      URL: ${URL}
+
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: postgres
+
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_TRUST_HOST: true
+
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_ENDPOINT: minio
+      S3_PORT: 9000
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+  minio-mc:
+    image: minio/mc
+    container_name: minio_bootstrap_runner
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ../minio-entrypoint.sh:/scripts/entrypoint.sh
+    entrypoint: /scripts/entrypoint.sh
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      ACCESS_KEY: ${S3_ACCESS_KEY}
+      SECRET_KEY: ${S3_SECRET_KEY}
+      BUCKET_NAME: ${S3_BUCKET_NAME}
+      MINIO_URL: http://minio:9000
+
+  bootstrap_runner:
+    build:
+      context: ../../
+      args:
+        - NODE_ENV=production
+      target: bootstrap_runner
+      dockerfile: ./docker/stage/Dockerfile
+    container_name: jimmodel_bootstrap_runner
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: postgres
+
+      ROOT_EMAIL: ${ROOT_EMAIL}
+      ROOT_NAME: ${ROOT_NAME}
+      ROOT_PASSWORD: ${ROOT_PASSWORD}
+
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_ENDPOINT: minio
+      S3_PORT: 9000
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+
+volumes:
+  postgres_data:
+  minio_data:
+  redis_data:

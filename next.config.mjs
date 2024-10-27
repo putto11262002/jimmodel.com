@@ -69,10 +69,12 @@ const nextConfig = {
     ];
   },
   experimental: {
+    esmExternals: "loose",
     serverActions: {
       bodySizeLimit: "5mb",
     },
   },
+
   webpack: (config, { webpack }) => {
     config.plugins.push(
       new webpack.IgnorePlugin({
@@ -88,6 +90,15 @@ const nextConfig = {
               "./node_modules/.pnpm/pdfkit@*/node_modules/pdfkit/js/data/Helvetica.afm"
             ),
             to: path.resolve(".next/server/vendor-chunks/data/Helvetica.afm"),
+          },
+
+          {
+            from: path.resolve(
+              "./node_modules/.pnpm/pdfkit@*/node_modules/pdfkit/js/data/Helvetica.afm"
+            ),
+            to: path.resolve(
+              ".next/standalone/.next/server/chunks/data/Helvetica.afm"
+            ),
           },
           {
             from: path.resolve("node_modules/geoip-lite/data"),

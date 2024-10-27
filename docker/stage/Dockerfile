@@ -25,7 +25,7 @@ COPY . .
 
 RUN ls node_modules/.pnpm
 
-RUN pnpm build:standalone
+RUN pnpm build
 
 # ----------------------------------
 
@@ -37,6 +37,8 @@ ENV NODE_ENV=production
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
+
+COPY --from=builder /app/public ./public
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 

@@ -97,6 +97,8 @@ const routes = {
           main: ({ id }: { id: string }) => `/admin/jobs/${id}/settings`,
           permission: ({ id }: { id: string }) =>
             `/admin/jobs/${id}/settings/permission`,
+          confirmation: ({ id }: { id: string }) =>
+            `/admin/jobs/${id}/settings/confirmation`,
         },
       },
     },

@@ -45,7 +45,7 @@ export default async function Header({
               index !== breadcrumb.length - 1 ? (
                 <div key={index} className="flex items-center gap-1.5">
                   <BreadcrumbItem>
-                    <BreadcrumbLink>
+                    <BreadcrumbLink asChild>
                       <Link href={href}>{label}</Link>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
