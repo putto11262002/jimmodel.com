@@ -9,6 +9,9 @@ import webConfig from "@/config/web";
 import { Metadata } from "next";
 import { config } from "@/config";
 import { GoogleTagManager } from "@next/third-parties/google";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.url),
@@ -19,38 +22,50 @@ export const metadata: Metadata = {
   openGraph: webConfig.defaultSEO.openGraph,
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
-  console.log(process.env.NEXT_PUBLIC_GTM_ID);
   return (
     <>
       {process.env.NEXT_PUBLIC_GTM_ID && (
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
       )}
-      <div className="flex min-h-screen w-full flex-col">
-        <header className="sticky top-0 h-16 gap-8 z-50 bg-background">
-          <Container className="flex items-center justify-between py-0 h-full">
-            <Link href="/" className="grid text-2xl font-semibold md:text-base">
-              <h1 className="text-2xl font-bold">{webConfig.companyName}</h1>
-            </Link>
-            <div className="hidden md:flex">
-              <TopNavMenu items={navItems} />
-            </div>
-            <div className="flex md:hidden">
-              <SideNavMenu items={navItems} />
-            </div>
-            <div className="hidden md:flex items-center justify-end gap-4 md:gap-2 lg:gap-4">
-              <Link href={"/application"}>
-                <Button className="rounded-md" size={"sm"}>
-                  Join Us
-                </Button>
+      <body className={inter.className}>
+        <div className="flex min-h-screen w-full flex-col">
+          <header className="sticky top-0 h-16 gap-8 z-50 bg-background">
+            <Container className="flex items-center justify-between py-0 h-full">
+              <Link
+                href="/"
+                className="grid text-2xl font-semibold md:text-base"
+              >
+                <h1 className="text-2xl font-bold">{webConfig.companyName}</h1>
               </Link>
-            </div>
-          </Container>
-        </header>
-        <main className="min-h-[calc(100vh-theme(spacing.16))] h-full">
-          {children}
-        </main>
-        <Footer />
-      </div>
+              <div className="hidden md:flex">
+                <TopNavMenu items={navItems} />
+              </div>
+              <div className="flex md:hidden">
+                <SideNavMenu items={navItems} />
+              </div>
+              <div className="hidden md:flex items-center justify-end gap-4 md:gap-2 lg:gap-4">
+                <Link href={"/application"}>
+                  <Button className="rounded-md" size={"sm"}>
+                    Join Us
+                  </Button>
+                </Link>
+              </div>
+            </Container>
+          </header>
+          <main className="min-h-[calc(100vh-theme(spacing.16))] h-full">
+            {children}
+          </main>
+          <Footer />
+        </div>
+      </body>
+      <noscript>
+        <iframe
+          src="https://www.googletagmanager.com/ns.html?id=GTM-PW76PFB7"
+          height="0"
+          width="0"
+          style={{ display: "none", visibility: "hidden" }}
+        />
+      </noscript>
     </>
   );
 }
