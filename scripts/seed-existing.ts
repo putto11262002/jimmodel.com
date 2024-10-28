@@ -72,7 +72,7 @@ const main = async () => {
 
     for (const image of model.portfolios) {
       const imageBuff = await readFile(
-        path.resolve(__dirname, "./images", image)
+        path.resolve(__dirname, process.env.MODEL_IMAGE_PATH, image)
       );
       const file = new Blob([imageBuff], {
         type: image.split(".").pop(),
