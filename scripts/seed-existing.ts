@@ -63,7 +63,7 @@ const main = async () => {
       path.resolve(process.env.MODEL_IMAGE_PATH, model.profileImage)
     );
     const blob = new Blob([profileFile], {
-      type: model.profileImage.split(".").pop(),
+      type: `image/${model.profileImage.split(".").pop()}`,
     });
 
     await usecases.modelUseCase.updateProfileImage(createdModel, {
@@ -75,7 +75,7 @@ const main = async () => {
         path.resolve(__dirname, process.env.MODEL_IMAGE_PATH, image)
       );
       const file = new Blob([imageBuff], {
-        type: image.split(".").pop(),
+        type: `image/${model.profileImage.split(".").pop()}`,
       });
 
       await usecases.modelUseCase.addModelImage(createdModel, {
