@@ -87,6 +87,7 @@ const main = async () => {
     await usecases.modelUseCase.updateModelSettings(createdModel, {
       published: true,
     });
+    console.log(`Model ${model.name} created`);
   }
 
   process.exit(0);
