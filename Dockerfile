@@ -60,7 +60,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN pnpm rollup -c rollup.config.bootstrap.js
+RUN pnpm rollup -c rollup.config.seed-existing.js
 
 # ----------------------------------
 
@@ -76,7 +76,7 @@ COPY ./db/migrations ./db/migrations
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install sharp@0.32.6
 
-CMD node ./dist/bootstrap.js
+CMD node ./dist/seed-existing.js
 
 
 
