@@ -38,14 +38,14 @@ const menuItems = ({ id }: { id: string }): LinkMenuItem[] => [
     href: routes.admin.models["[id]"].images.profile({ id }),
   },
   {
-    label: "Settings",
-    href: routes.admin.models["[id]"].settings.main({ id }),
-  },
-  {
     label: "Blocks",
     href: routes.admin.models["[id]"].blocks.main({ id }),
   },
   { label: "Jobs", href: routes.admin.models["[id]"].jobs.main({ id }) },
+  {
+    label: "Settings",
+    href: routes.admin.models["[id]"].settings.main({ id }),
+  },
 ];
 
 export default async function Layout({

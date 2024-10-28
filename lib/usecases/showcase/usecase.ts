@@ -186,7 +186,9 @@ export class ShowcaseUseCase {
     }
     const models = await this.modelUseCase
       .getModels({
-        modelIds: showcase.showcaseModels.map((model) => model.modelId),
+        modelIds: showcase.showcaseModels
+          .map((model) => model.modelId)
+          .filter((id) => id !== null),
       })
       .then((result) => result.data);
 

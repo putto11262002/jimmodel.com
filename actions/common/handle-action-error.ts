@@ -29,12 +29,7 @@ export function handleActionError(
       message: e.message,
     };
   }
-
-  console.error(e);
-  return {
-    status: "error",
-    message: "Something went wrong",
-  };
+  throw e;
 }
 export function handleActionErrorWithValidation<T>(
   e: unknown

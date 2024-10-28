@@ -5,50 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1728676745885,
-      "tag": "0000_ancient_cerebro",
+      "when": 1730111198763,
+      "tag": "0000_foamy_zodiak",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1728838679900,
-      "tag": "0001_high_joseph",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1729083139542,
-      "tag": "0002_big_skrulls",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1729222280589,
-      "tag": "0003_bumpy_mysterio",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1729451157163,
-      "tag": "0004_yellow_red_skull",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1729451305618,
-      "tag": "0005_moaning_praxagora",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1729567824972,
-      "tag": "0006_fair_wolfsbane",
+      "when": 1730111409241,
+      "tag": "0001_stale_rocket_racer",
       "breakpoints": true
     }
   ]

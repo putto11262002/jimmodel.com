@@ -61,6 +61,7 @@ export default function ModelProfileCard({
           {profile.profileImageId ? (
             <Image
               src={routes.files.get(profile.profileImageId)}
+              priority={true}
               alt={profile.name}
               fill
               className="object-cover pointer-events-none"

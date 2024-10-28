@@ -16,7 +16,7 @@ export default function JobModelAddDialog({ job }: { job: Job }) {
   return (
     <ModelSearchDialog
       onSelect={(modelId) => action(objToFormData({ modelId, id: job.id }))}
-      ignore={job.jobModels.map((jm) => jm.modelId)}
+      ignore={job.jobModels.map((jm) => jm.modelId).filter((id) => id !== null)}
       trigger={
         <IconButton
           size={"xs"}

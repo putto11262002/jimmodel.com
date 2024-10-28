@@ -1,113 +1,90 @@
 "use client";
 import type { Model } from "@/lib/domains";
-import { arrayToSelectOptions } from "@/components/utils/array-to-select-options";
 import {
   BOOKING_STATUS_LABEL_VALUE_PAIRS,
   MODEL_CATEGORY_LABEL_VALUE_PAIRS,
 } from "@/db/constants";
-import { useFormState } from "react-dom";
-import { updateModelSettingAction } from "@/actions/model";
+import { deleteModelAction, updateModelSettingAction } from "@/actions/model";
 import FormItem from "@/components/form/form-item";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import FormMessage from "@/components/form/form-message";
 import useActionToast from "@/hooks/use-action-toast";
+import AutoForm from "@/components/shared/auto-form";
+import SelectFormItem from "@/components/form/server-action/select-form-intput";
+import useActionState from "@/hooks/use-action-state";
 import AsyncButton from "@/components/shared/buttons/async-button";
 
 export default function ModelSettingsUpdateForm({ model }: { model: Model }) {
-  const [state, action, pending] = useFormState(updateModelSettingAction, {
-    status: "idle",
-  });
+  const { state, dispatch, pending } = useActionState(
+    updateModelSettingAction,
+    {
+      status: "idle",
+    }
+  );
 
-  useActionToast({ state });
+  const { dispatch: deleteModel, pending: pendingDelete } =
+    useActionState(deleteModelAction);
 
   return (
     <>
-      <form action={action} className="grid gap-4">
-        <input type="hidden" name="id" value={model.id} />
-        <FormItem>
-          <Label>Booking Status</Label>
-          <Select name="bookingStatus" defaultValue={model.bookingStatus}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {BOOKING_STATUS_LABEL_VALUE_PAIRS.map(
-                ({ label, value }, index) => (
-                  <SelectItem value={value} key={index}>
-                    {label}
-                  </SelectItem>
-                )
-              )}
-            </SelectContent>
-            <FormMessage
-              error={
-                state.status === "validationError"
-                  ? state.data?.bookingStatus
-                  : undefined
-              }
-            />
-          </Select>
-        </FormItem>
-
-        <FormItem>
-          <Label>Published</Label>
-          <Select
-            name="published"
-            defaultValue={model.published ? "true" : "false"}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="true">Yes</SelectItem>
-              <SelectItem value="false">No</SelectItem>
-            </SelectContent>
-            <FormMessage
-              error={
-                state.status === "validationError"
-                  ? state.data?.published
-                  : undefined
-              }
-            />
-          </Select>
-        </FormItem>
+      <div className="grid gap-4">
+        <AutoForm action={dispatch}>
+          <input type="hidden" name="id" value={model.id} />
+          <SelectFormItem
+            name="bookingStatus"
+            label="Booking Status"
+            defaultValue={model.bookingStatus}
+            options={BOOKING_STATUS_LABEL_VALUE_PAIRS}
+          />
+        </AutoForm>
 
         <FormItem>
           <Label>Category</Label>
-          <Select name="category" defaultValue={model.category}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MODEL_CATEGORY_LABEL_VALUE_PAIRS.map(
-                ({ label, value }, index) => (
-                  <SelectItem value={value} key={index}>
-                    {label}
-                  </SelectItem>
-                )
-              )}
-            </SelectContent>
-            <FormMessage
-              error={
-                state.status === "validationError"
-                  ? state.data?.category
-                  : undefined
-              }
-            />
-          </Select>
+          <input type="hidden" name="id" value={model.id} />
+          <SelectFormItem
+            name="category"
+            label="Category"
+            defaultValue={model.category}
+            options={MODEL_CATEGORY_LABEL_VALUE_PAIRS}
+          />
         </FormItem>
 
-        <div className="flex justify-end">
-          <AsyncButton disabled={pending}>Save</AsyncButton>
-        </div>
-      </form>
+        <form action={dispatch}>
+          <input
+            type="hidden"
+            name="published"
+            defaultValue={String(!model.published)}
+          />
+          <input type="hidden" name="id" value={model.id} />
+          <FormItem>
+            <Label>Published</Label>
+            <div>
+              <AsyncButton
+                pending={pending}
+                variant={model.published ? "warning" : "success"}
+                type="submit"
+              >
+                {model.published ? "Unpublish" : "Publish"}
+              </AsyncButton>
+            </div>
+          </FormItem>
+        </form>
+
+        <form action={deleteModel}>
+          <input type="hidden" name="id" value={model.id} />
+          <FormItem>
+            <Label>Delete</Label>
+            <div>
+              <AsyncButton
+                pending={pendingDelete}
+                variant="destructive"
+                type="submit"
+              >
+                Delete
+              </AsyncButton>
+            </div>
+          </FormItem>
+        </form>
+      </div>
     </>
   );
 }

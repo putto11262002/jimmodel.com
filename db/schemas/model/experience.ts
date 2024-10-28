@@ -1,10 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  pgTable,
-  uuid,
-  integer,
-  text,
-} from "drizzle-orm/pg-core";
+import { pgTable, uuid, integer, text } from "drizzle-orm/pg-core";
 import { COUNTRIES } from "@/db/constants/countries";
 import { modelTable } from "@/db/schemas/model";
 
@@ -12,10 +7,12 @@ export const modelExperienceTable = pgTable("model_experiences", {
   id: uuid("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  modelId: uuid("application_id"),
+  modelId: uuid("application_id")
+    .references(() => modelTable.id, { onDelete: "cascade" })
+    .notNull(),
   year: integer("year").notNull(),
   media: text("media").notNull(),
-  country: text("country", {enum: COUNTRIES}).notNull(),
+  country: text("country", { enum: COUNTRIES }).notNull(),
   product: text("product").notNull(),
   details: text("details"),
 });
@@ -30,7 +27,6 @@ export const modelExperienceRelations = relations(
   })
 );
 
-
-
 export type ModelExperience = typeof modelExperienceTable.$inferSelect;
 export type NewModelExperience = typeof modelExperienceTable.$inferInsert;
+

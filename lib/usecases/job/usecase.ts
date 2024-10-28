@@ -4,7 +4,6 @@ import { bookingTable, jobTable, jobModelTable } from "@/db/schemas";
 import { PaginatedData } from "@/lib/types/paginated-data";
 import {
   ActionNotAllowedError,
-  AppError,
   ConstraintViolationError,
   ForbiddenError,
   NotFoundError,
@@ -23,7 +22,7 @@ import { getDateRangeWhere } from "../common/helpers/date-range-where";
 import { withPagination } from "../common/helpers/with-pagination";
 import { UserUseCase } from "../user";
 import { EventHub, ReadonlyEventHub } from "@/lib/event-hub";
-import { ModelEventMap } from "../model/event";
+import { MODEL_PROFILE_IMAGE_UPDATED, ModelEventMap } from "../model/event";
 import {
   BOOKING_CREATED,
   BOOKING_DELETED,
@@ -76,7 +75,7 @@ export class JobUsecase<
     this.modelEventHub?.on("MODEL_UPDATED", this.onModelUpdated.bind(this));
 
     this.modelEventHub?.on(
-      "MODEL_PROFILE_IMAGE_UPDATED",
+      MODEL_PROFILE_IMAGE_UPDATED,
       this.onModelProfileImageUpdate.bind(this)
     );
 

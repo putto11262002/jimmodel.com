@@ -9,11 +9,7 @@ import { DB, TX } from "@/db/config";
 import { and, asc, countDistinct, desc, eq, ilike, inArray } from "drizzle-orm";
 import { PaginatedData } from "@/lib/types/paginated-data";
 import { paginate } from "@/lib/utils/pagination";
-import {
-  NotFoundError,
-  InvalidArgumentError,
-  ActionNotAllowedError,
-} from "@/lib/errors";
+import { NotFoundError, ActionNotAllowedError } from "@/lib/errors";
 import { FileUseCase } from "../file";
 import { ImageUseCase } from "../image";
 import dayjs from "dayjs";
@@ -50,7 +46,16 @@ import {
 import {} from "./inputs/model-profile-image-input/type";
 import { isEmpty } from "@/lib/utils/objects";
 import { EventHub } from "@/lib/event-hub";
-import { ModelEventMap } from "./event";
+import {
+  MODEL_BLOCK_CREATED_OR_UPDATED,
+  MODEL_BLOCK_DELETED,
+  MODEL_CREATED,
+  MODEL_DELETED,
+  MODEL_PROFILE_IMAGE_UPDATED,
+  MODEL_SETTINGS_UPDATED,
+  MODEL_UPDATED,
+  ModelEventMap,
+} from "./event";
 
 export const compactModelColumns: Record<keyof CompactModel, true> = {
   id: true,
@@ -130,7 +135,7 @@ export class ModelUseCase<T extends ModelEventMap = any> {
           .returning({ id: modelTable.id })
           .then((res) => res[0].id);
 
-        this.eventHub?.emit("MODEL_CREATED", { modelId: createdModelId });
+        this.eventHub?.emit(MODEL_CREATED, { modelId: createdModelId });
         return createdModelId;
       },
       this.db,
@@ -153,7 +158,7 @@ export class ModelUseCase<T extends ModelEventMap = any> {
     if (updatedModels.length < 1) {
       throw new NotFoundError("Model not found");
     }
-    this.eventHub?.emit("MODEL_UPDATED", { modelId, data: input });
+    this.eventHub?.emit(MODEL_UPDATED, { modelId, data: input });
   }
 
   public async updateModelSettings(
@@ -168,7 +173,7 @@ export class ModelUseCase<T extends ModelEventMap = any> {
     if (updatedModels.length < 1) {
       throw new NotFoundError("Model not found");
     }
-    this.eventHub?.emit("MODEL_SETTINGS_UPDATED", { modelId: id, data: input });
+    this.eventHub?.emit(MODEL_SETTINGS_UPDATED, { modelId: id, data: input });
   }
 
   public async modelExist(modelId: Model["id"], tx?: TX): Promise<boolean> {
@@ -309,7 +314,7 @@ export class ModelUseCase<T extends ModelEventMap = any> {
       .returning({ id: modelBlockTable.id })
       .then((res) => res[0].id);
 
-    this.eventHub?.emit("MODEL_BLOCK_CREATED", {
+    this.eventHub?.emit(MODEL_BLOCK_CREATED_OR_UPDATED, {
       modelId,
       blockId,
       data: input,
@@ -324,7 +329,7 @@ export class ModelUseCase<T extends ModelEventMap = any> {
     if (deleted.length < 1) {
       throw new NotFoundError("Block not found");
     }
-    this.eventHub?.emit("MODEL_BLOCK_DELETED", { blockId });
+    this.eventHub?.emit(MODEL_BLOCK_DELETED, { blockId });
   }
 
   public async getBlocks({
@@ -409,6 +414,34 @@ export class ModelUseCase<T extends ModelEventMap = any> {
     return experiences;
   }
 
+  public async deleteModel(modelId: string): Promise<void> {
+    const model = await this.getModel(modelId);
+    if (!model) {
+      throw new NotFoundError("Model not found");
+    }
+    // delete images
+    this.db.transaction(async (tx) => {
+      const deletedImageFileIds = await tx
+        .delete(modelImageTable)
+        .where(eq(modelImageTable.modelId, modelId))
+        .returning({ fileId: modelImageTable.fileId })
+        .then((res) => res.map((r) => r.fileId));
+
+      await Promise.all([
+        ...deletedImageFileIds.map((fileId) =>
+          this.fileUseCase.delete(fileId, tx)
+        ),
+        ...(model.profileImageId
+          ? [this.fileUseCase.delete(model.profileImageId, tx)]
+          : []),
+      ]);
+
+      await this.db.delete(modelTable).where(eq(modelTable.id, modelId));
+
+      this.eventHub?.emit(MODEL_DELETED, { modelId });
+    });
+  }
+
   public async updateProfileImage(
     modelId: string,
     input: ModelProfileImageInput
@@ -432,7 +465,7 @@ export class ModelUseCase<T extends ModelEventMap = any> {
       await this.fileUseCase.delete(modelExist.profileImageId);
     }
 
-    this.eventHub?.emit("MODEL_PROFILE_IMAGE_UPDATED", {
+    this.eventHub?.emit(MODEL_PROFILE_IMAGE_UPDATED, {
       modelId,
       imageMetadata: imageMetadata,
     });

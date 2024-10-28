@@ -27,7 +27,11 @@ export default function ShowcaseCard({ showcase }: { showcase: Showcase }) {
               <div className="flex items-center gap-3">
                 {showcase.showcaseModels.map((model, index) => (
                   <Link
-                    href={routes.models.profile.main(model.modelId)}
+                    href={
+                      model.modelId
+                        ? routes.models.profile.main(model.modelId)
+                        : "#"
+                    }
                     key={index}
                   >
                     <Image

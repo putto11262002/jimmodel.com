@@ -67,7 +67,9 @@ export const applicationTable = pgTable("applications", {
     withTimezone: true,
   }).notNull(),
 
-  modelId: uuid("model_id").references(() => modelTable.id),
+  modelId: uuid("model_id").references(() => modelTable.id, {
+    onDelete: "set null",
+  }),
 
   status: text("status", { enum: APPLICATION_STATUSES })
     .default(APPLICATION_STATUS.IN_PROGRESS)

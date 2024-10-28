@@ -1,4 +1,3 @@
-import dayjs, { Dayjs } from "dayjs";
 import {
   addDays,
   endOfMonth,
@@ -10,13 +9,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { Booking } from "@/lib/domains";
-import {
-  CalendarEvent,
-  CalendarType,
-  ExtractEvent,
-  ExtractEventType,
-} from "./types";
+import { CalendarEvent, CalendarType, ExtractEventType } from "./types";
 
 export const getDateKey = (date: Date) => date.toISOString();
 
@@ -111,12 +104,12 @@ export const sortEventModels = (
     const modelCount = new Map<string, number>();
     events.forEach((event) => {
       event.models.forEach((model) => {
-        modelCount.set(model.id, (modelCount.get(model.id) ?? 0) + 1);
+        modelCount.set(model.name, (modelCount.get(model.name) ?? 0) + 1);
       });
     });
     events.forEach((event) => {
       event.models.sort((a, b) => {
-        return (modelCount.get(b.id) ?? 0) - (modelCount.get(a.id) ?? 0);
+        return (modelCount.get(b.name) ?? 0) - (modelCount.get(a.name) ?? 0);
       });
     });
   });

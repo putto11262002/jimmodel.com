@@ -5,6 +5,7 @@ import {
   AnyPgColumn,
   text,
   integer,
+  index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { fileMetadataTable } from "../file-metadata";
@@ -19,7 +20,7 @@ export const modelImageTable = pgTable(
       .references(() => fileMetadataTable.id)
       .notNull(),
     modelId: uuid("model_id")
-      .references((): AnyPgColumn => modelTable.id)
+      .references((): AnyPgColumn => modelTable.id, { onDelete: "cascade" })
       .notNull(),
     width: integer("width").notNull(),
     height: integer("height").notNull(),
@@ -29,6 +30,7 @@ export const modelImageTable = pgTable(
   (table) => {
     return {
       pk: primaryKey({ columns: [table.fileId, table.modelId] }),
+      modelIdIndex: index().on(table.modelId),
     };
   }
 );

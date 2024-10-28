@@ -1,1 +1,0 @@
-ALTER TABLE "applications" ALTER COLUMN "status" SET DEFAULT 'in_progress';

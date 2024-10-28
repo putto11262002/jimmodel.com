@@ -120,6 +120,7 @@ const ModelActions = {
   createModel: "create-model",
   getModels: "get-models",
   updateModelById: "update-model-by-id",
+  deleteModel: "delete-model",
   getModelById: "get-model-by-id",
   getModelExperiencesById: "get-model-experiences-by-id",
   getModelImagesById: "get-model-images-by-id",
@@ -144,6 +145,7 @@ const modelPermissions: {
 } = {
   createModel: ["root", "admin", "staff"],
   getModels: ["root", "admin", "staff"],
+  deleteModel: ["root", "admin"],
   updateModelById: ["root", "admin", "staff"],
   getModelById: ["root", "admin", "staff"],
   getModelExperiencesById: ["root", "admin", "staff"],
@@ -202,16 +204,15 @@ const contactMessagePermissions: {
   getContactMessage: ["root", "admin", "staff", "IT"],
 };
 
-
 const websiteActions = {
-    revalidateCache: "revalidate-cache",
-}
+  revalidateCache: "revalidate-cache",
+};
 
 const websitePermissions: {
-	[key in keyof typeof websiteActions]: Permission;
+  [key in keyof typeof websiteActions]: Permission;
 } = {
-	revalidateCache: ["root", "admin", "IT"],
-}
+  revalidateCache: ["root", "admin", "IT"],
+};
 
 // Emptry array = only authentication is required
 // Null = no authentication required

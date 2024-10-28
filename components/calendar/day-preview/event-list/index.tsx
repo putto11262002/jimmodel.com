@@ -56,7 +56,11 @@ export default function EventList({
                   >
                     <Link
                       className="hover:underline"
-                      href={routes.admin.models["[id]"].main({ id: model.id })}
+                      href={
+                        model.id
+                          ? routes.admin.models["[id]"].main({ id: model.id })
+                          : "#"
+                      }
                     >
                       {model.name}
                     </Link>

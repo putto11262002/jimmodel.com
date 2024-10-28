@@ -6,7 +6,7 @@
 export type BaseCalendarEvent<TName extends Readonly<string>> = {
   start: Date;
   end: Date;
-  models: { id: string; name: string }[];
+  models: { id: string | null; name: string }[];
   type: TName;
   icon?: React.ReactNode;
 };

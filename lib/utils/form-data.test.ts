@@ -79,7 +79,7 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
       foo: z.string(),
     });
     const formData = new FormData();
-    const received = getValidationSchemaInputFromFormData(formData, schema);
+    const received = getValidationSchemaInputFromFormData(formData, schema, {});
     expect(received.foo).toBeUndefined();
   });
 
@@ -88,7 +88,7 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
     const schema = z.object({
       foo: z.string(),
     });
-    const received = getValidationSchemaInputFromFormData(formData, schema);
+    const received = getValidationSchemaInputFromFormData(formData, schema, {});
     expect(received.foo).toBeNull();
   });
 
@@ -123,12 +123,16 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
     });
 
     test("string ->", () => {
-      const received = getValidationSchemaInputFromFormData(input, schema);
+      const received = getValidationSchemaInputFromFormData(input, schema, {});
       expect(received).toEqual(expected);
     });
 
     test("string[] ->", () => {
-      const received = getValidationSchemaInputFromFormData(arrayInput, schema);
+      const received = getValidationSchemaInputFromFormData(
+        arrayInput,
+        schema,
+        {}
+      );
       expect(received).toEqual(expected);
     });
   });
@@ -167,12 +171,16 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
     });
 
     test("string ->", () => {
-      const received = getValidationSchemaInputFromFormData(input, schema);
+      const received = getValidationSchemaInputFromFormData(input, schema, {});
       expect(received).toEqual(expected);
     });
 
     test("string[] ->", () => {
-      const received = getValidationSchemaInputFromFormData(arrayInput, schema);
+      const received = getValidationSchemaInputFromFormData(
+        arrayInput,
+        schema,
+        {}
+      );
       expect(received).toEqual(expected);
     });
   });
@@ -207,12 +215,16 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
     });
 
     test("string ->", () => {
-      const received = getValidationSchemaInputFromFormData(input, schema);
+      const received = getValidationSchemaInputFromFormData(input, schema, {});
       expect(received).toEqual(expected);
     });
 
     test("string[] ->", () => {
-      const received = getValidationSchemaInputFromFormData(arrayInput, schema);
+      const received = getValidationSchemaInputFromFormData(
+        arrayInput,
+        schema,
+        {}
+      );
       expect(received).toEqual(expected);
     });
   });
@@ -226,7 +238,8 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
       const file = new File([" "], "foo.txt");
       const received = getValidationSchemaInputFromFormData(
         objToFormData({ foo: file }),
-        schema
+        schema,
+        {}
       );
       expect(received.foo).toEqual(file);
     });
@@ -234,7 +247,7 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
     test("File[] -> File[0]", () => {
       const file = new File(["  "], "foo1.txt");
       const input = objToFormData({ foo: [file, new File([" "], "foo2.txt")] });
-      const received = getValidationSchemaInputFromFormData(input, schema);
+      const received = getValidationSchemaInputFromFormData(input, schema, {});
       expect(received.foo).toEqual(file);
     });
   });
@@ -262,7 +275,7 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
         numberArray: [12],
         fileArray: [file1],
       };
-      const received = getValidationSchemaInputFromFormData(input, schema);
+      const received = getValidationSchemaInputFromFormData(input, schema, {});
       expect(received).toEqual(expected);
     });
 
@@ -280,7 +293,7 @@ describe("getValidationSchemaInputFromSearchParamsObj", () => {
         numberArray: [12, 23],
         fileArray: [file1, file2],
       };
-      const received = getValidationSchemaInputFromFormData(input, schema);
+      const received = getValidationSchemaInputFromFormData(input, schema, {});
       expect(received).toEqual(expected);
     });
   });

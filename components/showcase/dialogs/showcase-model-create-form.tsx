@@ -21,7 +21,9 @@ export default function ShowcaseModelCreateDialog({
         onSelect={(modelId) =>
           action(objToFormData({ id: showcase.id, modelId }))
         }
-        ignore={showcase.showcaseModels.map((m) => m.modelId)}
+        ignore={showcase.showcaseModels
+          .map((m) => m.modelId)
+          .filter((id) => id !== null)}
         trigger={
           <IconButton
             size="sm"

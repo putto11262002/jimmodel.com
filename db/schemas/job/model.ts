@@ -1,6 +1,6 @@
 import { fileMetadataTable, jobTable, modelTable } from "@/db/schemas";
 import { relations } from "drizzle-orm";
-import { pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
+import { index, pgTable, text, uuid } from "drizzle-orm/pg-core";
 
 export const jobModelTable = pgTable(
   "jobs_models",
@@ -8,20 +8,21 @@ export const jobModelTable = pgTable(
     jobId: uuid("job_id")
       .notNull()
       .references(() => jobTable.id),
-    modelId: uuid("model_id")
-      .notNull()
-      .references(() => modelTable.id, { onDelete: "set null" }),
+    modelId: uuid("model_id").references(() => modelTable.id, {
+      onDelete: "set null",
+    }),
     modelName: text("model_name").notNull(), // -> modelTable
     modelImageId: uuid("model_image_id").references(
       () => fileMetadataTable.id,
-      { onDelete: "set null" }
+      {
+        onDelete: "set null",
+      }
     ), // -> modelTable
   },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.jobId, table.modelId] }),
-    };
-  }
+  (table) => ({
+    jobIdIndex: index().on(table.jobId),
+    modelIdIndex: index().on(table.modelId),
+  })
 );
 
 export const jobModelRelation = relations(jobModelTable, ({ one }) => ({

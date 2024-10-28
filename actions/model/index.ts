@@ -89,6 +89,22 @@ export const updateModelAction = async (
     return handleActionError(e);
   }
 };
+
+export const deleteModelAction = async (
+  _: any,
+  formData: FormData
+): Promise<BaseActionResult> => {
+  try {
+    await auth({ permission: permissions.models.deleteModel });
+    const id = validateUUIDOrThrowError(formData.get("id"));
+    await modelUseCase.deleteModel(id);
+    revalidatePath(routes.admin.models.main, "layout");
+    redirect(routes.admin.models.main);
+  } catch (e) {
+    return handleActionError(e);
+  }
+};
+
 export const addModelExperienceAction = async (
   _: any,
   formData: FormData

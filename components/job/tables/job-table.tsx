@@ -44,9 +44,13 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
                   return (
                     <li key={index} className="flex items-center gap-2">
                       <Link
-                        href={routes.admin.models["[id]"].main({
-                          id: _model.modelId,
-                        })}
+                        href={
+                          _model.modelId
+                            ? routes.admin.models["[id]"].main({
+                                id: _model.modelId,
+                              })
+                            : "#"
+                        }
                       >
                         <Avatar
                           size={"sm"}

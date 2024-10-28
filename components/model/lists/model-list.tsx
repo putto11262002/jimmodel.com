@@ -9,8 +9,10 @@ export default function ModelList({
   models,
   action,
 }: {
-  models: Pick<CompactModel, "id" | "name" | "profileImageId">[];
-  action?: ({ modelId }: { modelId: string }) => React.ReactNode;
+  models: (Pick<CompactModel, "name" | "profileImageId"> & {
+    id: string | null;
+  })[];
+  action?: ({ modelId }: { modelId: string | null }) => React.ReactNode;
 }) {
   return (
     <DataList
@@ -24,7 +26,11 @@ export default function ModelList({
               fileId={model.profileImageId}
             />
             <Link
-              href={routes.admin.models["[id]"].main({ id: model.id })}
+              href={
+                model.id
+                  ? routes.admin.models["[id]"].main({ id: model.id })
+                  : "#"
+              }
               className="hover:underline text-sm font-medium"
             >
               {model.name}
