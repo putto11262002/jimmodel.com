@@ -34,11 +34,10 @@ export default function ApplicationCreateForm() {
             A Few Things to Keep in Mind
           </h2>
           <p className="text-center text-sm mt-2">
-            Please complete the form as thoroughly as possible. Providing
-            detailed information will help us accurately assess your profile and
-            match you with the most suitable opportunities. However, if there is
-            any information you are uncomfortable sharing, feel free to omit it.
-            Your privacy and comfort are important to us.
+            Please complete the form thoroughly to help us accurately assess
+            your profile and match you with suitable opportunities. If
+            you&apos;re uncomfortable sharing any information, feel free to omit
+            it—your privacy is important to us.
           </p>
           <div className="flex justify-center mt-4">
             <AsyncButton pending={pending}>Continue</AsyncButton>

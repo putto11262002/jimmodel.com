@@ -1,3 +1,4 @@
+import ApplicationDropdownMenu from "@/components/application/application-dropdown-menu";
 import ApplicationImageGallery from "@/components/application/application-image-gallery";
 import ApplicationStatusBadge from "@/components/application/application-status-badge";
 import ApproveApplcationForm from "@/components/application/forms/approve-application-form";
@@ -9,6 +10,7 @@ import LabelValueItem from "@/components/key-value/key-value-item";
 import { DataList } from "@/components/list";
 import AsyncButton from "@/components/shared/buttons/async-button";
 import Header, { HeaderBreadcrumb } from "@/components/shared/header";
+import { Button } from "@/components/ui/button";
 import { auth } from "@/config";
 import permissions from "@/config/permission";
 import routes from "@/config/routes";
@@ -19,6 +21,7 @@ import {
   getApplicationImages,
 } from "@/loaders/application";
 import { format } from "date-fns";
+import { MoreHorizontal } from "lucide-react";
 import { notFound } from "next/navigation";
 
 const breadcrumb = ({
@@ -75,19 +78,14 @@ export default async function Page({
 
             <ApplicationStatusBadge status={application.status} />
           </div>
-          {application.status !== APPLICATION_STATUS.SUBMITTED && (
-            <div className="flex items-center gap-2">
-              <RejectApplcationForm
-                id={id}
-                trigger={<AsyncButton size="sm">Reject</AsyncButton>}
-              />
-
-              <ApproveApplcationForm
-                id={id}
-                trigger={<AsyncButton size="sm">Approve</AsyncButton>}
-              />
-            </div>
-          )}
+          <ApplicationDropdownMenu
+            trigger={
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="icon-md" />
+              </Button>
+            }
+            application={application}
+          />
         </div>
         <Card title="General" headerBorder>
           <div className="grid gap-4">

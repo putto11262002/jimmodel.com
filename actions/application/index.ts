@@ -193,3 +193,17 @@ export const rejectApplicationAction = async (
     return handleActionError(e);
   }
 };
+
+export const deleteApplicationAction = async (
+  _: any,
+  formData: FormData
+): Promise<BaseActionResult> => {
+  try {
+    const id = validateUUIDOrThrowError(formData.get("id"));
+    await applicationUseCase.deleteApplication(id);
+    revalidatePath(routes.admin.applications.main, "layout");
+    return { status: "success", message: "Application deleted" };
+  } catch (e) {
+    return handleActionError(e);
+  }
+};
