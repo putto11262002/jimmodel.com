@@ -34,6 +34,7 @@ export default function ShowcaseCard({ showcase }: { showcase: Showcase }) {
                       className="rounded-md w-[30px] h-[30px] object-cover "
                       width={30}
                       height={30}
+                      priority={true}
                       src={
                         model.modelProfileImage
                           ? routes.files.get(model.modelProfileImage)

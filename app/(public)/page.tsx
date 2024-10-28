@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import HeroSection from "./_components/hero-section";
 import ShowcaseSection from "./_components/showcase-section";
 
@@ -7,7 +8,10 @@ export const dynamic = "force-static";
 export default async function Page() {
   return (
     <>
-      <HeroSection />
+      <Suspense fallback={<p>Loading</p>}>
+        {" "}
+        <HeroSection />
+      </Suspense>
       <ShowcaseSection />
     </>
   );
