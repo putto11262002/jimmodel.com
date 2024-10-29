@@ -14,11 +14,14 @@ import {
   BOOKING_STATUS,
   BOOKING_STATUSES,
   GENDERS,
+  JOB_STATUS,
+  JOB_STATUSES,
   MODEL_CATEGORIES,
 } from "@/db/constants";
 import { Model } from "@/lib/domains";
 import { readFile } from "fs/promises";
 import assert from "assert";
+import jobs from "./jobs.json";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,54 +44,87 @@ const main = async () => {
     config,
   });
 
-  for (const model of models) {
-    const gender: z.ZodType<Model["gender"], z.ZodTypeDef, any> = z
-      .enum(GENDERS)
-      .or(z.any().transform(() => "male" as const));
-    const bookingsStatus: z.ZodType<Model["bookingStatus"], z.ZodTypeDef, any> =
-      z
-        .enum(BOOKING_STATUSES)
-        .or(z.any().transform(() => BOOKING_STATUS.DIRECT_BOOKING));
-    const createdModel = await usecases.modelUseCase.createModel({
-      name: model.name,
-      gender: gender.parse(model.gender),
-      bookingStatus: bookingsStatus.parse(model.bookingStatus),
-      height: model.height,
-      weight: model.weight,
-      bust: model.bust,
-      hips: model.hips,
-    });
-    assert(process.env.MODEL_IMAGE_PATH, "MODEL_IMAGE_PATH is not defined");
-    const profileFile = await readFile(
-      path.resolve(process.env.MODEL_IMAGE_PATH, model.profileImage)
+  for (const job of jobs) {
+    const createdJobId = await usecases.jobUseCase.createJob(
+      {
+        ...job.job,
+        name: job.job.title,
+        status: ["pending", "confirmed"].includes(
+          job.job.status as "pending" | "confirmed"
+        )
+          ? (job.job.status as "pending" | "confirmed")
+          : JOB_STATUS.CONFIRMED,
+      },
+      job.ownerId
     );
-    const blob = new Blob([profileFile], {
-      type: `image/${model.profileImage.split(".").pop()}`,
-    });
-
-    await usecases.modelUseCase.updateProfileImage(createdModel, {
-      file: blob,
-    });
-
-    for (const image of model.portfolios) {
-      const imageBuff = await readFile(
-        path.resolve(__dirname, process.env.MODEL_IMAGE_PATH, image)
-      );
-      const file = new Blob([imageBuff], {
-        type: `image/${model.profileImage.split(".").pop()}`,
-      });
-
-      await usecases.modelUseCase.addModelImage(createdModel, {
-        file,
-        type: "book",
-      });
+    for (const model of job.models) {
+      if ("id" in model && model.id) {
+        await usecases.jobUseCase.addModel(createdJobId, model.id, job.ownerId);
+      } else {
+        await usecases.jobUseCase.addAnonymousModel(
+          createdJobId,
+          { name: model.name },
+          job.ownerId
+        );
+      }
     }
-
-    await usecases.modelUseCase.updateModelSettings(createdModel, {
-      published: true,
-    });
-    console.log(`Model ${model.name} created`);
+    for (const booking of job.bookings || []) {
+      await usecases.jobUseCase.addBooking(
+        createdJobId,
+        booking as any,
+        job.ownerId
+      );
+    }
   }
+
+  // for (const model of models) {
+  //   const gender: z.ZodType<Model["gender"], z.ZodTypeDef, any> = z
+  //     .enum(GENDERS)
+  //     .or(z.any().transform(() => "male" as const));
+  //   const bookingsStatus: z.ZodType<Model["bookingStatus"], z.ZodTypeDef, any> =
+  //     z
+  //       .enum(BOOKING_STATUSES)
+  //       .or(z.any().transform(() => BOOKING_STATUS.DIRECT_BOOKING));
+  //   const createdModel = await usecases.modelUseCase.createModel({
+  //     name: model.name,
+  //     gender: gender.parse(model.gender),
+  //     bookingStatus: bookingsStatus.parse(model.bookingStatus),
+  //     height: model.height,
+  //     weight: model.weight,
+  //     bust: model.bust,
+  //     hips: model.hips,
+  //   });
+  //   assert(process.env.MODEL_IMAGE_PATH, "MODEL_IMAGE_PATH is not defined");
+  //   const profileFile = await readFile(
+  //     path.resolve(process.env.MODEL_IMAGE_PATH, model.profileImage)
+  //   );
+  //   const blob = new Blob([profileFile], {
+  //     type: `image/${model.profileImage.split(".").pop()}`,
+  //   });
+  //
+  //   await usecases.modelUseCase.updateProfileImage(createdModel, {
+  //     file: blob,
+  //   });
+  //
+  //   for (const image of model.portfolios) {
+  //     const imageBuff = await readFile(
+  //       path.resolve(__dirname, process.env.MODEL_IMAGE_PATH, image)
+  //     );
+  //     const file = new Blob([imageBuff], {
+  //       type: `image/${model.profileImage.split(".").pop()}`,
+  //     });
+  //
+  //     await usecases.modelUseCase.addModelImage(createdModel, {
+  //       file,
+  //       type: "book",
+  //     });
+  //   }
+  //
+  //   await usecases.modelUseCase.updateModelSettings(createdModel, {
+  //     published: true,
+  //   });
+  //   console.log(`Model ${model.name} created`);
+  // }
 
   process.exit(0);
 };

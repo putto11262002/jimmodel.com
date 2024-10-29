@@ -5,7 +5,7 @@ export const JOB_STATUS = {
   CONFIRMED: "confirmed",
   CANCELLED: "cancelled",
   ARCHIVED: "archived",
-};
+} as const;
 export const JOB_STATUSES = [
   JOB_STATUS.PENDING,
   JOB_STATUS.CONFIRMED,

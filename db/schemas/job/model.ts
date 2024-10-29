@@ -8,9 +8,9 @@ export const jobModelTable = pgTable(
     jobId: uuid("job_id")
       .notNull()
       .references(() => jobTable.id),
-    modelId: uuid("model_id")
-      .notNull()
-      .references(() => modelTable.id, { onDelete: "set null" }),
+    modelId: uuid("model_id").references(() => modelTable.id, {
+      onDelete: "set null",
+    }),
     modelName: text("model_name").notNull(), // -> modelTable
     modelImageId: uuid("model_image_id").references(
       () => fileMetadataTable.id,

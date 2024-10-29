@@ -231,6 +231,53 @@ export class JobUsecase<
     return paginatedJob;
   }
 
+  public async addAnonymousModel(
+    jobId: Job["id"],
+    model: { name: string },
+    actorId: User["id"]
+  ) {
+    const userExist = await this.userUseCase.userExists(actorId);
+    if (!userExist) {
+      throw new NotFoundError("Actor not found");
+    }
+
+    const job = await this.getJob(jobId);
+    if (!job) {
+      throw new NotFoundError("Job not found");
+    }
+
+    if (job.private && job.ownerId !== actorId) {
+      throw new ForbiddenError(
+        "You do not have permission to add model to this job"
+      );
+    }
+    const jobWithBookings = await this.db.query.jobTable.findFirst({
+      where: eq(jobTable.id, jobId),
+      columns: { id: true },
+      with: {
+        bookings: true,
+      },
+    });
+
+    if (!jobWithBookings) {
+      throw new NotFoundError("Job not found");
+    }
+
+    if (jobWithBookings.bookings.length > 0) {
+      throw new ConstraintViolationError(
+        "Cannot add model to job with bookings"
+      );
+    }
+
+    await this.db
+      .insert(jobModelTable)
+      .values({
+        jobId,
+        modelName: model.name,
+      })
+      .returning();
+  }
+
   /**
    * Adds a model to a job if there are no existing bookings for that job.
    * If the model does not exist, the method does nothing.
