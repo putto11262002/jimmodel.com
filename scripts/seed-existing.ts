@@ -44,7 +44,7 @@ const main = async () => {
     config,
   });
 
-  for (const job of jobs) {
+  for (const job of Object.values(jobs)) {
     const createdJobId = await usecases.jobUseCase.createJob(
       {
         ...job.job,
