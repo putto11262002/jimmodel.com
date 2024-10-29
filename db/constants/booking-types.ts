@@ -4,6 +4,7 @@ export const BOOKING_TYPE = {
   FITTING: "fitting",
   SHOOTING: "shooting",
   MEETING: "meeting",
+  REHEARSAL: "rehearsal",
   OTHER: "other",
 } as const;
 
