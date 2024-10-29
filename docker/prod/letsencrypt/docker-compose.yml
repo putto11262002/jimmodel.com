@@ -170,5 +170,10 @@ services:
       S3_ENDPOINT: minio
       S3_PORT: 9000
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      NOTIFICATION_EMAIL: ${NOTIFICATION_EMAIL}
+
     labels:
       - "traefik.enable=false"
