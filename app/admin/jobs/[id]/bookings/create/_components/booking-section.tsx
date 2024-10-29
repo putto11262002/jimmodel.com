@@ -1,25 +1,34 @@
 "use client";
-import { Booking } from "@/lib/domains";
+import { Booking, Job } from "@/lib/domains";
 import useSWR from "swr";
 import { useRDateRange } from "../_components/date-context";
 import BookingTable from "@/components/job/tables/booking-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import Alert from "@/components/alert";
 
-export default function Default() {
+export default function BookingSection({ job }: { job: Job }) {
   const { start, end, valid } = useRDateRange();
   const { data, isLoading, error } = useSWR(
-    {
-      url: "/api/bookings",
-      start,
-      end,
-      valid,
-    },
+    valid && start && end
+      ? {
+          url: "/api/bookings",
+          start,
+          end,
+          valid,
+        }
+      : false,
     (arg) => {
-      if (!arg.valid) return [];
-      return fetch(
-        `${arg.url}?start=${start?.toISOString()}&end=${end?.toISOString()}`
-      )
+      if (!arg.valid || !start || !end) return [];
+
+      const searchParams = new URLSearchParams();
+
+      searchParams.set("start", start.toISOString());
+      searchParams.set("end", end.toISOString());
+      job.jobModels.forEach(
+        (model) =>
+          model.modelId && searchParams.append("modelIds", model.modelId)
+      );
+      return fetch(`${arg.url}?${searchParams.toString()}`)
         .then((res) => {
           if (!res.ok) {
             throw new Error("failed to fetch");
