@@ -31,6 +31,7 @@ export const JobActions = {
   getJobById: "get-job-by-id",
   createJob: "create-job",
   updateJobById: "update-job-by-id",
+  deleteJob: "delete-job-by-id",
   confirmJob: "confirm-job-by-id",
   cancelJob: "cancel-job-by-id",
   archiveJob: "archive-job-by-id",
@@ -66,6 +67,7 @@ const jobPermissions: { [key in keyof typeof JobActions]: Permission } = {
   getConflictingBookings: ["root", "admin", "staff"],
   generateJobConfirmationSheet: ["root", "admin", "staff"],
   updateJobPermissions: ["root", "admin", "staff"],
+  deleteJob: ["root", "admin"],
 } as const;
 
 const ApplicationActions = {

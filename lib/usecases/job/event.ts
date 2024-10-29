@@ -9,10 +9,12 @@ export const BOOKING_CREATED = Symbol("BOOKING_CREATED");
 export const BOOKING_DELETED = Symbol("BOOKING_DELETED");
 export const JOB_MODEL_ADDED = Symbol("JOB_MODEL_ADDED");
 export const JOB_MODEL_REMOVED = Symbol("JOB_MODEL_REMOVED");
+export const JOB_DELETED = Symbol("JOB_DELETED");
 
 export interface JobEventMap extends EventMap {
   [JOB_CREATED]: { jobId: string };
   [JOB_UPDATED]: { jobId: string; data: JobUpdateInput };
+  [JOB_DELETED]: { jobId: string };
   [JOB_STATUS_UPDATED]: { jobId: string; status: Job["status"] };
   [BOOKING_CREATED]: { jobId: string; bookingId: string };
   [BOOKING_DELETED]: { jobId: string; bookingId: string };

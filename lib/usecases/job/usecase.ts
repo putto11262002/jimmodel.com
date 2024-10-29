@@ -27,6 +27,7 @@ import {
   BOOKING_CREATED,
   BOOKING_DELETED,
   JOB_CREATED,
+  JOB_DELETED,
   JOB_MODEL_ADDED,
   JOB_MODEL_REMOVED,
   JOB_STATUS_UPDATED,
@@ -34,7 +35,7 @@ import {
   JobEventMap,
 } from "./event";
 import { DB, TX } from "@/db/config";
-import { JOB_STATUS } from "@/db/constants";
+import { JOB_STATUS, USER_ROLE } from "@/db/constants";
 import { withOptionalTransaction } from "../common/helpers/use-transaction";
 import { USER_IMAGE_UPDATED_EVENT, UserEventMap } from "../user/event";
 import _ from "lodash";
@@ -139,6 +140,17 @@ export class JobUsecase<
     }
 
     this.jobEventHub?.emit(JOB_UPDATED, { jobId: id, data: input });
+  }
+
+  public async deleteJob(id: Job["id"], actorId: User["id"]) {
+    const job = await this.getJob(id);
+    if (!job) {
+      throw new NotFoundError("Job not found");
+    }
+
+    await this.db.delete(jobTable).where(eq(jobTable.id, id));
+
+    this.jobEventHub?.emit(JOB_DELETED, { jobId: id });
   }
 
   /**

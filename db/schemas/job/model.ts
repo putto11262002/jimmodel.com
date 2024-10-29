@@ -7,7 +7,7 @@ export const jobModelTable = pgTable(
   {
     jobId: uuid("job_id")
       .notNull()
-      .references(() => jobTable.id),
+      .references(() => jobTable.id, { onDelete: "cascade" }),
     modelId: uuid("model_id").references(() => modelTable.id, {
       onDelete: "set null",
     }),

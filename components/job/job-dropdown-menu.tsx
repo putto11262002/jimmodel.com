@@ -84,6 +84,10 @@ export default function JobDropdownMenu({
           <DropdownMenuItem>Bookings</DropdownMenuItem>
         </Link>
 
+        <Link href={routes.admin.jobs["[id]"].settings.main({ id: job.id })}>
+          <DropdownMenuItem>Settings</DropdownMenuItem>
+        </Link>
+
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuGroup>

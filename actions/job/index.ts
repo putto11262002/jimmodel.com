@@ -69,6 +69,21 @@ export const updateJobAction = async (
   }
 };
 
+export const deleteJobAction = async (
+  _: any,
+  formData: FormData
+): Promise<BaseActionResult> => {
+  try {
+    const session = await auth({ permission: permissions.jobs.deleteJob });
+    const id = validateUUIDOrThrowError(formData.get("id"));
+    await jobUseCase.deleteJob(id, session.user.id);
+    revalidatePath(routes.admin.jobs.main, "layout");
+    redirect(routes.admin.jobs.main);
+  } catch (e) {
+    return handleActionError(e);
+  }
+};
+
 export const addJobModelAction = async (
   _: any,
   formData: FormData

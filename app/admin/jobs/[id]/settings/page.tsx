@@ -9,8 +9,8 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  await auth({ permission: permissions.jobs.getJobById });
+  const session = await auth({ permission: permissions.jobs.getJobById });
   const job = await getJobOrThrow(id);
 
-  return <JobActionCard job={job} />;
+  return <JobActionCard user={session.user} job={job} />;
 }

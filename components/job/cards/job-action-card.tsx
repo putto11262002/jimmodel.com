@@ -6,14 +6,23 @@ import {
   archiveJobAction,
   cancelJobAction,
   confirmJobAction,
+  deleteJobAction,
 } from "@/actions/job";
 import AsyncButton from "@/components/shared/buttons/async-button";
 import { objToFormData } from "@/lib/utils/form-data";
 import LabelValueItem from "@/components/key-value/key-value-item";
 import { Card } from "@/components/card";
 import useActionState from "@/hooks/use-action-state";
+import { AuthUser, checkPermission } from "@/lib/auth";
+import permissions from "@/config/permission";
 
-export default function JobActionCard({ job }: { job: Job }) {
+export default function JobActionCard({
+  job,
+  user,
+}: {
+  job: Job;
+  user: AuthUser;
+}) {
   const { dispatch: confirmJob, pending: pendindConfirmJob } = useActionState(
     confirmJobAction,
     {
@@ -32,6 +41,10 @@ export default function JobActionCard({ job }: { job: Job }) {
       status: "idle",
     }
   );
+
+  const { dispatch: deleteJob, pending: pendingDeleteJob } =
+    useActionState(deleteJobAction);
+
   return (
     <Card
       headerBorder
@@ -98,6 +111,27 @@ export default function JobActionCard({ job }: { job: Job }) {
             size="sm"
           />
         )}
+
+        {checkPermission(user, permissions.jobs.deleteJob) && (
+          <LabelValueItem
+            label="Permaently Delete Job"
+            value={
+              <form action={deleteJob}>
+                <input type="hidden" name="id" value={job.id} />
+                <AsyncButton
+                  size="sm"
+                  variant="destructive"
+                  pending={pendingDeleteJob}
+                >
+                  Delete
+                </AsyncButton>
+              </form>
+            }
+            line="break"
+            size="sm"
+          />
+        )}
+
         <Action
           name={"Download Confirmation"}
           description={"Download job confirmation PDF."}
