@@ -13,9 +13,8 @@ const webConfig = {
   heroSubTitle: "Where Talents Meets Opportunities",
   defaultSEO: {
     title: "J.I.M. Modeling Agency | Thailand's Premier Modeling Agency",
-    description: `Discover where your talents meet top opportunities at J.I.M. Modeling Agency, \ 
-			Thailand's premier modeling agency with over 40 years of industry expertise in fashion, \  
-			TV, and media. Elevate your career with the trusted leaders in talent representation.`,
+    description:
+      "Discover your talents with J.I.M. Modeling Agency, Thailand's top agency with over 40 years of expertise in fashion, TV, and media. Elevate your career with trusted leaders in talent representation.",
     applicationName: "jimmodel.com",
     keywords: [
       "modeling",

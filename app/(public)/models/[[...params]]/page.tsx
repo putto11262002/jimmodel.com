@@ -7,6 +7,7 @@ import { stringToIntOrUndefined } from "@/lib/utils/text";
 import { Model } from "@/lib/domains";
 import Pagination from "../../_components/pagination";
 import routes from "@/config/routes";
+import { Metadata, ResolvedMetadata } from "next";
 
 // Every day
 export const revalidate = 86400;
@@ -18,18 +19,35 @@ type Props = {
   }>;
 };
 
-// export async function generateMetadata(
-//   { params, searchParams }: Props,
-//   parent: ResolvingMetadata
-// ): Promise<Metadata> {
-//   return {
-//     title: `Models${
-//       (params.categories || []).length > 0 ? ` | ${params.categories?.[0]}` : ""
-//     }${
-//       (params.categories || []).length > 1 ? ` | ${params.categories?.[1]}` : ""
-//     }`,
-//   };
-// }
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvedMetadata
+): Promise<Metadata> {
+  const resovledParams = await params;
+
+  const rawCategory = resovledParams.params?.[0];
+  const category =
+    rawCategory === "all"
+      ? undefined
+      : rawCategory
+      ? decodeURIComponent(rawCategory)
+      : undefined;
+
+  const rawBookingStatus = resovledParams.params?.[1];
+
+  const bookingStatus =
+    rawBookingStatus === "all"
+      ? undefined
+      : rawBookingStatus
+      ? decodeURIComponent(rawBookingStatus)
+      : undefined;
+  return {
+    title: `Models${category ? ` | ${category}` : " | All"}${
+      bookingStatus ? ` ${bookingStatus}` : ""
+    }`,
+    description: "Explore our models",
+  };
+}
 const PAGE_SIZE = 24;
 
 export async function generateStaticParams() {

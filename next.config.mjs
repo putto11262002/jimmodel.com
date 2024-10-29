@@ -15,6 +15,14 @@ const nextConfig = {
         destination: "/models/all/all/1",
       },
       {
+        source: "/models/male",
+        destination: "/models/male/all/1",
+      },
+      {
+        source: "/models/female",
+        destination: "/models/female/all/1",
+      },
+      {
         source: "/models/profile/:id",
         destination: "/models/profile/:id/book",
       },
@@ -58,9 +66,10 @@ const nextConfig = {
 
       {
         source: "/application",
-        destination: "/application/general",
+        destination: "/application/new",
         permanent: false,
       },
+
       // {
       //   source: "/admin/users/:id/update",
       //   destination: "/admin/users/:id/update/roles",
@@ -69,7 +78,6 @@ const nextConfig = {
     ];
   },
   experimental: {
-    esmExternals: "loose",
     serverActions: {
       bodySizeLimit: "5mb",
     },
