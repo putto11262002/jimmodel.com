@@ -54,12 +54,23 @@ export default async function Page({
           action={
             <div className="grid gap-2 lg:flex lg:items-centers">
               <JobCreateDialog
-                status={JOB_STATUS.PENDING}
+                status={JOB_STATUS.CONFIRMED}
                 trigger={
                   <IconButton
                     size="sm"
                     icon={<PlusCircle className="icon-sm" />}
                     text="Job"
+                  />
+                }
+              />
+
+              <JobCreateDialog
+                status={JOB_STATUS.PENDING}
+                trigger={
+                  <IconButton
+                    size="sm"
+                    icon={<PlusCircle className="icon-sm" />}
+                    text="Option"
                   />
                 }
               />

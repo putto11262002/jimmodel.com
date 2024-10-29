@@ -7,6 +7,8 @@ import {
   UserUseCase,
   ApplicationUseCase,
   ShowcaseUseCase,
+  EmailUseCase,
+  ResendEmailUseCase,
 } from "@/lib/usecases";
 import { WebAssetUseCase } from "@/lib/usecases/web-asset";
 import { ContactMessageUseCase } from "@/lib/usecases/contact-message/usecase";
@@ -25,6 +27,7 @@ export type AppUseCase = {
   webAssetUseCase: WebAssetUseCase;
   contactMessageUseCase: ContactMessageUseCase;
   showcaseUseCase: ShowcaseUseCase;
+  emalUseCase?: EmailUseCase;
 };
 
 export const AppUseCaseFactory = async ({
@@ -38,6 +41,9 @@ export const AppUseCaseFactory = async ({
   config: AppConfig;
   appEventHub?: AppEventHub;
 }): Promise<AppUseCase> => {
+  const emailUseCase = config.email
+    ? new ResendEmailUseCase(config.email)
+    : undefined;
   const fileUseCase = new FileUseCase({
     storages: [
       new S3FileStorageStrategy({
@@ -88,7 +94,7 @@ export const AppUseCaseFactory = async ({
       fileUseCase,
       db,
     }),
-    contactMessageUseCase: new ContactMessageUseCase({ db }),
+    contactMessageUseCase: new ContactMessageUseCase({ db, emailUseCase }),
     showcaseUseCase: new ShowcaseUseCase({
       db,
       fileUseCase,

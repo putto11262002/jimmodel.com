@@ -8,22 +8,40 @@ import { paginate } from "@/lib/utils/pagination";
 import { PaginatedData } from "@/lib/types/paginated-data";
 import { NotFoundError } from "@/lib/errors";
 import { contactMessageTable } from "@/db/schemas";
+import { EmailUseCase } from "../email/usecase";
 
 export class ContactMessageUseCase {
   private db: DB;
+  private emailUseCase?: EmailUseCase;
 
-  constructor({ db }: { db: DB }) {
+  constructor({ db, emailUseCase }: { db: DB; emailUseCase?: EmailUseCase }) {
     this.db = db;
+    this.emailUseCase = emailUseCase;
   }
 
   async createContactMessage(
     input: ContactMessageCreateInput
   ): Promise<ContactMessage> {
-    return this.db
+    const contactMesssage = this.db
       .insert(contactMessageTable)
       .values({ ...input, read: false })
       .returning()
       .then((res) => res[0]);
+    if (this.emailUseCase) {
+      this.emailUseCase.sendEmail(
+        "NEW CONTACT MESSAGE",
+        "From: " +
+          input.name +
+          "\nEmail: " +
+          input.email +
+          "\nPhone: " +
+          input.phone +
+          "\nMessage: " +
+          input.message
+      );
+    }
+
+    return contactMesssage;
   }
 
   async getContactMessages({

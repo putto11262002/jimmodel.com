@@ -12,20 +12,21 @@ export type AppConfig = {
   db: DBConfig;
   s3: S3Config;
   redis: RedisConfig;
-  googleAnalytics?: GoogleAnalyticsConfig;
+  email?: EmailConfig;
 };
 
-export type GoogleAnalyticsConfig = {
-  gtmId?: string;
+export type EmailConfig = {
+  resendAPIKey: string;
+  from: string;
+  notificationEmail: string;
 };
 
-export const GoogleAnalyticsConfigSchema: z.ZodSchema<
-  GoogleAnalyticsConfig,
-  z.ZodTypeDef,
-  any
-> = z.object({
-  gtmId: z.string().optional(),
-});
+export const EmailConfigSchema: z.ZodSchema<EmailConfig, z.ZodTypeDef, any> =
+  z.object({
+    resendAPIKey: z.string(),
+    from: z.string(),
+    notificationEmail: z.string(),
+  });
 
 export type RedisConfig = {
   host: string;
@@ -112,6 +113,7 @@ export const ConfigSchema: z.ZodSchema<AppConfig, z.ZodTypeDef, any> = z.object(
     db: DBConfigSchema,
     s3: S3ConfigSchema,
     redis: RedisConfigSchema,
+    email: EmailConfigSchema.optional(),
   }
 );
 
@@ -139,6 +141,11 @@ export const loadConfig = async () => {
       host: process.env.REDIS_HOST || "localhost",
       port: process.env.REDIS_PORT || 6379,
       password: process.env.REDIS_PASSWORD,
+    },
+    email: {
+      resendAPIKey: process.env.RESEND_API_KEY,
+      from: process.env.EMAIL_FROM,
+      notificationEmail: process.env.NOTIFICATION_EMAIL,
     },
   });
   if (!validation.success) {

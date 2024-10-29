@@ -38,7 +38,6 @@ export default function ModelSettingsUpdateForm({ model }: { model: Model }) {
         </AutoForm>
 
         <FormItem>
-          <Label>Category</Label>
           <input type="hidden" name="id" value={model.id} />
           <SelectFormItem
             name="category"

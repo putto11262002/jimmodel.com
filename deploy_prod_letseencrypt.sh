@@ -64,10 +64,13 @@ main() {
     docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" run --rm minio-mc
 
     echo "Bootstrapping the app..."
-    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" run --build --rm bootstrap_runner
+
+    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" build --no-cache bootstrap_runner
+    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" up  --no-deps bootstrap_runner
 
     echo "Building and running app..."
-    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" up --build -d app
+    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" build --no-cache app
+    docker compose -p "$PROJECT" -f "$DOCKER_COMPOSE_FILE" --project-directory "$PROJECT_DIRECTORY" up --no-deps -d app
 
 }
 
