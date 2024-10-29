@@ -8,6 +8,7 @@ import {
 } from "@/lib/usecases";
 import {
   ActionResult,
+  ActionResultWithDataOnSuccess,
   BaseActionResult,
   EmptyActionResult,
   IdelActionResult,
@@ -36,7 +37,10 @@ import routes from "@/config/routes";
 export const createUserAction = async (
   _: any,
   formData: FormData
-): Promise<BaseActionResult | ValidationErrorActionResult<UserCreateInput>> => {
+): Promise<
+  | ActionResultWithDataOnSuccess<string>
+  | ValidationErrorActionResult<UserCreateInput>
+> => {
   try {
     await auth({ permission: permissions.users.createUser });
     const data = validateOrThrowValidationError(
@@ -45,7 +49,10 @@ export const createUserAction = async (
     );
     const createdUserId = await userUseCase.createUser(data);
     revalidatePath(routes.admin.users.main, "page");
-    redirect(routes.admin.users.edit.main(createdUserId));
+    return {
+      status: "success",
+      data: createdUserId,
+    };
   } catch (e) {
     return handleActionError(e);
   }

@@ -22,6 +22,7 @@ export type BookingEvent = CalendarEvent<
     ownerName: string;
     ownerId: string;
     ownerImage: string | null;
+    jobName: string;
   }
 >;
 
@@ -52,6 +53,8 @@ export const bookingEventLoader = async ({
 
   const jobSearchParams = new URLSearchParams();
   jobIds.forEach((jobId) => jobSearchParams.append("jobIds", jobId));
+  jobSearchParams.append("page", "1");
+  jobSearchParams.append("pageSize", jobIds.size.toString());
   const jobRes = await fetch(
     `${routes.api.jobs.get}?${jobSearchParams.toString()}`
   );
@@ -78,13 +81,15 @@ export const bookingEventLoader = async ({
         type: "booking" as const,
         jobId: booking.jobId,
         bookingType: booking.type,
+        jobName: job.name,
         bookingStatus: booking.status,
         priority: booking.status === JOB_STATUS.CONFIRMED ? 1 : 0,
         ownerName: job.ownerName,
         ownerId: job.ownerId,
         ownerImage: job.ownerImageId,
         icon:
-          booking.status === JOB_STATUS.CONFIRMED ? (
+          booking.status === JOB_STATUS.CONFIRMED &&
+          booking.type === "shooting" ? (
             <div>
               <CheckCircle className="w-[12px] h-[12px] text-green-800" />
             </div>
@@ -105,6 +110,7 @@ export const bookingEventLoader = async ({
 export function BookingEventMetadata({ data }: { data: BookingEvent }) {
   return (
     <div className="grid gap-2">
+      <LabelValueItem label="Job:" value={data.jobName} size="sm" />
       <LabelValueItem
         label="Booking Type:"
         value={

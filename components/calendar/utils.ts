@@ -1,5 +1,6 @@
 import {
   addDays,
+  endOfDay,
   endOfMonth,
   endOfWeek,
   isAfter,
@@ -26,8 +27,10 @@ export const getCalendar = <T extends CalendarEvent<string>>(
 
     events.forEach((event) => {
       if (
-        (isBefore(current, event.end) || isSameDay(current, event.end)) &&
-        (isAfter(current, event.start) || isSameDay(current, event.start))
+        (isBefore(startOfDay(current), event.end) ||
+          isSameDay(current, event.end)) &&
+        (isAfter(endOfDay(current), event.start) ||
+          isSameDay(current, event.start))
       ) {
         currentDateEvents.push(event);
       }

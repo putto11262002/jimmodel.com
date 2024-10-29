@@ -15,6 +15,13 @@
       "when": 1730111409241,
       "tag": "0001_stale_rocket_racer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1730231463534,
+      "tag": "0002_dizzy_sue_storm",
+      "breakpoints": true
     }
   ]
 }

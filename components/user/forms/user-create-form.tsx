@@ -2,18 +2,23 @@
 import { createUserAction } from "@/actions/users";
 import InputFormItem from "@/components/form/server-action/input-form-item";
 import AsyncButton from "@/components/shared/buttons/async-button";
-import useActionToast from "@/hooks/use-action-toast";
-import { useFormState } from "react-dom";
+import useActionState from "@/hooks/use-action-state";
 
-export default function UserCreateForm() {
-  const [state, action, pending] = useFormState(createUserAction, {
-    status: "idle",
-  });
-
-  useActionToast({ state });
+export default function UserCreateForm({
+  done,
+}: {
+  done?: (id: string) => void;
+}) {
+  const { state, dispatch, pending } = useActionState(
+    createUserAction,
+    {
+      status: "idle",
+    },
+    { onSuccess: (data) => done && done(data.data) }
+  );
 
   return (
-    <form action={action} className="grid gap-4">
+    <form action={dispatch} className="grid gap-4">
       <InputFormItem name="name" label="Name" state={state} />
 
       <InputFormItem name="email" label="Email" state={state} />
