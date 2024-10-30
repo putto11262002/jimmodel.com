@@ -9,6 +9,7 @@ import webConfig from "@/config/web";
 import { Metadata } from "next";
 import { config } from "@/config";
 import { GoogleTagManager } from "@next/third-parties/google";
+import routes from "@/config/routes";
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.url),
@@ -37,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <SideNavMenu items={navItems} />
             </div>
             <div className="hidden md:flex items-center justify-end gap-4 md:gap-2 lg:gap-4">
-              <Link href={"/application"}>
+              <Link href={routes.application.new}>
                 <Button className="rounded-md" size={"sm"}>
                   Join Us
                 </Button>
