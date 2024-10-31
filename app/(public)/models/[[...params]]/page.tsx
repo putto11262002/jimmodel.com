@@ -19,10 +19,7 @@ type Props = {
   }>;
 };
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvedMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resovledParams = await params;
 
   const rawCategory = resovledParams.params?.[0];

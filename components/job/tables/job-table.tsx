@@ -8,7 +8,7 @@ import routes from "@/config/routes";
 import { Job } from "@/lib/domains";
 import { formatDate } from "@/lib/utils/date";
 import { truncate } from "lodash";
-import { MoreHorizontal } from "lucide-react";
+import { ArrowRight, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
 export default function JobTable({ jobs }: { jobs: Job[] }) {
@@ -73,14 +73,11 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
           ),
           createdAt: formatDate(job.createdAt),
           action: (
-            <JobDropdownMenu
-              job={job}
-              trigger={
-                <Button size="icon" variant="ghost">
-                  <MoreHorizontal className="icon-md" />
-                </Button>
-              }
-            />
+            <Link href={routes.admin.jobs["[id]"].edit.main({ id: job.id })}>
+              <Button variant="ghost" size="icon">
+                <ArrowRight className="icon-sm" />
+              </Button>
+            </Link>
           ),
         };
       })}

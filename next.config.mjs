@@ -63,18 +63,6 @@ const nextConfig = {
         destination: "/admin/jobs/:id/update/general",
         permanent: false,
       },
-
-      {
-        source: "/application",
-        destination: "/application/new",
-        permanent: false,
-      },
-
-      // {
-      //   source: "/admin/users/:id/update",
-      //   destination: "/admin/users/:id/update/roles",
-      //   permanent: false,
-      // },
     ];
   },
   experimental: {

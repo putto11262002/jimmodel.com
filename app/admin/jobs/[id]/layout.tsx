@@ -5,13 +5,6 @@ import { auth } from "@/config";
 import routes from "@/config/routes";
 import Header from "@/components/shared/header";
 
-const menuItems = ({ id }: { id: string }) => [
-  { label: "Edit", href: routes.admin.jobs["[id]"].edit.main({ id }) },
-  { label: "Bookings", href: routes.admin.jobs["[id]"].bookings({ id }) },
-  { label: "Models", href: routes.admin.jobs["[id]"].models({ id }) },
-  { label: "Settings", href: routes.admin.jobs["[id]"].settings.main({ id }) },
-];
-
 const breadcrumb = ({ id, name }: { id: string; name: string }) => [
   {
     label: "Admin",
@@ -39,14 +32,11 @@ export default async function Layout({
   const job = await getJobOrThrow(id);
 
   return (
-    <>
-      <Header
-        breadcrumb={breadcrumb({ id, name: job.name })}
-        items={menuItems({ id })}
-      ></Header>
-      <Container max="xl" className="">
+    <div className="flex flex-col h-full">
+      <Header breadcrumb={breadcrumb({ id, name: job.name })}></Header>
+      <Container max="xl" className="grow overflow-hidden">
         {children}
       </Container>
-    </>
+    </div>
   );
 }

@@ -198,7 +198,10 @@ export const createBookingAction = async (
     );
     await jobUseCase.addBooking(id, data, session.user.id);
     revalidatePath(routes.admin.jobs["[id]"].bookings({ id }), "layout");
-    redirect(routes.admin.jobs.bookings.main(id));
+    return {
+      status: "success",
+      message: "Booking created",
+    };
   } catch (e) {
     return handleActionError(e);
   }
