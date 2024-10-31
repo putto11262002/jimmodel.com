@@ -9,6 +9,8 @@ import {
 import { JobCreateInput } from "@/lib/usecases";
 import { useState } from "react";
 import JobCreateForm from "../forms/job-create-form";
+import routes from "@/config/routes";
+import { useRouter } from "next/navigation";
 
 export default function JobCreateDialog({
   status,
@@ -18,6 +20,12 @@ export default function JobCreateDialog({
   trigger: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const handleDone = (id: string) => {
+    setOpen(false);
+    router.push(routes.admin.jobs["[id]"].edit.main({ id }));
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -28,7 +36,7 @@ export default function JobCreateDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="py-4">
-          <JobCreateForm status={status} done={() => setOpen(false)} />
+          <JobCreateForm status={status} done={handleDone} />
         </div>
       </DialogContent>
     </Dialog>
