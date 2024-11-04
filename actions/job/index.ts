@@ -7,6 +7,8 @@ import {
   JobCreateInputSchema,
   JobUpdateInput,
   JobUpdateInputSchema,
+  ModelCreateInput,
+  ModelCreateInputSchema,
 } from "@/lib/usecases";
 import {
   ActionResultWithDataOnSuccess,
@@ -19,9 +21,10 @@ import {
 import permissions from "@/config/permission";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth, jobUseCase } from "@/config";
+import { auth, jobUseCase, modelUseCase } from "@/config";
 import routes from "@/config/routes";
 import { AppError } from "@/lib/errors";
+import { union } from "lodash";
 
 export const createJobAction = async (
   _: any,
@@ -79,6 +82,36 @@ export const deleteJobAction = async (
     await jobUseCase.deleteJob(id, session.user.id);
     revalidatePath(routes.admin.jobs.main, "layout");
     redirect(routes.admin.jobs.main);
+  } catch (e) {
+    return handleActionError(e);
+  }
+};
+
+export const createAndAddModelToJobAction = async (
+  _: any,
+  formData: FormData
+): Promise<
+  BaseActionResult | ValidationErrorActionResult<ModelCreateInput>
+> => {
+  try {
+    const jobId = validateUUIDOrThrowError(formData.get("id"));
+    const session = await auth({
+      permission: union(
+        permissions.jobs.addModels,
+        permissions.models.createModel
+      ),
+    });
+    const modelData = validateOrThrowValidationError(
+      formData,
+      ModelCreateInputSchema
+    );
+    const modelId = await modelUseCase.createModel(modelData);
+    await jobUseCase.addModel(jobId, modelId, session.user.id);
+    revalidatePath(routes.admin.jobs["[id]"].models({ id: jobId }), "layout");
+    return {
+      status: "success",
+      message: "Model created and added to job",
+    };
   } catch (e) {
     return handleActionError(e);
   }

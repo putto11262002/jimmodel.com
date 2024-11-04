@@ -1,13 +1,22 @@
 import { Card } from "@/components/card";
 import IconButton from "@/components/icon-button";
 import JobActionCard from "@/components/job/cards/job-action-card";
+import JobModelCard from "@/components/job/cards/job-model-card";
 import JobPermissionCard from "@/components/job/cards/job-permission-card";
 import BookingCreateDialog from "@/components/job/dialogs/booking-create-dialog";
 import JobModelAddDialog from "@/components/job/dialogs/job-model-add-dialog";
+import JobModelCreateAndAddDialog from "@/components/job/dialogs/job-model-create-and-add-dialog";
 import JobGeneralForm from "@/components/job/forms/job-general-form";
 import BookingTable from "@/components/job/tables/booking-table";
 import JobModelEditableTable from "@/components/job/tables/job-model-editable-table";
 import SideMenuLayout from "@/components/layouts/side-menu-layout";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { auth } from "@/config";
 import permissions from "@/config/permission";
 import { getBookings, getJobOrThrow } from "@/loaders/job";
@@ -43,16 +52,7 @@ export default async function Page({
       >
         <JobGeneralForm job={job} />
       </Card>
-
-      <Card
-        title="Models"
-        description="Models associated with this job"
-        headerBorder
-        action={<JobModelAddDialog job={job} />}
-      >
-        <JobModelEditableTable jobId={id} models={job.jobModels} />
-      </Card>
-
+      <JobModelCard job={job} />
       <Card
         title="Bookings"
         description="Shotting, Fitting, and other bookings"

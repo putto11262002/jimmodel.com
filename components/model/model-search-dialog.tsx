@@ -18,10 +18,14 @@ export default function ModelSearchDialog({
   trigger,
   onSelect,
   ignore,
+  open,
+  setOpen,
 }: {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   onSelect: (model: string) => void;
   ignore?: string[];
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
 }) {
   const [q, setQ] = useState("");
 
@@ -40,8 +44,8 @@ export default function ModelSearchDialog({
 
   return (
     <>
-      <Dialog>
-        <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <Dialog open={open} onOpenChange={setOpen}>
+        {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
         <DialogPortal>
           <DialogOverlay>
             <DialogContent>
