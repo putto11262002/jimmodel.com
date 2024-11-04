@@ -106,7 +106,12 @@ export class JobUsecase<
     }
     const createdJobId = await this.db
       .insert(jobTable)
-      .values({ ...job, ownerId: user.id, ownerName: user.name })
+      .values({
+        ...job,
+        ownerId: user.id,
+        ownerName: user.name,
+        ownerImageId: user.imageId,
+      })
       .returning({ id: jobTable.id })
       .then((res) => res[0].id);
 
