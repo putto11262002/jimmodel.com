@@ -38,6 +38,10 @@ const nextConfig = {
         source: "/admin/website",
         destination: "/admin/website/web-assets",
       },
+      {
+        source: "/application",
+        destination: "/application/general",
+      }
     ];
   },
   async redirects() {
