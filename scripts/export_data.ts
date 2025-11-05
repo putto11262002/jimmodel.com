@@ -22,26 +22,33 @@ async function main() {
     hasMore = models.hasNext;
 
     for (const model of models.data) {
-      // save model images
-      const modelAssetsDir = `${outputDir}/${model.id}/assets`;
-      await fs.mkdir(`${outputDir}/${model.id}`, { recursive: true });
-      if (model.profileImageId) {
-        const profileBlob = await fileUseCase.download(model.profileImageId);
-        console.log("Saving profile image for model:", model.id);
-        await fs.writeFile(
-          `${modelAssetsDir}/profile-image.jpeg`,
-          Buffer.from(await profileBlob.arrayBuffer()),
-        );
-        console.log("Saved profile image for model:", model.id);
-      }
+      try {
+        // save model images
+        const modelAssetsDir = `${outputDir}/${model.id}/assets`;
+        await fs.mkdir(`${outputDir}/${model.id}`, { recursive: true });
 
-      modelOutput.push({
-        ...model,
-        modelProfileImagePath: model.profileImageId
-          ? `${modelAssetsDir}/profile-image.jpeg`
-          : null,
-      });
-      console.log("Exported model:", model.id);
+        const images = await modelUseCase.getModelImages(model.id);
+
+        if (model.profileImageId) {
+          const profileBlob = await fileUseCase.download(model.profileImageId);
+          console.log("Saving profile image for model:", model.id);
+          await fs.writeFile(
+            `${modelAssetsDir}/profile-image.jpeg`,
+            Buffer.from(await profileBlob.arrayBuffer()),
+          );
+          console.log("Saved profile image for model:", model.id);
+        }
+
+        modelOutput.push({
+          ...model,
+          modelProfileImagePath: model.profileImageId
+            ? `${modelAssetsDir}/profile-image.jpeg`
+            : null,
+        });
+        console.log("Exported model:", model.id);
+      } catch (error) {
+        console.error("Error exporting model:", model.id, error);
+      }
     }
   }
   await fs.writeFile(
@@ -51,4 +58,4 @@ async function main() {
   console.log("Exported all models to", `${outputDir}/models.json`);
 }
 
-main()
+main();
