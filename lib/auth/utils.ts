@@ -1,5 +1,5 @@
 import { AuthUser, Permission } from "./";
-import { intersection } from "lodash";
+import _ from "lodash";
 
 /**
  * Checks whether a user is authorized to perform an action based on their roles
@@ -60,7 +60,7 @@ export const checkPermission = (
     return "success";
   }
   // Check if the user roles intersect with the required permission
-  if (intersection(user.roles, requiredPermission).length < 1) {
+  if (_.intersection(user.roles, requiredPermission).length < 1) {
     return "forbidden";
   }
 
