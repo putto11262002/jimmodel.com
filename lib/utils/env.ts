@@ -8,7 +8,8 @@ export const loadEnv = async () => {
           ...(process.env.NODE_ENV === "production"
             ? [".env.production"]
             : [".env.development"]),
-          ".env",
+         // HACK 
+	  ...(process.env.NODE_ENV === "script" ? [".env.script"] : [".env"])
         ],
       })
     );
