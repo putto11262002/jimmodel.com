@@ -28,16 +28,6 @@ async function main() {
         await fs.mkdir(`${outputDir}/${model.id}`, { recursive: true });
         await fs.mkdir(modelAssetsDir, { recursive: true });
 
-        if (model.profileImageId) {
-          const profileBlob = await fileUseCase.download(model.profileImageId);
-          console.log("Saving profile image for model:", model.id);
-          await fs.writeFile(
-            `${modelAssetsDir}/profile-image.jpeg`,
-            Buffer.from(await profileBlob.arrayBuffer()),
-          );
-          console.log("Saved profile image for model:", model.id);
-        }
-
         const images = await modelUseCase.getModelImages(model.id);
         for (const image of images) {
           const imageBlob = await fileUseCase.download(image.fileId);
