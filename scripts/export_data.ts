@@ -50,3 +50,5 @@ async function main() {
   );
   console.log("Exported all models to", `${outputDir}/models.json`);
 }
+
+main()
