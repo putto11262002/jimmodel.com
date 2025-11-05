@@ -5,6 +5,8 @@ import fs from "fs/promises";
 // Grab all the models from the database
 //
 let hasMore = true;
+let page = 1;
+const pageSize = 50;
 
 const outputDir = "./exports/models";
 
@@ -15,11 +17,13 @@ async function main() {
 
   while (hasMore) {
     const models = await modelUseCase.getModels({
-      pagination: false,
+      page: page,
+      pageSize: pageSize,
       compact: false,
     });
 
     hasMore = models.hasNext;
+    page += 1;
 
     for (const model of models.data) {
       try {
