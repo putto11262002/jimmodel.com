@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --force
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install sharp@0.32.6
 
 # --------------- APP ---------------
