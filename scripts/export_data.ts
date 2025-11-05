@@ -65,7 +65,10 @@ async function main() {
     `${outputDir}/models.json`,
     JSON.stringify(modelOutput, null, 2),
   );
-  console.log("Exported all models to", `${outputDir}/models.json`);
+
+  console.log(
+    `Exported ${modelOutput.length} models to ${outputDir}/models.json`,
+  );
 }
 
 main();
